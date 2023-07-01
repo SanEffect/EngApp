@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EnglishBender</string>
+
+    <string name="text_retry">Retry</string>
+    <string name="text_no_data_found">No suitable data found.</string>
+    <string name="empty_record_message">Record cannot be empty</string>
+    <string name="title_records">Records</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_dictionary">Dictionary</string>
+</resources>
