@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-//    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
 }
 
 android {
@@ -49,10 +48,8 @@ android {
 
 val composeVersion = "1.4.0"
 val material3Version = "1.1.0"
-
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
-
 val koinCoreVersion = "3.4.0"
 val koinAndroidVersion = "3.4.0"
 val koinComposeVersion = "3.4.3"
@@ -101,9 +98,6 @@ dependencies {
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.6.0")
-//    implementation("io.github.raamcosta.compose-destinations:core:1.4.4-beta")
-//    ksp("io.github.raamcosta.compose-destinations:ksp:1.4.4-beta")
-//    implementation("io.github.raamcosta.compose-destinations:animations-core:1.4.4-beta")
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")

@@ -40,9 +40,9 @@ actual class Platform actual constructor() {
 
 actual fun getPlatform(): Platform = Platform()
 
-actual val dispatcherMain: CoroutineDispatcher = Dispatchers.Main
-actual val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
-actual val dispatcherDefault: CoroutineDispatcher = Dispatchers.Default
+actual val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
+actual val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+actual val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
 actual fun randomUUID() = UUID.randomUUID().toString()
 

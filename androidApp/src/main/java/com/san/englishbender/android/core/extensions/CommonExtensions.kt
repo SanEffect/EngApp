@@ -1,4 +1,4 @@
-package com.san.englishbender.android.core
+package com.san.englishbender.android.core.extensions
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb

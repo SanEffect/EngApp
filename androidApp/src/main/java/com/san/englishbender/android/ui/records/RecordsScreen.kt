@@ -1,6 +1,5 @@
 package com.san.englishbender.android.ui.records
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -12,10 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
@@ -32,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,13 +37,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.flowWithLifecycle
-import com.san.englishbender.android.core.truncateText
+import com.san.englishbender.android.core.extensions.truncateText
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
@@ -57,9 +50,7 @@ import com.san.englishbender.core.utils.DateConverters.convertLongToDate
 import com.san.englishbender.domain.entities.Record
 import com.san.englishbender.ui.records.RecordsUiState
 import com.san.englishbender.ui.records.RecordsViewModel
-import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.getViewModel
-import timber.log.Timber
 
 
 @Composable
@@ -71,82 +62,21 @@ fun RecordsScreen(
 //    val context = LocalContext.current
 
     val viewModel: RecordsViewModel = getViewModel()
-
-//    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val uiState by viewModel.recordsUiState.collectAsStateWithLifecycle()
 
-//    (uiState as? RecordsUiState.Success)?.let {
-//        Text(text = it.records.firstOrNull()?.title.toString(), color = Color.White)
-//    }
-
-//    val data = uiState.cast<RecordsUiState.Success>().records
-//    val pagingItems = rememberFlowWithLifecycle(recordsUiState.records).collectAsLazyPagingItems()
-
-//    Timber.tag("onCleared").d("pagingItems: $pagingItems")
-
-    //Timber.tag("onCleared").d("RecordsScreen")
-
     when(uiState) {
-        is RecordsUiState.Loading -> {
-            //Timber.tag("onCleared").d("RecordsScreen Loading")
-            LoadingView()
-        }
+        is RecordsUiState.Loading -> LoadingView()
         is RecordsUiState.Success -> {
-            //Timber.tag("onCleared").d("RecordsScreen Success")
-            val records = uiState.cast<RecordsUiState.Success>().records
-//            val pagingItems = rememberFlowWithLifecycle(data).collectAsLazyPagingItems()
-
-//            Timber.tag("onCleared").d("itemCount: ${pagingItems.itemCount}")
-
             RecordsContent(
                 onRecordClick,
                 viewModel,
-                records
+                uiState.cast<RecordsUiState.Success>().records
             )
-
-//            LazyColumn(
-//                verticalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                items(pagingItems.itemCount) { index ->
-//                    val record = pagingItems[index]
-//
-//                    Text(record?.title ?: "")
-//                }
-//
-//                item {
-//                    Button(onClick = onRecordClick) {
-//                        Text("Go to Record")
-//                    }
-//                }
-//            }
         }
         is RecordsUiState.Failure -> {
-            Timber.tag("onCleared").d("RecordsScreen Failure")
             ErrorView(e = uiState.cast<RecordsUiState.Failure>().exception)
         }
     }
-
-//    LaunchedEffect(key1 = viewModel, block = {
-//        viewModel.saveRecord()
-//    })
-
-//    LaunchedEffect(Unit) {
-//
-//        viewModel.loadRecordsPaging()
-//    }
-//    Timber.tag("onCleared").d("--------------------------------")
-}
-
-@Composable
-fun <T> rememberFlowWithLifecycle(
-    flow: Flow<T>,
-    lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
-    minActiveState: Lifecycle.State = Lifecycle.State.STARTED
-): Flow<T> = remember(flow, lifecycle) {
-    flow.flowWithLifecycle(
-        lifecycle = lifecycle,
-        minActiveState = minActiveState
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -208,9 +138,7 @@ fun RecordsContent(
                 shape = RoundedCornerShape(10.dp),
                 onClick = {
                     onRecordClick(null)
-
                 }
-//                onClick = { navigator.navigate(RecordDetailScreenDestination(null)) }
             ) {
                 Icon(
                     Icons.Filled.Edit,
@@ -220,9 +148,6 @@ fun RecordsContent(
             }
         }
     ) { paddingValues ->
-
-//        Timber.tag("navigation").d("pagingItems.itemCount: ${pagingItems.itemCount}")
-
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
             items(records.size) { index ->
                 val record = records[index]
@@ -232,18 +157,14 @@ fun RecordsContent(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RecordItem(
     record: Record,
     viewModel: RecordsViewModel,
     onRecordClick: (recordId: String?) -> Unit,
 ) {
-    Timber.tag("navigationLib").d("record: ${record.title}")
-
     var showMenu by remember { mutableStateOf(false) }
 
-//    record.description = truncateDescription(record.description)
     record.title = truncateText(record.title, RECORD_MAX_LENGTH_TITLE)
     record.description = truncateText(record.description, RECORD_MAX_LENGTH_DESCRIPTION)
 
@@ -310,7 +231,6 @@ fun RecordItem(
                 }
                 Divider()
                 DropdownMenuItem(onClick = {
-//                    Timber.tag("Delete").d("Delete....")
 //                    viewModel.onTriggerEvent(RecordsEvent.RemoveRecord(record.id))
                 }) {
                     Text("Delete")

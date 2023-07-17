@@ -24,10 +24,5 @@ fun commonModule(enableNetworkLogs: Boolean) = module {
 
 //    single { createJson() }
 //    single { createHttpClient(get(), get(), enableNetworkLogs = enableNetworkLogs) }
-//
 //    single { CoroutineScope(Dispatchers.Default + SupervisorJob() ) }
-//
-//    single<PeopleInSpaceRepositoryInterface> { PeopleInSpaceRepository() }
-//
-//    single { PeopleInSpaceApi(get()) }
 }

@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 
 class GetRecordsUseCase constructor(
-//    @get:VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     private val recordsRepository: IRecordsRepository
 ) {
     operator fun invoke(forceUpdate: Boolean = false): Flow<List<Record>> =

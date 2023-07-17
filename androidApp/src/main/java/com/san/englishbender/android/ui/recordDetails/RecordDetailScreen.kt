@@ -54,8 +54,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.san.englishbender.android.core.toColor
-import com.san.englishbender.android.core.toHex
+import com.san.englishbender.android.core.extensions.toColor
+import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.LabelsDialog
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
@@ -65,7 +65,6 @@ import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.extensions.cast
 import com.san.englishbender.domain.entities.Label
 import com.san.englishbender.domain.entities.Record
-import com.san.englishbender.ui.recordDetail.NavTarget
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
 import com.san.englishbender.ui.recordDetail.RecordsDetailUiState
 import kotlinx.coroutines.launch
