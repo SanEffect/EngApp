@@ -1,10 +1,10 @@
 package com.san.englishbender.android
 
 import android.app.Application
-import com.san.englishbender.di.*
+import com.san.englishbender.android.di.appModule
+import com.san.englishbender.core.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import timber.log.Timber
 
@@ -17,19 +17,29 @@ class App : Application() {
             Timber.plant(Timber.DebugTree())
         }
 
-        startKoin {
-            androidLogger(Level.ERROR)
+        initKoin {
+            androidLogger()
             androidContext(this@App)
-            modules(
-                sharedModule,
-                appModule,
-                databaseModule,
-                viewModelModule,
-                useCasesModule
-            )
+            modules(appModule)
+
             if (BuildConfig.DEBUG) {
                 printLogger(Level.DEBUG)
             }
         }
+
+//        startKoin {
+//            androidLogger(Level.ERROR)
+//            androidContext(this@App)
+//            modules(
+//                sharedModule,
+//                appModule,
+//                databaseModule,
+//                viewModelModule,
+//                useCasesModule
+//            )
+//            if (BuildConfig.DEBUG) {
+//                printLogger(Level.DEBUG)
+//            }
+//        }
     }
 }

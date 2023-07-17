@@ -20,13 +20,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -41,7 +40,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,24 +53,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.san.englishbender.android.ui.common.BottomSheetContainerColor
-import com.san.englishbender.android.ui.common.RedDark
-import com.san.englishbender.android.ui.common.widgets.ErrorView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.san.englishbender.android.core.toColor
+import com.san.englishbender.android.core.toHex
+import com.san.englishbender.android.ui.common.LabelsDialog
 import com.san.englishbender.android.ui.common.widgets.LoadingView
-import com.san.englishbender.android.ui.destinations.RecordsScreenDestination
-import com.san.englishbender.android.ui.recordDetails.bottomSheets.AnalyseTextBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
+import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
+import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.extensions.cast
-import com.san.englishbender.core.extensions.toColor
-import com.san.englishbender.core.extensions.toHex
+import com.san.englishbender.domain.entities.Label
 import com.san.englishbender.domain.entities.Record
-import com.san.englishbender.ui.common.base.BaseViewState
-import com.san.englishbender.ui.recordDetails.NavTarget
-import com.san.englishbender.ui.recordDetails.RecordDetailState
-import com.san.englishbender.ui.recordDetails.RecordDetailViewModel
+import com.san.englishbender.ui.recordDetail.NavTarget
+import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
+import com.san.englishbender.ui.recordDetail.RecordsDetailUiState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import timber.log.Timber
@@ -80,65 +75,65 @@ import java.util.Calendar
 import java.util.Date
 
 
-@Destination
 @Composable
-@ExperimentalMaterialApi
+//@ExperimentalMaterialApi
 fun RecordDetailScreen(
-    navigator: DestinationsNavigator,
+    onBackClick: () -> Unit,
     recordId: String?
 ) {
+    Timber.tag("onCleared").d("RecordDetailScreen (recordId: $recordId)")
+
     val coroutineScope = rememberCoroutineScope()
     val viewModel: RecordDetailViewModel = getViewModel()
-    val navigation by viewModel.navigation.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
+//    val navigation by viewModel.navigation.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(navigation) {
-        navigation.getContentIfNotHandled()?.let { navTarget ->
-            coroutineScope.launch {
-                when (navTarget) {
-                    is NavTarget.RecordsScreen -> navigator.navigate(RecordsScreenDestination)
-                }
-            }
+//    LaunchedEffect(navigation) {
+//        navigation.getContentIfNotHandled()?.let { navTarget ->
+//            coroutineScope.launch {
+//                Timber.tag("onCleared").d("navigation")
+//                when (navTarget) {
+//                    is NavTarget.RecordsScreen -> onBackClick()
+//                    else -> {}
+//                }
+//            }
+//        }
+//    }
+
+    when(uiState) {
+        is RecordsDetailUiState.Loading -> {
+            Timber.tag("onCleared").d("RecordDetailScreen Loading")
+            LoadingView()
+        }
+        is RecordsDetailUiState.Success -> {
+            Timber.tag("onCleared").d("RecordDetailContent Success")
+            RecordDetailContent(
+                onBackClick,
+                viewModel,
+                uiState.cast<RecordsDetailUiState.Success>().record,
+            )
+        }
+        is RecordsDetailUiState.Empty -> {
+            Timber.tag("onCleared").d("RecordDetailContent Empty")
+            RecordDetailContent(
+                onBackClick,
+                viewModel,
+                null,
+            )
+        }
+        is RecordsDetailUiState.Failure -> {
+            Timber.tag("onCleared").d("RecordDetailScreen Failure")
         }
     }
 
-    Timber.tag("navigation").d("RecordDetailScreen")
-
-    LaunchedEffect(viewModel) {
+    LaunchedEffect(Unit) {
         when (recordId) {
-            null -> viewModel.showEmptyScreen()
+            null -> {
+                Timber.tag("onCleared").d("showEmptyScreen")
+                viewModel.showEmptyScreen()
+            }
             else -> viewModel.loadRecord(recordId)
         }
-    }
-
-    Timber.tag("recordDesc").d("recordId: $recordId")
-    Timber.tag("recordDesc").d("RecordDetailScreen uiState: $uiState")
-
-    when (uiState) {
-        is BaseViewState.Data -> {
-            RecordDetailContent(
-                navigator,
-                viewModel,
-                uiState.cast<BaseViewState.Data<RecordDetailState>>().value,
-            )
-        }
-
-        is BaseViewState.Empty -> {
-            RecordDetailContent(
-                navigator,
-                viewModel,
-                RecordDetailState(),
-            )
-        }
-
-        is BaseViewState.Error -> ErrorView(
-            e = uiState.cast<BaseViewState.Error>().throwable,
-            action = {
-//                viewModel.onTriggerEvent(GetRecordsEvent.LoadRecords)
-            }
-        )
-
-        is BaseViewState.Loading -> LoadingView()
     }
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
@@ -151,9 +146,9 @@ fun RecordDetailScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordDetailContent(
-    navigator: DestinationsNavigator,
+    onBackClick: () -> Unit,
     viewModel: RecordDetailViewModel,
-    viewState: RecordDetailState,
+    record: Record?,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -166,18 +161,20 @@ fun RecordDetailContent(
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val record by rememberSaveable(viewState) { mutableStateOf(viewState.record ?: Record()) }
+    val recordData by rememberSaveable(record) { mutableStateOf(record ?: Record()) }
 
     val randomGreeting = viewModel.randomGreeting
-    var title by remember { mutableStateOf(record.title) }
-    var description by remember { mutableStateOf(record.description) }
+    var title by rememberSaveable { mutableStateOf(recordData.title) }
+    var description by rememberSaveable { mutableStateOf(recordData.description) }
 
     var backgroundColor by remember {
         mutableStateOf(
-            if (record.backgroundColor.isEmpty()) Color.White else record.backgroundColor.toColor
+            if (recordData.backgroundColor.isEmpty()) Color.White else recordData.backgroundColor.toColor
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
+
+    var labelsDialog by remember { mutableStateOf(false) }
 
 //    val snackbarMessage by viewModel.snackbar.collectAsState()
 
@@ -201,7 +198,7 @@ fun RecordDetailContent(
 //    }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         containerColor = backgroundColor,
         topBar = {
             TopAppBar(
@@ -211,7 +208,7 @@ fun RecordDetailContent(
                 title = {
                     Text(
 //                        stringResource(titleResId),
-                        if (record.title.isEmpty()) "New Record" else "Record Details",
+                        if (recordData.title.isEmpty()) "New Record" else "Record Details",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
 //                        style = JetRortyTypography.h2
@@ -226,7 +223,7 @@ fun RecordDetailContent(
                             .padding(8.dp)
                             .clickable {
                                 coroutineScope.launch {
-                                    viewModel.saveRecord(record)
+                                    viewModel.saveRecord(recordData)
                                 }
                             }
                     )
@@ -238,9 +235,7 @@ fun RecordDetailContent(
 //                        tint = JetRortyColors.navigationBackIconColor,
                         modifier = Modifier
                             .padding(8.dp)
-                            .clickable {
-                                navigator.navigate(RecordsScreenDestination)
-                            }
+                            .clickable { onBackClick() }
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -257,22 +252,39 @@ fun RecordDetailContent(
         snackbarHost = {
             SnackbarHost(snackbarHostState)
         }
-    ) { innerPadding ->
+    ) { padding ->
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(innerPadding)
+                .padding(padding)
         ) {
-            if (record.isDraft) {
+            if (recordData.isDraft) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = 16.dp),
+                        .padding(end = 12.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(text = "Draft", color = RedDark)
                 }
+            }
+
+            Row(modifier = Modifier.padding(
+                start = 12.dp,
+                end = 12.dp,
+                top = 12.dp,
+                bottom = 24.dp
+            )) {
+                Icon(
+                    rememberVectorPainter(Icons.Outlined.NewLabel),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clickable {
+                            labelsDialog = true
+//                            viewModel.insertTags()
+                        }
+                )
             }
 
             // --- Title ---
@@ -281,11 +293,9 @@ fun RecordDetailContent(
                 label = { Text("Title") },
                 onValueChange = {
                     title = it
-                    record.title = it
+                    recordData.title = it
                 },
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
@@ -298,43 +308,31 @@ fun RecordDetailContent(
                 ),
             )
 
-            Divider(modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 24.dp))
+//            Divider(modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 24.dp))
 
             // --- Description ---
-            Row(
-                Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-            ) {
-                SelectionContainer {
-                    OutlinedTextField(
-                        value = description,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent
-                        ),
-                        onValueChange = {
-                            description = it
-                            record.description = it
-                        },
-                        label = { Text(randomGreeting) },
-                        modifier = Modifier
-                            .padding(
-                                top = 0.dp,
-                                start = 20.dp,
-                                end = 20.dp,
-                                bottom = 20.dp
-                            )
-                            .fillMaxSize()
-                            .verticalScroll(state = rememberScrollState())
-                    )
-                }
+            SelectionContainer(Modifier.fillMaxSize()) {
+                OutlinedTextField(
+                    value = description,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent
+                    ),
+                    onValueChange = {
+                        description = it
+                        recordData.description = it
+                    },
+                    label = { Text(randomGreeting) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(state = rememberScrollState())
+                )
             }
         }
 
@@ -344,26 +342,67 @@ fun RecordDetailContent(
                 onDismissRequest = { openBottomSheet = false },
                 sheetState = bottomSheetState,
             ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-
-                    when (bottomNavItem) {
-                        BottomNavItem.Analyze -> AnalyseTextBSContent(
-                            viewModel,
-                            description
-                        )
-                        BottomNavItem.Translate -> TranslatedTextBSContent(
-                            text = "Some translated text"
-                        )
-                        BottomNavItem.Settings -> BackgroundColorPickerBSContent(
-                            onClick = { color ->
-                                backgroundColor = color
-                                record.backgroundColor = color.toHex()
-                            }
-                        )
-                    }
+                when (bottomNavItem) {
+//                    BottomNavItem.Analyze -> AnalyseTextBSContent(
+//                        viewModel,
+//                        description
+//                    )
+                    BottomNavItem.Translate -> TranslatedTextBSContent(
+                        text = "Some translated text"
+                    )
+                    BottomNavItem.Settings -> BackgroundColorPickerBSContent(
+                        onClick = { color ->
+                            backgroundColor = color
+                            recordData.backgroundColor = color.toHex()
+                        }
+                    )
+                    else -> {}
                 }
             }
         }
+
+        if (labelsDialog) {
+            val labels = listOf(
+                Label("1", "Thoughts", ""),
+                Label("2", "Feelings", ""),
+                Label("3", "Ideas", ""),
+            )
+            LabelsDialog(
+                labels = labels,
+                onDismissRequest = {},
+                onLabelSelected = { label ->
+
+                }
+            )
+        }
+
+//        if (labelsDialog) {
+//            AlertDialog(labelsDialog) {
+//                Surface(
+//                    modifier = Modifier
+//                        .wrapContentWidth()
+//                        .wrapContentHeight(),
+//                    shape = MaterialTheme.shapes.large,
+//                    tonalElevation = AlertDialogDefaults.TonalElevation
+//                ) {
+//                    Column(modifier = Modifier.padding(16.dp)) {
+//                        Text(
+//                            text = "This area typically contains the supportive text " +
+//                                    "which presents the details regarding the Dialog's purpose.",
+//                        )
+//                        Spacer(modifier = Modifier.height(24.dp))
+//                        TextButton(
+//                            onClick = {
+//                                openDialog = false
+//                            },
+//                            modifier = Modifier.align(Alignment.End)
+//                        ) {
+//                            Text("Confirm")
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 }
 

@@ -1,5 +1,6 @@
 package com.san.englishbender.android.ui.common.widgets
 
+//import androidx.compose.material.icons.filled.HourglassEmpty
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-//import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.san.englishbender.android.EnglishBenderTheme
 import com.san.englishbender.android.R
+import com.san.englishbender.android.ui.theme.EnglishBenderTheme
 
 @Composable
 fun EmptyView(modifier: Modifier = Modifier) {

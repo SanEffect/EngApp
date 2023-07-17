@@ -2,7 +2,6 @@ package com.san.englishbender.ui.records
 
 import androidx.paging.PagingData
 import com.san.englishbender.domain.entities.Record
-import com.san.englishbender.data.local.dto.RecordDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 

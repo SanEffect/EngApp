@@ -2,11 +2,16 @@ package com.san.englishbender
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.san.englishbender.data.local.DatabaseDriverFactory
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.TypeParceler
+import org.koin.dsl.module
+import java.util.UUID
 
 actual typealias CommonParcelize = Parcelize
 actual typealias CommonParcelable = Parcelable
@@ -25,8 +30,24 @@ actual object LocalDateTimeParceler : Parceler<LocalDateTime> {
     }
 }
 
-class AndroidPlatform : Platform {
-    override val name: String = "Android ${android.os.Build.VERSION.SDK_INT}"
+//class AndroidPlatform : Platform {
+//    override val name: String = "Android ${android.os.Build.VERSION.SDK_INT}"
+//}
+
+actual class Platform actual constructor() {
+    actual val name: String = "Android ${android.os.Build.VERSION.SDK_INT}"
 }
 
-actual fun getPlatform(): Platform = AndroidPlatform()
+actual fun getPlatform(): Platform = Platform()
+
+actual val dispatcherMain: CoroutineDispatcher = Dispatchers.Main
+actual val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
+actual val dispatcherDefault: CoroutineDispatcher = Dispatchers.Default
+
+actual fun randomUUID() = UUID.randomUUID().toString()
+
+actual fun getSystemTimeInMillis() = System.currentTimeMillis()
+
+actual fun platformModule() = module {
+    single { DatabaseDriverFactory(get()) }
+}

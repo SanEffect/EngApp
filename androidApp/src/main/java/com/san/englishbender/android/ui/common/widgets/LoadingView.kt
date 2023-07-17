@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.san.englishbender.android.EnglishBenderTheme
 import com.san.englishbender.android.ui.common.Delayed
 import com.san.englishbender.android.ui.common.ProgressIndicator
+import com.san.englishbender.android.ui.theme.EnglishBenderTheme
 
 @Composable
 fun LoadingView(modifier: Modifier = Modifier, delayMillis: Long = 100L) {

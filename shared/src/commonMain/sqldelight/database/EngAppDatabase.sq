@@ -1,0 +1,23 @@
+
+CREATE TABLE RecordData(
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    creationDate INTEGER NOT NULL,
+    isDeleted INTEGER AS Boolean NOT NULL,
+    isDraft INTEGER AS Boolean NOT NULL,
+    backgroundColor TEXT NOT NULL
+);
+
+insertRecord:
+INSERT INTO RecordData(id, title, description, creationDate, isDeleted, isDraft, backgroundColor) VALUES (?,?,?,?,?,?,?);
+
+deleteRecord:
+DELETE FROM RecordData WHERE id = ?;
+
+selectAllRecord:
+SELECT * FROM RecordData;
+
+selectRecordById:
+SELECT * FROM RecordData WHERE id = ?;
+-- SELECT EXISTS(SELECT 1 FROM RecordData WHERE id = ? LIMIT 1);

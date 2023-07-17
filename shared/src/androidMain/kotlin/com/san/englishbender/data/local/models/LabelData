@@ -1,0 +1,27 @@
+package com.san.englishbender.data.local.models
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.san.englishbender.domain.entities.Label
+
+
+@Entity(tableName = "recordLabels")
+data class LabelData(
+    @PrimaryKey
+    var id: String = "",
+
+    @ColumnInfo(name = "name")
+    var name: String = "",
+
+    @ColumnInfo(name = "color")
+    var color: String = ""
+)
+
+fun LabelData.toEntity() = Label(
+    this.id,
+    this.name,
+    this.color
+)
+
+fun Collection<LabelData>.toEntities() : List<Label> = this.map { it.toEntity() }

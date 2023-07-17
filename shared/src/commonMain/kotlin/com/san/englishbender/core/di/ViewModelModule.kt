@@ -1,0 +1,10 @@
+package com.san.englishbender.core.di
+
+import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
+import com.san.englishbender.ui.records.RecordsViewModel
+import org.koin.dsl.module
+
+val viewModelModule = module {
+    single { RecordsViewModel(get(), get()) }
+    single { RecordDetailViewModel(get(), get()) }
+}

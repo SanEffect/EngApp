@@ -1,5 +1,6 @@
 package com.san.englishbender.android.ui.common.widgets
 
+//import androidx.compose.material.icons.filled.ErrorOutline
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -7,7 +8,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-//import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,13 +16,13 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.san.englishbender.android.EnglishBenderTheme
-import com.san.englishbender.ui.common.SmallSpacer
 import com.san.englishbender.android.R
+import com.san.englishbender.android.ui.theme.EnglishBenderTheme
+import com.san.englishbender.ui.common.SmallSpacer
 
 @Suppress("ForbiddenComment")
 @Composable
-fun ErrorView(modifier: Modifier = Modifier, e: Throwable, action: () -> Unit) {
+fun ErrorView(modifier: Modifier = Modifier, e: Throwable, action: () -> Unit = {}) {
     // todo: handleThrowable- create extension method
     e.printStackTrace()
     Column(

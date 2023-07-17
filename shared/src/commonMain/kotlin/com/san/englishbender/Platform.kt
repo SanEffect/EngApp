@@ -1,10 +1,14 @@
 package com.san.englishbender
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.datetime.LocalDateTime
+import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
-interface Platform {
-    val name: String
-}
+//interface Platform {
+//    val name: String
+//}
 
 expect fun getPlatform(): Platform
 
@@ -31,3 +35,18 @@ expect interface CommonParceler<T>
 
 // For Android @TypeParceler to convert LocalDateTime to Parcel
 expect object LocalDateTimeParceler: CommonParceler<LocalDateTime>
+
+expect val dispatcherMain: CoroutineDispatcher
+expect val dispatcherIO: CoroutineDispatcher
+expect val dispatcherDefault: CoroutineDispatcher
+
+expect fun randomUUID(): String
+
+expect fun getSystemTimeInMillis(): Long
+
+expect fun platformModule(): Module
+
+// KMP Class Definition
+expect class Platform() {
+    val name: String
+}

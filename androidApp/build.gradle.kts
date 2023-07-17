@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
+//    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
 }
 
 android {
@@ -19,7 +19,8 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"
+//        kotlinCompilerExtensionVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "1.4.8"
     }
     packagingOptions {
         resources {
@@ -39,12 +40,15 @@ android {
         jvmTarget = "1.8"
     }
 
-    applicationVariants.all {
-        addJavaSourceFoldersToModel(
-            File(buildDir, "generated/ksp/$name/kotlin")
-        )
-    }
+//    applicationVariants.all {
+//        addJavaSourceFoldersToModel(
+//            File(buildDir, "generated/ksp/$name/kotlin")
+//        )
+//    }
 }
+
+val composeVersion = "1.4.0"
+val material3Version = "1.1.0"
 
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
@@ -53,20 +57,53 @@ val koinCoreVersion = "3.4.0"
 val koinAndroidVersion = "3.4.0"
 val koinComposeVersion = "3.4.3"
 
+val lifecycleViewModelVersion = "2.5.1"
+
 dependencies {
     implementation(project(":shared"))
 
-    implementation("io.insert-koin:koin-core:3.4.0")
+    implementation("io.insert-koin:koin-core:3.4.1")
     implementation("io.insert-koin:koin-android:$koinAndroidVersion")
     implementation("io.insert-koin:koin-androidx-compose:$koinComposeVersion")
 
-    implementation("androidx.navigation:navigation-compose:2.6.0-beta01")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.1")
+
+    // --- Compose ---
+    implementation("androidx.compose.ui:ui:$composeVersion")
+//     Integration with activities
+    implementation("androidx.activity:activity-compose:1.7.2")
+    // Integration with ViewModels
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    // Tooling support (Previews, etc.)
+    api("androidx.compose.ui:ui-tooling:$composeVersion")
+    // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
+    implementation("androidx.compose.foundation:foundation:$composeVersion")
+
+//     Material Design
+    implementation("androidx.compose.material:material:$composeVersion")
+    api("androidx.compose.material3:material3:$material3Version")
+    api("androidx.compose.material3:material3-window-size-class:$material3Version")
+    // Material design icons
+    api("androidx.compose.material:material-icons-core:$composeVersion")
+    api("androidx.compose.material:material-icons-extended:$composeVersion")
+
+    implementation("com.google.accompanist:accompanist-insets:0.31.0-alpha")
+
+//    ViewModel & LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
+
+    // SplashScreen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // DON'T USE IT
+//    implementation("androidx.navigation:navigation-compose:2.7.0-beta02")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("io.github.raamcosta.compose-destinations:core:1.4.4-beta")
-    ksp("io.github.raamcosta.compose-destinations:ksp:1.4.4-beta")
-    implementation("io.github.raamcosta.compose-destinations:animations-core:1.4.4-beta")
+    implementation("androidx.navigation:navigation-compose:2.6.0")
+//    implementation("io.github.raamcosta.compose-destinations:core:1.4.4-beta")
+//    ksp("io.github.raamcosta.compose-destinations:ksp:1.4.4-beta")
+//    implementation("io.github.raamcosta.compose-destinations:animations-core:1.4.4-beta")
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")

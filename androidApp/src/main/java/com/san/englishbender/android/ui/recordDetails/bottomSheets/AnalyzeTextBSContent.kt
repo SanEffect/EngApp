@@ -11,19 +11,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.san.englishbender.ui.recordDetails.RecordDetailViewModel
+//import com.san.englishbender.ui.recordDetails.RecordDetailViewModel
 
 
 @Composable
 fun AnalyseTextBSContent(
-    viewModel: RecordDetailViewModel,
+//    viewModel: RecordDetailViewModel,
     text: String
 ) {
-    val result = viewModel.textResult.collectAsState().value
+//    val result = viewModel.textResult.collectAsState().value
 
-    LaunchedEffect(viewModel) {
-        viewModel.checkGrammar(text)
-    }
+//    LaunchedEffect(viewModel) {
+//        viewModel.checkGrammar(text)
+//    }
 
     Column(
         modifier = Modifier
@@ -32,8 +32,8 @@ fun AnalyseTextBSContent(
             //.weight(1f, false)
             .padding(16.dp)
     ) {
-        result.forEach {
-            Text(it)
-        }
+//        result.forEach {
+//            Text(it)
+//        }
     }
 }
