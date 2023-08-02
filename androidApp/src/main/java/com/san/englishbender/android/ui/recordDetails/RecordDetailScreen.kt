@@ -39,7 +39,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,84 +55,74 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
-import com.san.englishbender.android.ui.common.LabelsDialog
-import com.san.englishbender.android.ui.common.widgets.LoadingView
+import com.san.englishbender.android.ui.labels.LabelsDialog
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
-import com.san.englishbender.core.extensions.cast
-import com.san.englishbender.domain.entities.Label
-import com.san.englishbender.domain.entities.Record
+import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import com.san.englishbender.ui.recordDetail.RecordsDetailUiState
+import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
-import timber.log.Timber
 import java.util.Calendar
 import java.util.Date
 
 
 @Composable
-//@ExperimentalMaterialApi
 fun RecordDetailScreen(
     onBackClick: () -> Unit,
+    onRecordSaved: () -> Unit,
     recordId: String?
 ) {
-    Timber.tag("onCleared").d("RecordDetailScreen (recordId: $recordId)")
+    log(tag = "navigationFuck") { "RecordDetailScreen" }
 
     val coroutineScope = rememberCoroutineScope()
     val viewModel: RecordDetailViewModel = getViewModel()
-//    val navigation by viewModel.navigation.collectAsStateWithLifecycle()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+//    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val detailUiState by viewModel.detailUiState.collectAsStateWithLifecycle()
 
-//    LaunchedEffect(navigation) {
-//        navigation.getContentIfNotHandled()?.let { navTarget ->
-//            coroutineScope.launch {
-//                Timber.tag("onCleared").d("navigation")
-//                when (navTarget) {
-//                    is NavTarget.RecordsScreen -> onBackClick()
-//                    else -> {}
-//                }
-//            }
+    viewModel.recordId = recordId
+
+    RecordDetailContent(
+        onBackClick,
+        onRecordSaved,
+        viewModel,
+        detailUiState,
+    )
+
+//    when(uiState) {
+//        is RecordsDetailUiState.Loading -> LoadingView()
+//        is RecordsDetailUiState.Success -> {
+//            RecordDetailContent(
+//                onBackClick,
+//                onRecordSaved,
+//                viewModel,
+//                uiState.cast<RecordsDetailUiState.Success>().record,
+//            )
+//        }
+//        is RecordsDetailUiState.Empty -> {
+//            RecordDetailContent(
+//                onBackClick,
+//                onRecordSaved,
+//                viewModel,
+//                null,
+//            )
+//        }
+//        is RecordsDetailUiState.Failure -> {
+//
 //        }
 //    }
-
-    when(uiState) {
-        is RecordsDetailUiState.Loading -> {
-            Timber.tag("onCleared").d("RecordDetailScreen Loading")
-            LoadingView()
-        }
-        is RecordsDetailUiState.Success -> {
-            Timber.tag("onCleared").d("RecordDetailContent Success")
-            RecordDetailContent(
-                onBackClick,
-                viewModel,
-                uiState.cast<RecordsDetailUiState.Success>().record,
-            )
-        }
-        is RecordsDetailUiState.Empty -> {
-            Timber.tag("onCleared").d("RecordDetailContent Empty")
-            RecordDetailContent(
-                onBackClick,
-                viewModel,
-                null,
-            )
-        }
-        is RecordsDetailUiState.Failure -> {
-            Timber.tag("onCleared").d("RecordDetailScreen Failure")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        when (recordId) {
-            null -> {
-                Timber.tag("onCleared").d("showEmptyScreen")
-                viewModel.showEmptyScreen()
-            }
-            else -> viewModel.loadRecord(recordId)
-        }
-    }
+//
+//    LaunchedEffect(Unit) {
+//        when (recordId) {
+//            null -> {
+//                viewModel.showEmptyScreen()
+//            }
+//            else -> viewModel.loadRecord(recordId)
+//        }
+//    }
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
 //
@@ -146,8 +135,9 @@ fun RecordDetailScreen(
 @Composable
 fun RecordDetailContent(
     onBackClick: () -> Unit,
+    onRecordSaved: () -> Unit,
     viewModel: RecordDetailViewModel,
-    record: Record?,
+    detailUiState: DetailUiState
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -160,7 +150,9 @@ fun RecordDetailContent(
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val recordData by rememberSaveable(record) { mutableStateOf(record ?: Record()) }
+    val recordData by rememberSaveable(detailUiState.record) {
+        mutableStateOf(detailUiState.record ?: RecordEntity())
+    }
 
     val randomGreeting = viewModel.randomGreeting
     var title by rememberSaveable { mutableStateOf(recordData.title) }
@@ -359,49 +351,16 @@ fun RecordDetailContent(
                 }
             }
         }
+    }
+    if (labelsDialog) {
+        LabelsDialog(
+            labels = detailUiState.labels,
+            dismiss = { labelsDialog = false },
+            onSaveLabel = { label -> viewModel.saveLabel(label) },
+            onLabelSelected = { label ->
 
-        if (labelsDialog) {
-            val labels = listOf(
-                Label("1", "Thoughts", ""),
-                Label("2", "Feelings", ""),
-                Label("3", "Ideas", ""),
-            )
-            LabelsDialog(
-                labels = labels,
-                onDismissRequest = {},
-                onLabelSelected = { label ->
-
-                }
-            )
-        }
-
-//        if (labelsDialog) {
-//            AlertDialog(labelsDialog) {
-//                Surface(
-//                    modifier = Modifier
-//                        .wrapContentWidth()
-//                        .wrapContentHeight(),
-//                    shape = MaterialTheme.shapes.large,
-//                    tonalElevation = AlertDialogDefaults.TonalElevation
-//                ) {
-//                    Column(modifier = Modifier.padding(16.dp)) {
-//                        Text(
-//                            text = "This area typically contains the supportive text " +
-//                                    "which presents the details regarding the Dialog's purpose.",
-//                        )
-//                        Spacer(modifier = Modifier.height(24.dp))
-//                        TextButton(
-//                            onClick = {
-//                                openDialog = false
-//                            },
-//                            modifier = Modifier.align(Alignment.End)
-//                        ) {
-//                            Text("Confirm")
-//                        }
-//                    }
-//                }
-//            }
-//        }
+            }
+        )
     }
 }
 

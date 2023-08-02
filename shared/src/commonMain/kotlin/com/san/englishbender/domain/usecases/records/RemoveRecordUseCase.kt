@@ -1,4 +1,4 @@
-package com.san.englishbender.domain.usecases
+package com.san.englishbender.domain.usecases.records
 
 import com.san.englishbender.data.Result
 import com.san.englishbender.domain.repositories.IRecordsRepository

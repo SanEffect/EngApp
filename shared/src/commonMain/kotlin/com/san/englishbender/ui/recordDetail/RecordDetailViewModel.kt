@@ -9,76 +9,91 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import com.san.englishbender.core.AppConstants
-//import com.san.englishbender.core.Event
-import com.san.englishbender.domain.entities.Record
-import com.san.englishbender.domain.usecases.GetRecordUseCase
-import com.san.englishbender.domain.usecases.SaveRecordUseCase
+import com.san.englishbender.core.WhileUiSubscribed
+import com.san.englishbender.data.Result
+import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.domain.usecases.labels.GetAllLabelsUseCase
+import com.san.englishbender.domain.usecases.labels.SaveLabelUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordUseCase
+import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
+import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
+import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.ui.ViewModel
+import com.san.englishbender.ui.records.RecordsUiState
+import database.Label
+import database.Stats
+import io.github.aakira.napier.log
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-sealed class NavTarget {
-    object RecordsScreen : NavTarget()
-}
-
-
-sealed interface RecordsDetailUiState {
-
-    object Loading : RecordsDetailUiState
-    object Empty : RecordsDetailUiState
-
-    data class Success(val record: Record?) : RecordsDetailUiState
-
-    data class Failure(val exception: Exception) : RecordsDetailUiState
-}
+data class DetailUiState(
+    val record: RecordEntity? = null,
+    val labels: List<Label> = emptyList()
+)
 
 class RecordDetailViewModel constructor(
     private val getRecordUseCase: GetRecordUseCase,
+    private val getRecordFlowUseCase: GetRecordFlowUseCase,
     private val saveRecordUseCase: SaveRecordUseCase,
-//    private val recordDao: RecordDao,
-//    private val labelDao: LabelDao,
-//    savedStateHandle: SavedStateHandle
+    private val updateStatsUseCase: UpdateStatsUseCase,
+    private val getAllLabelsUseCase: GetAllLabelsUseCase,
+    private val saveLabelUseCase: SaveLabelUseCase
 ) : ViewModel() {
-
-    private val _uiState = MutableStateFlow<RecordsDetailUiState>(RecordsDetailUiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-//    val taskId: String = savedStateHandle[DestinationsArgs.RECORD_ID_ARG]!!
-
-//    private val _snackBar = MutableStateFlow<Event<String?>>(Event(null))
-//    private val _snackBar: MutableSharedFlow<String> = MutableStateFlow("")
-//    val snackbar = _snackBar.asStateFlow()
-
-//    private val _navigation = MutableStateFlow<Event<NavTarget?>>(Event(null))
-//    val navigation = _navigation.asStateFlow()
 
     val randomGreeting = AppConstants.GREETINGS.random()
 
-//    init {
-//        setState(BaseViewState.Loading)
+    private var stats: Stats? = null
+    private var currentRecord: RecordEntity? = null
+
+    private var currentWordsCount = 0
+    private var currentLettersCount = 0
+
+    var recordId: String? = null
+
+    val detailUiState: StateFlow<DetailUiState> = combine(
+        getRecordFlowUseCase(recordId),
+        getAllLabelsUseCase()
+    ) { recordEntity, labels ->
+        log(tag = "navigationFuck") { "GetRecordAndLabels" }
+        DetailUiState(
+            record = recordEntity,
+            labels = labels
+        )
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = WhileUiSubscribed,
+            initialValue = DetailUiState()
+        )
+
+//    fun loadRecord(id: String) = safeLaunch {
+//        val params = GetRecordUseCase.Params(id)
+//        execute(getRecordUseCase(params)) { record ->
+//            currentRecord = record?.copy()
+//
+//            currentRecord?.let {
+//                currentWordsCount = getWordsCountOfStrings(it.title, it.description)
+//                currentLettersCount = getLettersOfStrings(it.title, it.description)
+//            }
+//
+//            detailUiState.update {
+//
+//            }
+//
+//            _uiState.emit(RecordsDetailUiState.Success(record))
+//        }
 //    }
 
-    private var currentRecord: Record? = null
-
-    fun loadRecord(id: String) = safeLaunch {
-//        execute(recordsRepository.getRecordById(id, false)) { record ->
-//            currentRecord = record.copy()
-//            setState(BaseViewState.Data(RecordDetailState(record)))
-//        }
-
-        val params = GetRecordUseCase.Params(id)
-        execute(getRecordUseCase(params)) { record ->
-            currentRecord = record?.copy()
-
-            _uiState.emit(RecordsDetailUiState.Success(record))
-        }
-    }
-
-    val textResult = MutableStateFlow(listOf(""))
+    private val textResult = MutableStateFlow(listOf(""))
 
     @OptIn(BetaOpenAI::class)
     fun checkGrammar(text: String) = viewModelScope.launch {
@@ -189,7 +204,7 @@ class RecordDetailViewModel constructor(
         }
     }
 
-    fun saveRecord(record: Record) = safeLaunch {
+    fun saveRecord(record: RecordEntity) = safeLaunch {
         val title = record.title.trim()
         val description = record.description.trim()
 
@@ -211,12 +226,42 @@ class RecordDetailViewModel constructor(
 //
 //        recordsRepository.saveRecord(recDto)
 
+        // newWordsCount - currentWordsCount
+
+        val wordsCount = getDiff(currentWordsCount, getWordsCountOfStrings(title, description))
+        val lettersCount = getDiff(currentLettersCount, getLettersOfStrings(title, description))
+
+        currentWordsCount = 0
+        currentLettersCount = 0
+
         execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) {
-//            _navigation.value = Event(NavTarget.RecordsScreen)
+            log { "record saved" }
+            val params = UpdateStatsUseCase.Params(
+                recordsCount = 1,
+                wordsCount = wordsCount,
+                lettersCount = lettersCount
+            )
+            log { "params: $params" }
+            execute(updateStatsUseCase(params)) { result ->
+                log { "updateStatsUseCase result: $result" }
+            }
         }
     }
 
-    fun saveDraft(record: Record) = safeLaunch {
+    private fun getLettersOfString(value: String) : Int = value.replace(" ", "").length
+    private fun getLettersOfStrings(vararg values: String) : Int {
+        return values.sumOf { it.replace(" ", "").length }
+    }
+
+    private fun getWordsCountOfStrings(vararg values: String) : Int {
+        return values.sumOf { it.split(" ").size }
+    }
+
+    private fun getDiff(currentValue: Int, newValue: Int) : Int {
+        return newValue - currentValue
+    }
+
+    fun saveDraft(record: RecordEntity) = safeLaunch {
         val title = record.title.trim()
         val description = record.description.trim()
 
@@ -232,19 +277,27 @@ class RecordDetailViewModel constructor(
 //        }
     }
 
-    private fun isThereSomeChanges(dto: Record): Boolean {
+    private fun isThereSomeChanges(record: RecordEntity): Boolean {
         val currRecordTitle = currentRecord?.title?.trim()
         val currRecordDesc = currentRecord?.description?.trim()
 
-        val newTitle = dto.title.trim()
-        val newDesc = dto.description.trim()
+        val newTitle = record.title.trim()
+        val newDesc = record.description.trim()
+
+//        val res = currentRecord?.equals(record)
 
         return (currRecordTitle != newTitle || currRecordDesc != newDesc)
     }
 
-    suspend fun showEmptyScreen() {
-        _uiState.emit(RecordsDetailUiState.Empty)
+    fun saveLabel(label: Label) = safeLaunch {
+        execute(saveLabelUseCase(SaveLabelUseCase.Params(label))) {
+
+        }
     }
+
+//    suspend fun showEmptyScreen() {
+//        _uiState.emit(RecordsDetailUiState.Empty)
+//    }
 
 //    private var needToTranslate = true
 //    private var translateToggled = false

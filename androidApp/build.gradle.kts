@@ -46,8 +46,8 @@ android {
 //    }
 }
 
-val composeVersion = "1.4.0"
-val material3Version = "1.1.0"
+val composeVersion = "1.4.3"
+val material3Version = "1.1.1"
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
 val koinCoreVersion = "3.4.0"
@@ -59,7 +59,7 @@ val lifecycleViewModelVersion = "2.5.1"
 dependencies {
     implementation(project(":shared"))
 
-    implementation("io.insert-koin:koin-core:3.4.1")
+    implementation("io.insert-koin:koin-core:3.4.2")
     implementation("io.insert-koin:koin-android:$koinAndroidVersion")
     implementation("io.insert-koin:koin-androidx-compose:$koinComposeVersion")
 
@@ -88,19 +88,29 @@ dependencies {
 
 //    ViewModel & LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
+//    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
 
     // SplashScreen
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     // DON'T USE IT
-//    implementation("androidx.navigation:navigation-compose:2.7.0-beta02")
+    implementation("androidx.navigation:navigation-compose:2.7.0-rc01")
+
+    // Color picker
+    implementation("com.github.skydoves:colorpicker-compose:1.0.4")
+//    implementation("com.godaddy.android.colorpicker:compose-color-picker-android:0.7.0")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.6.0")
+//    implementation("androidx.navigation:navigation-compose:2.6.0")
+//    implementation("com.google.accompanist:accompanist-navigation-animation:0.23.1")
+
+
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+
 
     // Timber
-    implementation("com.jakewharton.timber:timber:5.0.1")
+//    implementation("com.jakewharton.timber:timber:5.0.1")
 
     implementation("androidx.compose.ui:ui:1.3.1")
     implementation("androidx.compose.ui:ui-tooling:1.3.1")

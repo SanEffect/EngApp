@@ -4,7 +4,7 @@ import com.san.englishbender.CommonParcelable
 import com.san.englishbender.CommonParcelize
 
 @CommonParcelize
-data class Record(
+data class RecordEntity(
     var title: String = "",
     var description: String = "",
     var id: String = "",

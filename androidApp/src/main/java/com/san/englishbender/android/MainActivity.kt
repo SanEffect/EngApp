@@ -5,42 +5,36 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.san.englishbender.android.navigation.TodoNavGraph
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.san.englishbender.android.core.workers.DatabaseWorker
 import com.san.englishbender.android.ui.EnglishBenderApp
-//import com.san.englishbender.android.ui.EnglishBenderApp
-import com.san.englishbender.android.ui.MainActivityUiState
-import com.san.englishbender.android.ui.MainActivityUiState.Loading
-import com.san.englishbender.android.ui.MainActivityUiState.Success
 import com.san.englishbender.android.ui.MainActivityViewModel
 import com.san.englishbender.android.ui.theme.EnglishBenderTheme
+import com.san.englishbender.data.local.dataStore.IDataStore
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.github.aakira.napier.log
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.getViewModel
-import timber.log.Timber
 
 
 class MainActivity : ComponentActivity() {
+
+    private val dataStore: IDataStore by inject()
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
+        Napier.base(DebugAntilog())
+
+        prePopulateDatabase()
+
         val viewModel = getViewModel<MainActivityViewModel>()
 //        var uiState: MainActivityUiState by mutableStateOf(Loading)
-
-        Napier.base(DebugAntilog())
 
         // Update the uiState
 //        lifecycleScope.launch {
@@ -61,22 +55,26 @@ class MainActivity : ComponentActivity() {
 //            }
 //        }
 
-        Timber.tag("NavGraph").d("setContent")
-
-        log { "NAPIER SUKA" }
-
         setContent {
 //            val systemUiController = rememberSystemUiController()
 //            val darkTheme = shouldUseDarkTheme(uiState)
 
             EnglishBenderTheme {
-//                TodoNavGraph()
-
                 EnglishBenderApp(
                     windowSizeClass = calculateWindowSizeClass(this)
                 )
-
             }
+        }
+    }
+
+    private fun prePopulateDatabase() {
+        val appSettings = dataStore.getAppSettings()
+        if (appSettings.isFirstLaunch) {
+            val request = OneTimeWorkRequestBuilder<DatabaseWorker>().build()
+            WorkManager.getInstance(this).enqueue(request)
+
+            appSettings.isFirstLaunch = false
+            dataStore.saveAppSettings(appSettings)
         }
     }
 }

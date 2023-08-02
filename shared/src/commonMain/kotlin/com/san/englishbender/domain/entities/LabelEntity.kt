@@ -5,7 +5,7 @@ import com.san.englishbender.CommonParcelize
 
 
 @CommonParcelize
-data class Label(
+data class LabelEntity(
     var id: String = "",
     var name: String = "",
     var color: String = ""

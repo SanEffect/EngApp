@@ -1,5 +1,5 @@
 
-CREATE TABLE RecordData(
+CREATE TABLE Record(
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -10,14 +10,87 @@ CREATE TABLE RecordData(
 );
 
 insertRecord:
-INSERT INTO RecordData(id, title, description, creationDate, isDeleted, isDraft, backgroundColor) VALUES (?,?,?,?,?,?,?);
+INSERT INTO Record(id, title, description, creationDate, isDeleted, isDraft, backgroundColor) VALUES (?,?,?,?,?,?,?);
+
+updateRecord:
+UPDATE Record SET title = ?, description = ?, isDeleted = ?, isDraft = ?, backgroundColor = ? WHERE id = ?;
 
 deleteRecord:
-DELETE FROM RecordData WHERE id = ?;
+DELETE FROM Record WHERE id = ?;
 
 selectAllRecord:
-SELECT * FROM RecordData;
+SELECT * FROM Record;
 
 selectRecordById:
-SELECT * FROM RecordData WHERE id = ?;
--- SELECT EXISTS(SELECT 1 FROM RecordData WHERE id = ? LIMIT 1);
+SELECT * FROM Record WHERE id = ?;
+-- SELECT EXISTS(SELECT 1 FROM Record WHERE id = ? LIMIT 1);
+
+getRecordsCount:
+SELECT count(*) FROM Record;
+
+-- getLettersCount:
+-- SELECT LENGTH(REGEXP_REPLACE(title || description, '[[:space:]]', '')) AS total_letters FROM Record;
+-- SELECT sum(length(trim(title)) + lenght(replace(description, ' ', ''))) FROM Record;
+-- SELECT length(trim(title)) + length(trim(description)) FROM Record;
+
+-- =============================================================
+
+CREATE TABLE Label(
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    color TEXT NOT NULL
+);
+
+insertLabel:
+INSERT INTO Label (id, name, color) VALUES (?, ?, ?);
+
+updateLabel:
+UPDATE Label SET name = ?, color = ? WHERE id = ?;
+
+selectAllLabels:
+SELECT * FROM Label;
+
+selectLabelById:
+SELECT * FROM Label WHERE id = ?;
+
+deleteLabelById:
+DELETE FROM Label WHERE id = ?;
+
+-- =============================================================
+
+CREATE TABLE RecordLabelCrossRef(
+    id TEXT NOT NULL PRIMARY KEY,
+    recordId TEXT NOT NULL,
+    labelId TEXT NOT NULL
+);
+
+insertRecordLabelCrossRef:
+INSERT INTO RecordLabelCrossRef(id, recordId, labelId) VALUES (?, ?, ?);
+
+selectAllByRecordId:
+SELECT *
+FROM RecordLabelCrossRef AS rlcr
+JOIN Record AS r ON rlcr.recordId = r.id
+JOIN Label AS l ON rlcr.labelId = l.id
+WHERE rlcr.recordId = ?;
+
+-- =============================================================
+
+CREATE TABLE Stats(
+    id INTEGER DEFAULT 1 NOT NULL PRIMARY KEY,
+    recordsCount INTEGER NOT NULL,
+    wordsCount INTEGER NOT NULL,
+    lettersCount INTEGER NOT NULL
+);
+
+selectAllStats:
+SELECT * FROM Stats;
+
+insertStats:
+INSERT INTO Stats(id, recordsCount, wordsCount, lettersCount) VALUES (?, ?, ?, ?);
+
+updateStats:
+UPDATE Stats SET recordsCount = ?, wordsCount = ?, lettersCount = ? WHERE id = 1;
+
+deleteStats:
+DELETE FROM Stats;

@@ -4,6 +4,7 @@ plugins {
     id("kotlin-parcelize")
     id("kotlin-kapt")
     id("com.squareup.sqldelight")
+    id("io.realm.kotlin") version "1.10.0"
 }
 
 kotlin {
@@ -78,6 +79,11 @@ kotlin {
                 // SQLDelight
                 implementation("com.squareup.sqldelight:runtime:1.5.5")
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.5")
+
+                // Realm
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2") // Add to use coroutines with the SDK
+                api("io.realm.kotlin:library-base:1.10.0") // Add to only use the local database
+                api("io.realm.kotlin:library-sync:1.10.0") // Add to use Device Sync
 
                 //
                 implementation("co.touchlab:stately-concurrency:2.0.0-rc3")

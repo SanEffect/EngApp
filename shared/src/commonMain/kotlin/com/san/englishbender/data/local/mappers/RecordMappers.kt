@@ -1,10 +1,10 @@
 package com.san.englishbender.data.local.mappers
 
-import com.san.englishbender.domain.entities.Record
-import database.RecordData
+import com.san.englishbender.domain.entities.RecordEntity
+import database.Record
 
-fun RecordData.toEntity() : Record =
-    Record(
+fun Record.toEntity() : RecordEntity =
+    RecordEntity(
         id = id,
         title = title,
         description = description,
@@ -14,8 +14,8 @@ fun RecordData.toEntity() : Record =
         backgroundColor = backgroundColor
     )
 
-fun Record.toData() : RecordData =
-    RecordData(
+fun RecordEntity.toData() : Record =
+    Record(
         id = id,
         title = title,
         description = description,

@@ -1,24 +1,25 @@
 package com.san.englishbender.domain.repositories
 
 import com.san.englishbender.data.Result
-import com.san.englishbender.domain.entities.Record
+import com.san.englishbender.domain.entities.RecordEntity
 import kotlinx.coroutines.flow.Flow
 
 interface IRecordsRepository {
 
-    val records: Flow<List<Record>>
+    val records: Flow<List<RecordEntity>>
 
-    fun getRecordsStream(): Flow<List<Record>>
+    fun getRecordsStream(): Flow<List<RecordEntity>>
 
-    suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<Record>>>
+    suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<RecordEntity>>>
 
-    suspend fun getRecords(forceUpdate: Boolean): Result<List<Record>>
+    suspend fun getRecords(forceUpdate: Boolean): Result<List<RecordEntity>>
 
 //    suspend fun getLastRecord(): Result<Record?>
 
-    suspend fun saveRecord(record: Record): Flow<Result<Unit>>
+    suspend fun saveRecord(record: RecordEntity): Flow<Result<Unit>>
 
-    suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<Record?>
+    fun getRecordFlowById(id: String): Flow<RecordEntity?>
+    suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?>
 
     suspend fun removeRecord(recordId: String): Flow<Result<Unit>>
 
@@ -28,7 +29,5 @@ interface IRecordsRepository {
 
     suspend fun refreshRecords()
 
-//    suspend fun getRecordsCount(): Flow<Result<Long>>
-//
-//    suspend fun getWordsCount(): Flow<Result<Long>>
+    fun getRecordsCount(): Flow<Long>
 }

@@ -19,6 +19,11 @@ val Purple500 = Color(0xFF6200EE)
 val Purple700 = Color(0xFF3700B3)
 val Teal200 = Color(0xFF03DAC5)
 
+val ideas = Color(0xFF2196F3)
+val thoughts = Color(0xFF4CAF50)
+val feelings = Color(0xFFFFC107)
+val selectedLabelColor = Color(0xFFFF9800)
+
 
 val Green400 = Color(0xFF00C853)
 
