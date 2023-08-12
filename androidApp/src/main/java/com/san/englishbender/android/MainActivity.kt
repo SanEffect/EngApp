@@ -13,9 +13,11 @@ import com.san.englishbender.android.ui.EnglishBenderApp
 import com.san.englishbender.android.ui.MainActivityViewModel
 import com.san.englishbender.android.ui.theme.EnglishBenderTheme
 import com.san.englishbender.data.local.dataStore.IDataStore
+import com.san.englishbender.data.local.dataStore.models.UserSettings
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.github.aakira.napier.log
+import io.realm.kotlin.ext.realmListOf
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 

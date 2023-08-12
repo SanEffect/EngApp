@@ -16,8 +16,8 @@ data class StatsUiState(
 )
 
 class StatsViewModel(
-    private val getRecordsCountUseCase: GetRecordsCountUseCase,
-    private val getStatsUseCase: GetStatsUseCase,
+    getRecordsCountUseCase: GetRecordsCountUseCase,
+    getStatsUseCase: GetStatsUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<StatsUiState> = combine(

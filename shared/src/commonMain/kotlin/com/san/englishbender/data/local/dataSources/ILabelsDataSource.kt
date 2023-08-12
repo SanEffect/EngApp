@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface ILabelsDataSource {
     fun getAllLabels() : Flow<List<Label>>
 
-    suspend fun saveLabel(label: Label) : Flow<Result<Unit>>
+    suspend fun upsertLabel(label: Label) : Flow<Result<Unit>>
 
     suspend fun deleteLabel(labelId: String) : Flow<Result<Unit>>
 }

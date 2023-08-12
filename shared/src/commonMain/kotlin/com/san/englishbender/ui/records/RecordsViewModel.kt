@@ -1,17 +1,13 @@
 package com.san.englishbender.ui.records
 
 import com.san.englishbender.core.WhileUiSubscribed
-import com.san.englishbender.data.local.dataStore.DataStore
 import com.san.englishbender.domain.entities.RecordEntity
-import com.san.englishbender.domain.usecases.labels.GetAllLabelsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
 import com.san.englishbender.ui.ViewModel
 import database.Label
 import io.github.aakira.napier.log
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 

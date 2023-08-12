@@ -15,7 +15,7 @@ class LabelsRepository(
     override fun getAllLabels(): Flow<List<Label>> = labelsDataSource.getAllLabels()
 
     override suspend fun saveLabel(label: Label): Flow<Result<Unit>> = withContext(ioDispatcher) {
-        return@withContext labelsDataSource.saveLabel(label)
+        return@withContext labelsDataSource.upsertLabel(label)
     }
 
     override suspend fun deleteLabel(labelId: String): Flow<Result<Unit>> = withContext(ioDispatcher) {

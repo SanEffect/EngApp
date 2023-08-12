@@ -13,20 +13,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavOptions
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.san.englishbender.android.core.extensions.enterTransitionLeft
 import com.san.englishbender.android.core.extensions.enterTransitionRight
 import com.san.englishbender.android.core.extensions.exitTransitionLeft
 import com.san.englishbender.android.core.extensions.exitTransitionRight
 import com.san.englishbender.android.navigation.Destinations
+import com.san.englishbender.android.navigation.DestinationsArgs
+import com.san.englishbender.android.navigation.Screens
 import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
 import org.koin.androidx.compose.getViewModel
-
-
 
 
 @Composable
@@ -41,46 +43,61 @@ fun LabelsDialog(
 
     val navController = rememberNavController()
 
+    navController.previousBackStackEntry?.destination
 
-
-        NavHost(
-            navController = navController,
-            startDestination = Destinations.LIST_LABELS_ROUTE
+    NavHost(
+        navController = navController,
+        startDestination = Destinations.LABEL_LIST_ROUTE
+    ) {
+        composable(
+            route = Destinations.LABEL_LIST_ROUTE,
+            enterTransition = enterTransitionRight(),
+            exitTransition = exitTransitionLeft()
         ) {
-            composable(
-                route = Destinations.LIST_LABELS_ROUTE,
-                enterTransition = enterTransitionRight(),
-                exitTransition = exitTransitionLeft()
-            ) {
-                ListLabelScreen(
-                    labelsViewModel = labelsViewModel,
-                    createLabel = {
-                        navController.navigate(Destinations.ADD_LABEL_ROUTE)
-                    },
-                    dismiss = dismiss
-                )
-            }
+            ListLabelScreen(
+                labelsViewModel = labelsViewModel,
+                createLabel = { labelId ->
+                    var arg = Screens.LABEL_CREATE_SCREEN
+                    if (labelId != null) {
+                        arg += "?labelId=$labelId"
+                    }
+                    navController.navigate(arg)
+                },
+                dismiss = dismiss
+            )
+        }
 
-            composable(
-                route = Destinations.ADD_LABEL_ROUTE,
-                enterTransition = enterTransitionLeft(),
-                exitTransition = exitTransitionRight()
-            ) {
-                AddLabelScreen(
-                    labelsViewModel = labelsViewModel,
-                    onColorPicker = { navController.navigate(Destinations.COLOR_PICKER_ROUTE) },
-                    onBack = { navController.navigate(Destinations.LIST_LABELS_ROUTE) }
-                )
-            }
+        composable(
+            route = Destinations.LABEL_CREATE_ROUTE,
+            enterTransition = enterTransitionLeft(),
+            exitTransition = exitTransitionRight(),
+            arguments = listOf(
+                navArgument(DestinationsArgs.LABEL_ID_ARG) {
+                    nullable = true
+                    defaultValue = null
+                    type = NavType.StringType
+                },
+            ),
+        ) { entry ->
+            val labelId = entry.arguments?.getString(DestinationsArgs.LABEL_ID_ARG)
 
-            composable(
-                route = Destinations.COLOR_PICKER_ROUTE,
-                enterTransition = enterTransitionLeft(),
-                exitTransition = exitTransitionRight()
-            ) {
-                ColorPickerScreen(
-                    onSave = {},
-                    onBack = {
+            AddLabelScreen(
+                labelId = labelId,
+                labelsViewModel = labelsViewModel,
+                onColorPicker = { navController.navigate(Destinations.COLOR_PICKER_ROUTE) },
+                onBack = { navController.navigate(Destinations.LABEL_LIST_ROUTE) },
+                dismiss = dismiss
+            )
+        }
+
+        composable(
+            route = Destinations.COLOR_PICKER_ROUTE,
+            enterTransition = enterTransitionLeft(),
+            exitTransition = exitTransitionRight()
+        ) {
+            ColorPickerScreen(
+                onSave = {},
+                onBack = {
 
 //                        val navOptions = NavOptions.Builder()
 //                            .setEnterAnim(enterTransitionLeft()) // Animation when navigating to this destination
@@ -89,10 +106,11 @@ fun LabelsDialog(
 //                            .setPopExitAnim(R.anim.slide_out_right) // Animation when navigating away from this destination
 //                            .build()
 
-                        navController.navigate(Destinations.ADD_LABEL_ROUTE)
-                    }
-                )
-            }
+                    navController.popBackStack()
+                },
+                dismiss = dismiss
+            )
         }
+    }
 
 }

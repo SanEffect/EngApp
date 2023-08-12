@@ -16,14 +16,25 @@ class LabelsDataSource(db: Database) : ILabelsDataSource {
 
     override fun getAllLabels(): Flow<List<Label>> = queries.selectAllLabels().asFlow().mapToList()
 
-    override suspend fun saveLabel(label: Label): Flow<Result<Unit>> = flow {
-        emit(getResult {
-            queries.insertLabel(
-                id = label.id.ifEmpty { randomUUID() },
-                name = label.name,
-                color = label.color
-            )
-        })
+    override suspend fun upsertLabel(label: Label): Flow<Result<Unit>> = flow {
+
+        if (label.id.isEmpty()) {
+            emit(getResult {
+                queries.insertLabel(
+                    id = randomUUID(),
+                    name = label.name,
+                    color = label.color
+                )
+            })
+        } else {
+            emit(getResult {
+                queries.updateLabel(
+                    id = label.id,
+                    name = label.name,
+                    color = label.color
+                )
+            })
+        }
     }
 
     override suspend fun deleteLabel(labelId: String): Flow<Result<Unit>> = flow {

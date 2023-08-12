@@ -27,18 +27,15 @@ kotlin {
     }
 
     sourceSets {
-        val composeVersion = "1.4.0"
-        val material3Version = "1.1.0"
-
-        val coroutineVersion = "1.5.0"
+        val coroutineVersion = "1.7.2"
         val retrofitCoroutineAdapterVersion = "0.9.2"
         val retrofitVersion = "2.9.0"
-        val okHttpVersion = "4.9.2"
+        val okHttpVersion = "4.11.0"
         val moshiVersion = "1.13.0"
-        val lifecycleViewModelVersion = "2.5.1"
-        val koinCoreVersion = "3.4.0"
-        val koinAndroidVersion = "3.4.0"
-        val koinComposeVersion = "3.4.3"
+        val lifecycleViewModelVersion = "2.6.1"
+        val koinCoreVersion = "3.4.2"
+        val koinAndroidVersion = "3.4.2"
+        val koinComposeVersion = "3.4.5"
 
         val commonMain by getting {
             dependencies {

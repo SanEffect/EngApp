@@ -38,6 +38,7 @@ fun BaseDialogContent(
                 .height(height)
                 .clip(shape)
                 .background(containerColor)
+                .noRippleClickable {  }
         ) {
             content()
         }

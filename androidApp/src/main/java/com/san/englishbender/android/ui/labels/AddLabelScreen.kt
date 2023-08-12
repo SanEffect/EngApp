@@ -2,30 +2,27 @@
 
 package com.san.englishbender.android.ui.labels
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedButton
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Colorize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,13 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.skydoves.colorpicker.compose.BrightnessSlider
-import com.github.skydoves.colorpicker.compose.ColorEnvelope
-import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.san.englishbender.android.ui.common.BaseDialogContent
+import com.san.englishbender.android.ui.common.EBOutlinedButton
+import com.san.englishbender.core.extensions.isNull
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
 import io.github.aakira.napier.log
@@ -47,92 +46,160 @@ import io.github.aakira.napier.log
 
 @Composable
 fun AddLabelScreen(
+    labelId: String? = null,
     labelsViewModel: LabelsViewModel,
     onColorPicker: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    dismiss: () -> Unit = {}
 ) {
+    log(tag = "navEntriesCheck") { "AddLabelScreen" }
+    val uiState by labelsViewModel.uiState.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
     var hexCode by remember { mutableStateOf("") }
     var color: Color by remember { mutableStateOf(Color.Black) }
 
     val controller = rememberColorPickerController()
 
+    val label = uiState.labels.firstOrNull { it.id == labelId }
 
-    BaseDialogContent {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
+    val title = if (labelId.isNull) "Add label" else "Edit label"
+
+//    log(tag = "AddLabelScreen") { "labelId: $labelId" }
+//    log(tag = "AddLabelScreen") { "label: $label" }
+
+    LaunchedEffect(Unit) {
+        labelsViewModel.getLabelColors()
+    }
+
+    BaseDialogContent(
+        height = 350.dp,
+        dismiss = dismiss
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            Text(
-                text = "Back",
-                modifier = Modifier,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-//                    fontWeight = FontWeight.ExtraBold
-                )
-            )
-        }
-
-        // --- Name
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = name,
-            placeholder = { Text("Label name") },
-            onValueChange = { name = it }
-        )
-
-        // --- Color presets
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp)
-            .padding(top = 16.dp)
-            .border(1.dp, Color.DarkGray)
-        ) {
-            OutlinedIconButton(onClick = { onColorPicker() }) {
-                Icon(Icons.Filled.Colorize, contentDescription = "Color Picker")
-            }
-        }
-
-        // --- Button
-        Button(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
-            onClick = {
-
-//                val rnd = Random()
-//                val color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
-
-                labelsViewModel.saveLabel(
-                    Label(
-                        id = "",
-                        name = name,
-                        color = ""
-                    )
-                )
-            },
-            shape = RoundedCornerShape(4.dp),
-            border = BorderStroke(1.dp, Color.Gray),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray)
+                .padding(16.dp)
         ) {
             Text(
-                text = "Add",
-                fontSize = 14.sp,
-                color = Color.DarkGray
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 16.dp),
+                text = title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
             )
+
+            // --- Name
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = name,
+                placeholder = { Text("Label name") },
+                onValueChange = { name = it }
+            )
+
+            // --- Color presets
+            val colors = listOf(
+                Color.Red,
+                Color.Yellow,
+                Color.Green,
+                Color.Blue,
+                Color.White,
+                Color.Black
+            )
+
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .background(Color.White),
+                columns = GridCells.Fixed(6),
+            ) {
+                items(12) { index ->
+                    if (index == 11) {
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(4.dp)
+                                .background(Color.White, shape = RoundedCornerShape(4.dp))
+                                .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp))
+                                .clickable { onColorPicker() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Outlined.Palette, contentDescription = "Color Picker")
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(4.dp)
+                                .background(colors.random(), shape = RoundedCornerShape(4.dp))
+                                .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp)),
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // --- Button
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                EBOutlinedButton(
+                    text = "Back",
+                    onClick = onBack
+                )
+                EBOutlinedButton(
+                    text = "Add",
+                    onClick = {
+                        labelsViewModel.saveLabel(
+                            Label(
+                                id = "",
+                                name = name,
+                                color = ""
+                            )
+                        )
+                    }
+                )
+            }
+
         }
     }
+}
+
+@Preview
+@Composable
+fun LazyHPreview() {
+
+    val colors = listOf(
+        Color.Red,
+        Color.Yellow,
+        Color.Green,
+        Color.Blue,
+        Color.White,
+        Color.Black
+    )
+
+    LazyVerticalGrid(
+        modifier = Modifier
+            .fillMaxWidth()
+//            .height(180.dp)
+            .padding(vertical = 8.dp)
+            .background(Color.White),
+        columns = GridCells.Fixed(5),
+    ) {
+        items(10) {
+            Box(
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(4.dp)
+                    .background(colors.random(), shape = RoundedCornerShape(4.dp))
+                    .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp)),
+            ) {
+
+            }
+        }
     }
 }

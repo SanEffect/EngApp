@@ -7,9 +7,10 @@ import com.san.englishbender.data.local.dataSources.IStatsDataSource
 import com.san.englishbender.data.local.dataSources.LabelsDataSource
 import com.san.englishbender.data.local.dataSources.RecordsDataSource
 import com.san.englishbender.data.local.dataSources.StatsDataSource
-import com.san.englishbender.data.local.dataStore.DataStore
+import com.san.englishbender.data.local.dataStore.DataStoreRealm
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.dataStore.models.AppSettings
+import com.san.englishbender.data.local.dataStore.models.UserSettings
 import com.san.englishbender.data.repositories.LabelsRepository
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.data.repositories.StatsRepository
@@ -23,7 +24,8 @@ import org.koin.dsl.module
 
 
 private val dataStoreModels = setOf(
-    AppSettings::class
+    AppSettings::class,
+    UserSettings::class
 )
 
 val databaseModule = module {
@@ -44,7 +46,7 @@ val databaseModule = module {
         Realm.open(config)
     }
 
-    single<IDataStore> { DataStore(get()) }
+    single<IDataStore> { DataStoreRealm(get()) }
 }
 
 class Database(databaseDriverFactory: DatabaseDriverFactory) {

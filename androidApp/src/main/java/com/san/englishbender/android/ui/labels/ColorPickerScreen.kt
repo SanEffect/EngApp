@@ -1,7 +1,6 @@
 package com.san.englishbender.android.ui.labels
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonDefaults.outlinedButtonColors
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,15 +28,21 @@ import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.san.englishbender.android.ui.common.BaseDialogContent
-
+import com.san.englishbender.android.ui.common.EBOutlinedButton
+import io.github.aakira.napier.log
 
 
 @Composable
 fun ColorPickerScreen(
     onSave: () -> Unit = {},
     onBack: () -> Unit = {},
+    dismiss: () -> Unit = {}
 ) {
-    BaseDialogContent(height = 500.dp) {
+    log(tag = "navEntriesCheck") { "ColorPickerScreen" }
+    BaseDialogContent(
+        height = 500.dp,
+        dismiss = dismiss
+    ) {
         val controller = rememberColorPickerController()
         var hexCode by remember { mutableStateOf("") }
         var color: Color by remember { mutableStateOf(Color.Black) }
@@ -67,7 +65,7 @@ fun ColorPickerScreen(
                 }
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
 
             BrightnessSlider(
                 modifier = Modifier
@@ -90,17 +88,14 @@ fun ColorPickerScreen(
                 Modifier.fillMaxWidth().padding(top = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                OutlinedButton(
-                    onClick = { onBack() },
-                    colors = outlinedButtonColors(
-                        contentColor = Color.Black,
-                    )
-                ) {
-                    Text("Back", color = Color.Black)
-                }
-                OutlinedButton(onClick = { onSave() }) {
-                    Text("Save", color = Color.Black)
-                }
+                EBOutlinedButton(
+                    text = "Back",
+                    onClick = onBack
+                )
+                EBOutlinedButton(
+                    text = "Save",
+                    onClick = onSave
+                )
             }
         }
     }

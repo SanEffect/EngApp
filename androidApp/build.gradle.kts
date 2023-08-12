@@ -46,15 +46,15 @@ android {
 //    }
 }
 
-val composeVersion = "1.4.3"
+val composeVersion = "1.5.0"
 val material3Version = "1.1.1"
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
 val koinCoreVersion = "3.4.0"
-val koinAndroidVersion = "3.4.0"
-val koinComposeVersion = "3.4.3"
+val koinAndroidVersion = "3.4.2"
+val koinComposeVersion = "3.4.5"
 
-val lifecycleViewModelVersion = "2.5.1"
+val lifecycleViewModelVersion = "2.6.1"
 
 dependencies {
     implementation(project(":shared"))
