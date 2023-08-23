@@ -1,18 +1,7 @@
 package com.san.englishbender.android.ui.labels
 
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,25 +14,23 @@ import com.san.englishbender.android.core.extensions.exitTransitionRight
 import com.san.englishbender.android.navigation.Destinations
 import com.san.englishbender.android.navigation.DestinationsArgs
 import com.san.englishbender.android.navigation.Screens
-import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
 import org.koin.androidx.compose.getViewModel
 
 
 @Composable
-fun LabelsDialog(
+fun LabelsNavHost(
     labels: List<Label>,
-    onSaveLabel: (label: Label) -> Unit,
-    onLabelSelected: (labels: List<Label>) -> Unit,
+    recordLabels: List<Label>,
+    onLabelClick: (List<Label>) -> Unit,
     dismiss: () -> Unit
 ) {
-    val labelsViewModel: LabelsViewModel = getViewModel()
-//    var selectedLabels: List<RecordLabelUI> by remember { mutableListOf(listOf()) }
-
     val navController = rememberNavController()
+    val labelsViewModel: LabelsViewModel = getViewModel()
 
-    navController.previousBackStackEntry?.destination
+    var enterTransition = enterTransitionLeft()
+    var exitTransition = exitTransitionRight()
 
     NavHost(
         navController = navController,
@@ -56,21 +43,25 @@ fun LabelsDialog(
         ) {
             ListLabelScreen(
                 labelsViewModel = labelsViewModel,
+                recordLabels = recordLabels,
                 createLabel = { labelId ->
-                    var arg = Screens.LABEL_CREATE_SCREEN
-                    if (labelId != null) {
-                        arg += "?labelId=$labelId"
-                    }
-                    navController.navigate(arg)
+                    navController.navigate(
+                        Screens.LABEL_CREATE_SCREEN.let {
+                            if (labelId != null) "$it?labelId=$labelId" else it
+                        }
+                    )
                 },
+                onLabelClick = onLabelClick,
                 dismiss = dismiss
             )
         }
 
         composable(
             route = Destinations.LABEL_CREATE_ROUTE,
-            enterTransition = enterTransitionLeft(),
-            exitTransition = exitTransitionRight(),
+//            enterTransition = enterTransitionLeft(),
+//            exitTransition = exitTransitionRight(),
+            enterTransition = enterTransition,
+            exitTransition = exitTransition,
             arguments = listOf(
                 navArgument(DestinationsArgs.LABEL_ID_ARG) {
                     nullable = true
@@ -84,8 +75,22 @@ fun LabelsDialog(
             AddLabelScreen(
                 labelId = labelId,
                 labelsViewModel = labelsViewModel,
-                onColorPicker = { navController.navigate(Destinations.COLOR_PICKER_ROUTE) },
-                onBack = { navController.navigate(Destinations.LABEL_LIST_ROUTE) },
+                onColorPicker = {
+
+                    enterTransition = enterTransitionRight()
+                    exitTransition = exitTransitionLeft()
+
+//                    val navOptions = NavOptions.Builder()
+//                        .setEnterAnim(R.anim.slide_out)
+//                        .setExitAnim(R.anim.slide_in)
+//                        .build()
+//                    navController.navigate(Destinations.COLOR_PICKER_ROUTE, navOptions)
+                    navController.navigate(Destinations.COLOR_PICKER_ROUTE)
+                },
+                onBack = {
+                    enterTransition = enterTransitionLeft()
+                    exitTransition = exitTransitionRight()
+                    navController.navigate(Destinations.LABEL_LIST_ROUTE) },
                 dismiss = dismiss
             )
         }
@@ -112,5 +117,4 @@ fun LabelsDialog(
             )
         }
     }
-
 }

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.core.extensions.isNull
@@ -52,20 +53,13 @@ fun AddLabelScreen(
     onBack: () -> Unit,
     dismiss: () -> Unit = {}
 ) {
-    log(tag = "navEntriesCheck") { "AddLabelScreen" }
     val uiState by labelsViewModel.uiState.collectAsStateWithLifecycle()
     var name by remember { mutableStateOf("") }
     var hexCode by remember { mutableStateOf("") }
     var color: Color by remember { mutableStateOf(Color.Black) }
 
-    val controller = rememberColorPickerController()
-
     val label = uiState.labels.firstOrNull { it.id == labelId }
-
     val title = if (labelId.isNull) "Add label" else "Edit label"
-
-//    log(tag = "AddLabelScreen") { "labelId: $labelId" }
-//    log(tag = "AddLabelScreen") { "label: $label" }
 
     LaunchedEffect(Unit) {
         labelsViewModel.getLabelColors()
@@ -154,11 +148,17 @@ fun AddLabelScreen(
                 EBOutlinedButton(
                     text = "Add",
                     onClick = {
+                        val randomColor = Color(
+                            red = (0x00..0xFF).random(),
+                            green = (0x00..0xFF).random(),
+                            blue = (0x00..0xFF).random()
+                        )
+
                         labelsViewModel.saveLabel(
                             Label(
                                 id = "",
                                 name = name,
-                                color = ""
+                                color = randomColor.toHex()
                             )
                         )
                     }

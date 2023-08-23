@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,23 +31,28 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -55,7 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
-import com.san.englishbender.android.ui.labels.LabelsDialog
+import com.san.englishbender.android.ui.common.LabelItem
+import com.san.englishbender.android.ui.labels.LabelsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
@@ -63,6 +72,7 @@ import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
+import database.Label
 import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
@@ -164,8 +174,8 @@ fun RecordDetailContent(
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
-
     var labelsDialog by remember { mutableStateOf(false) }
+    var selectedLabels = remember { mutableStateListOf<Label>() }
 
 //    val snackbarMessage by viewModel.snackbar.collectAsState()
 
@@ -198,7 +208,6 @@ fun RecordDetailContent(
                 ),
                 title = {
                     Text(
-//                        stringResource(titleResId),
                         if (recordData.title.isEmpty()) "New Record" else "Record Details",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
@@ -209,12 +218,14 @@ fun RecordDetailContent(
                     Icon(
                         rememberVectorPainter(Icons.Outlined.Save),
                         contentDescription = null,
-//                        tint = JetRortyColors.navigationBackIconColor,
                         modifier = Modifier
                             .padding(8.dp)
                             .clickable {
                                 coroutineScope.launch {
-                                    viewModel.saveRecord(recordData)
+                                    viewModel.saveRecord(
+                                        recordData,
+                                        selectedLabels
+                                    )
                                 }
                             }
                     )
@@ -223,7 +234,6 @@ fun RecordDetailContent(
                     Icon(
                         rememberVectorPainter(Icons.Filled.ArrowBack),
                         contentDescription = null,
-//                        tint = JetRortyColors.navigationBackIconColor,
                         modifier = Modifier
                             .padding(8.dp)
                             .clickable { onBackClick() }
@@ -261,24 +271,37 @@ fun RecordDetailContent(
                 }
             }
 
-            Row(modifier = Modifier.padding(
-                start = 12.dp,
-                end = 12.dp,
-                top = 12.dp,
-                bottom = 24.dp
-            )) {
-                Icon(
-                    rememberVectorPainter(Icons.Outlined.NewLabel),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clickable {
-                            labelsDialog = true
-//                            viewModel.insertTags()
+            LazyRow(
+                modifier = Modifier
+                    .height(100.dp)
+                    .padding(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 12.dp,
+                        bottom = 24.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Icon(
+                        rememberVectorPainter(Icons.Outlined.NewLabel),
+                        contentDescription = null,
+                        modifier = Modifier.clickable { labelsDialog = true }
+                    )
+                }
+                items(selectedLabels, key = { it.id }) { label ->
+                    LabelItem(
+                        label = label,
+                        containerColor = label.color.toColor,
+                        onDeleteClick = { labelId ->
+                            selectedLabels.removeIf { it.id == labelId }
                         }
-                )
+                    )
+                }
             }
 
-            // --- Title ---
+            // --- Title
             OutlinedTextField(
                 value = title,
                 label = { Text("Title") },
@@ -299,9 +322,7 @@ fun RecordDetailContent(
                 ),
             )
 
-//            Divider(modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 24.dp))
-
-            // --- Description ---
+            // --- Description
             SelectionContainer(Modifier.fillMaxSize()) {
                 OutlinedTextField(
                     value = description,
@@ -341,24 +362,27 @@ fun RecordDetailContent(
                     BottomNavItem.Translate -> TranslatedTextBSContent(
                         text = "Some translated text"
                     )
+
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             backgroundColor = color
                             recordData.backgroundColor = color.toHex()
                         }
                     )
+
                     else -> {}
                 }
             }
         }
     }
     if (labelsDialog) {
-        LabelsDialog(
+        LabelsNavHost(
             labels = detailUiState.labels,
+            recordLabels = selectedLabels,
             dismiss = { labelsDialog = false },
-            onSaveLabel = { label -> viewModel.saveLabel(label) },
-            onLabelSelected = { label ->
-
+            onLabelClick = { labels ->
+                selectedLabels.clear()
+                selectedLabels.addAll(labels)
             }
         )
     }
@@ -373,7 +397,7 @@ fun BottomSheetLayout() {
 //        skipHalfExpanded = false
 //    )
 
-    val value by rememberInfiniteTransition().animateFloat(
+    val value by rememberInfiniteTransition(label = "").animateFloat(
         initialValue = 1.dp.value,
         targetValue = 16.dp.value,
         animationSpec = infiniteRepeatable(
@@ -381,7 +405,7 @@ fun BottomSheetLayout() {
                 durationMillis = 1000,
             ),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = ""
     )
 
     Card(

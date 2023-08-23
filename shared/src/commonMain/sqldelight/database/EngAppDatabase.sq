@@ -58,21 +58,58 @@ DELETE FROM Label WHERE id = ?;
 
 -- =============================================================
 
+-- CREATE TABLE RecordLabelCrossRef(
+--     id TEXT NOT NULL PRIMARY KEY,
+--     recordId TEXT NOT NULL,
+--     labelId TEXT NOT NULL
+-- );
 CREATE TABLE RecordLabelCrossRef(
-    id TEXT NOT NULL PRIMARY KEY,
     recordId TEXT NOT NULL,
-    labelId TEXT NOT NULL
+    labelId TEXT NOT NULL,
+    PRIMARY KEY (recordId, labelId),
+    FOREIGN KEY (recordId) REFERENCES Record(id) ON DELETE CASCADE,
+    FOREIGN KEY (labelId) REFERENCES Label(id) ON DELETE CASCADE
 );
 
 insertRecordLabelCrossRef:
-INSERT INTO RecordLabelCrossRef(id, recordId, labelId) VALUES (?, ?, ?);
+INSERT INTO RecordLabelCrossRef(recordId, labelId) VALUES (?, ?);
 
 selectAllByRecordId:
-SELECT *
-FROM RecordLabelCrossRef AS rlcr
-JOIN Record AS r ON rlcr.recordId = r.id
-JOIN Label AS l ON rlcr.labelId = l.id
-WHERE rlcr.recordId = ?;
+SELECT R.*, label_info.label_names, label_info.label_colors
+FROM Record AS R
+JOIN (
+    SELECT RL.recordId,
+           GROUP_CONCAT(L.name) AS label_names,
+           GROUP_CONCAT(L.color) AS label_colors
+    FROM RecordLabelCrossRef AS RL
+    JOIN Label AS L ON RL.labelId = L.id
+    GROUP BY RL.recordId
+) AS label_info ON R.id = label_info.recordId
+WHERE R.id = ?;
+
+-- selectAllByRecordId:
+-- SELECT *,
+--        GROUP_CONCAT(L.name) AS label_names, GROUP_CONCAT(L.color) AS label_colors
+-- FROM Record AS R
+-- JOIN RecordLabelCrossRef AS RL ON R.id = RL.recordId
+-- JOIN Label AS L ON RL.labelId = L.id
+-- WHERE R.id = ?
+-- GROUP BY R.id;
+
+-- selectAllByRecordId:
+-- SELECT *
+-- FROM RecordLabelCrossRef AS rlcr
+-- JOIN Record AS r ON rlcr.recordId = r.id
+-- JOIN Label AS l ON rlcr.labelId = l.id
+-- WHERE rlcr.recordId = ?;
+
+-- selectAllByRecordId:
+-- SELECT R.id AS record_id, R.title AS record_title, R.description AS record_description,
+--        L.id AS label_id, L.name AS label_name, L.color AS label_color
+-- FROM Record AS R
+-- JOIN RecordLabelCrossRef AS RL ON R.id = RL.recordId
+-- JOIN Label AS L ON RL.labelId = L.id
+-- WHERE R.id = ?;
 
 -- =============================================================
 

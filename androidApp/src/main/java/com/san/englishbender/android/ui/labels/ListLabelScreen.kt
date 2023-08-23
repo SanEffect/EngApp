@@ -35,26 +35,25 @@ import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.theme.selectedLabelColor
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
-import io.github.aakira.napier.log
 
 
 @Composable
 fun ListLabelScreen(
     labelsViewModel: LabelsViewModel,
+    recordLabels: List<Label>,
     createLabel: (String?) -> Unit = {},
+    onLabelClick: (List<Label>) -> Unit,
     dismiss: () -> Unit = {}
 ) {
-    log(tag = "navEntriesCheck") { "ListLabelScreen" }
     val uiState by labelsViewModel.uiState.collectAsStateWithLifecycle()
-//    val labels by labelsViewModel.labels.collectAsStateWithLifecycle()
-
     LaunchedEffect(Unit) {
         labelsViewModel.getLabels()
     }
 
-    log { "labels: ${uiState.labels}" }
-
-    val selectedLabels = remember { mutableStateListOf("") }
+    val selectedLabels = remember { mutableStateListOf<Label>() }
+    recordLabels.forEach {
+        if (!selectedLabels.contains(it)) selectedLabels.add(it)
+    }
 
     BaseDialogContent(
         height = 350.dp,
@@ -75,15 +74,16 @@ fun ListLabelScreen(
                 LazyColumn {
                     items(uiState.labels.size) { index ->
                         val label = uiState.labels[index]
-                        val hasLabel = selectedLabels.indexOf(label.id) != -1
-                        val borderColor = if (hasLabel) selectedLabelColor else Color.DarkGray
+                        val hasLabel = selectedLabels.any { it.id == label.id }
 
                         LabelRow(
                             label = label,
-                            borderColor = borderColor,
+                            isSelected = hasLabel,
                             onClick = {
-                                if (hasLabel) selectedLabels.remove(label.id)
-                                else selectedLabels.add(label.id)
+                                if (hasLabel) selectedLabels.removeIf { it.id == label.id }
+                                else selectedLabels.add(label)
+
+                                onLabelClick(selectedLabels.toList())
                             },
                             onEditClick = { createLabel(label.id) }
                         )
@@ -112,10 +112,14 @@ fun ListLabelScreen(
 @Composable
 fun LabelRow(
     label: Label,
-    borderColor: Color = Color.Gray,
+    isSelected: Boolean = false,
     onClick: (String) -> Unit,
     onEditClick: () -> Unit,
 ) {
+    val border = when (isSelected) {
+        true -> Modifier.border(2.dp, selectedLabelColor, RoundedCornerShape(4.dp))
+        false -> Modifier.border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+    }
     Row(
         Modifier
             .width(300.dp)
@@ -129,7 +133,7 @@ fun LabelRow(
                 .weight(7f)
                 .padding(2.dp)
                 .background(label.color.toColor, shape = RoundedCornerShape(4.dp))
-                .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+                .then(border)
                 .clickable { onClick(label.id) }
         ) {
             Text(
