@@ -1,28 +1,24 @@
 package com.san.englishbender.ui
 
-import com.san.englishbender.core.WhileUiSubscribed
 import com.san.englishbender.data.local.dataStore.IDataStore
-import com.san.englishbender.domain.usecases.labels.GetAllLabelsUseCase
+import com.san.englishbender.domain.entities.LabelEntity
+import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
 import com.san.englishbender.domain.usecases.labels.SaveLabelUseCase
 import database.Label
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 
 class LabelsViewModel(
     val dataStore: IDataStore,
-    val getAllLabelsUseCase: GetAllLabelsUseCase,
+    val getLabelsFlowUseCase: GetLabelsFlowUseCase,
     private val saveLabelUseCase: SaveLabelUseCase
 ) : ViewModel() {
 
     data class LabelsUiState(
-        val labels: List<Label> = emptyList(),
+        val labels: List<LabelEntity> = emptyList(),
         val labelColors: List<String> = emptyList(),
         val isSaved: Boolean = false,
         val isLoading: Boolean = true
@@ -55,7 +51,7 @@ class LabelsViewModel(
 //        )
 
     fun getLabels() = safeLaunch {
-        getAllLabelsUseCase().collect { labels ->
+        getLabelsFlowUseCase().collect { labels ->
             _uiState.update {
                 it.copy(
                     labels = labels,

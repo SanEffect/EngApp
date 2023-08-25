@@ -14,7 +14,8 @@ class LabelsDataSource(db: Database) : ILabelsDataSource {
 
     private val queries = db.dbQueries
 
-    override fun getAllLabels(): Flow<List<Label>> = queries.selectAllLabels().asFlow().mapToList()
+    override fun getAllLabelsFlow(): Flow<List<Label>> = queries.selectAllLabels().asFlow().mapToList()
+    override suspend fun getAllLabels(): List<Label> = queries.selectAllLabels().executeAsList()
 
     override suspend fun upsertLabel(label: Label): Flow<Result<Unit>> = flow {
 

@@ -16,10 +16,12 @@ interface IRecordsRepository {
 
 //    suspend fun getLastRecord(): Result<Record?>
 
-    suspend fun saveRecord(record: RecordEntity): Flow<Result<Unit>>
+    suspend fun saveRecord(record: RecordEntity): Flow<Result<String>>
 
     fun getRecordFlowById(id: String): Flow<RecordEntity?>
     suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?>
+
+    fun getRecordWithLabels(id: String): Flow<RecordEntity?>
 
     suspend fun removeRecord(recordId: String): Flow<Result<Unit>>
 

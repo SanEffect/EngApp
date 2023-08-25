@@ -12,4 +12,5 @@ data class RecordEntity(
     var isDraft: Boolean = false,
     var creationDate: Long = 0,
     var backgroundColor: String = "",
+    var labels: List<String>? = null
 ) : CommonParcelable

@@ -9,40 +9,40 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import com.san.englishbender.core.AppConstants
-import com.san.englishbender.core.WhileUiSubscribed
+import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.domain.entities.RecordEntity
-import com.san.englishbender.domain.usecases.labels.GetAllLabelsUseCase
-import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
-import com.san.englishbender.domain.usecases.records.GetRecordUseCase
+import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
 import com.san.englishbender.domain.usecases.records.SaveRecordLabelUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
-import com.san.englishbender.randomUUID
 import com.san.englishbender.ui.ViewModel
-import database.Label
 import database.RecordLabelCrossRef
 import database.Stats
 import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 
 data class DetailUiState(
     val record: RecordEntity? = null,
-    val labels: List<Label> = emptyList()
+    val labels: List<LabelEntity> = emptyList()
 )
 
 class RecordDetailViewModel constructor(
-    private val getRecordUseCase: GetRecordUseCase,
-    private val getRecordFlowUseCase: GetRecordFlowUseCase,
+    private val getRecordWithLabels: GetRecordWithLabels,
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
-    private val getAllLabelsUseCase: GetAllLabelsUseCase,
+    private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
     private val saveRecordLabelUseCase: SaveRecordLabelUseCase
 ) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(DetailUiState())
+    val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     val randomGreeting = AppConstants.GREETINGS.random()
 
@@ -52,27 +52,46 @@ class RecordDetailViewModel constructor(
     private var currentWordsCount = 0
     private var currentLettersCount = 0
 
-    var recordId: String? = null
+//    val detailUiState: StateFlow<DetailUiState> = combine(
+//        getRecordWithLabels(recordId),
+////        getRecordFlowUseCase(recordId),
+//        getLabelsFlowUseCase()
+//    ) { recordEntity, labels ->
+//
+//        log(tag = "selectedLabels") { "recordId: $recordId" }
+//        log(tag = "selectedLabels") { "recordEntity: $recordEntity" }
+//        log(tag = "selectedLabels") { "recordEntity.labels: ${recordEntity?.labels}" }
+//
+////        recordEntity?.labels = labels.filter { it.contains(it.id) }
+//
+//
+//        DetailUiState(
+//            record = recordEntity,
+//            labels = labels
+//        )
+//    }
+//        .stateIn(
+//            scope = viewModelScope,
+//            started = WhileUiSubscribed,
+//            initialValue = DetailUiState()
+//        )
 
-    val detailUiState: StateFlow<DetailUiState> = combine(
-        getRecordFlowUseCase(recordId),
-        getAllLabelsUseCase()
-    ) { recordEntity, labels ->
-        log(tag = "navigationFuck") { "GetRecordAndLabels" }
-        DetailUiState(
-            record = recordEntity,
-            labels = labels
-        )
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = WhileUiSubscribed,
-            initialValue = DetailUiState()
-        )
+    fun getRecord(recordId: String?) =
+        combine(
+            getRecordWithLabels(recordId),
+            getLabelsFlowUseCase()
+        ) { record, labels ->
+            _uiState.update {
+                it.copy(
+                    record = record,
+                    labels = labels
+                )
+            }
+        }.launchIn(viewModelScope)
 
     fun saveRecord(
         record: RecordEntity,
-        selectedLabels: List<Label>
+        selectedLabels: List<LabelEntity>
     ) = safeLaunch {
         val title = record.title.trim()
         val description = record.description.trim()
@@ -87,45 +106,53 @@ class RecordDetailViewModel constructor(
         }
 
         record.isDraft = false
-
-//        val recDto = RecordDto(
-//            title = "Test",
-//            description = "TestDesc"
-//        )
-//
-//        recordsRepository.saveRecord(recDto)
-
-        // newWordsCount - currentWordsCount
-
         val wordsCount = getDiff(currentWordsCount, getWordsCountOfStrings(title, description))
         val lettersCount = getDiff(currentLettersCount, getLettersOfStrings(title, description))
 
         currentWordsCount = 0
         currentLettersCount = 0
 
-        execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) { result ->
-            log { "record saved" }
-
-            saveRecordLabels(
-                recordId = "",
-                labels = selectedLabels
+        execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) { recordId ->
+            updateRecordLabels(
+                isNewRecord = record.id.isEmpty(),
+                recordId = recordId,
+                selectedLabels = selectedLabels
             )
-
             saveStats(wordsCount, lettersCount)
         }
     }
 
-    private fun saveRecordLabels(recordId: String, labels: List<Label>) = safeLaunch {
-        labels.forEach {
-            val recordLabelParams = SaveRecordLabelUseCase.Params(
-                RecordLabelCrossRef(
-                    id = randomUUID(),
-                    recordId = recordId,
-                    labelId = it.id
-                )
-            )
-            execute(saveRecordLabelUseCase(recordLabelParams)) {
+    private fun updateRecordLabels(
+        isNewRecord: Boolean,
+        recordId: String,
+        selectedLabels: List<LabelEntity>
+    ) = safeLaunch {
+        when (isNewRecord) {
+            true -> saveRecordLabes(recordId, selectedLabels)
+            false -> {
+                val initialLabels = _uiState.value.labels
+                val deletedLabels = initialLabels.subtract(selectedLabels.toSet()).toList()
+                val addedLabels = selectedLabels.subtract(initialLabels.toSet()).toList()
 
+                deleteRecordLabels(recordId, deletedLabels)
+                saveRecordLabes(recordId, addedLabels)
+            }
+        }
+    }
+
+    private fun deleteRecordLabels(recordId: String, labels: List<LabelEntity>) = safeLaunch {
+        labels.forEach {
+            // Delete labels by id
+        }
+    }
+
+    private fun saveRecordLabes(recordId: String, labels: List<LabelEntity>) = safeLaunch {
+        labels.forEach { label ->
+            val params = SaveRecordLabelUseCase.Params(
+                RecordLabelCrossRef(recordId = recordId, labelId = label.id)
+            )
+            execute(saveRecordLabelUseCase(params)) {
+                log(tag = "saveRecordUseCase") { "recordLabels saved" }
             }
         }
     }
@@ -136,9 +163,8 @@ class RecordDetailViewModel constructor(
             wordsCount = wordsCount,
             lettersCount = lettersCount
         )
-        log { "params: $statParams" }
         execute(updateStatsUseCase(statParams)) { result ->
-            log { "updateStatsUseCase result: $result" }
+            log(tag = "saveRecordUseCase") { "updateStatsUseCase result: $result" }
         }
     }
 
@@ -271,16 +297,16 @@ class RecordDetailViewModel constructor(
         }
     }
 
-    private fun getLettersOfString(value: String) : Int = value.replace(" ", "").length
-    private fun getLettersOfStrings(vararg values: String) : Int {
+    private fun getLettersOfString(value: String): Int = value.replace(" ", "").length
+    private fun getLettersOfStrings(vararg values: String): Int {
         return values.sumOf { it.replace(" ", "").length }
     }
 
-    private fun getWordsCountOfStrings(vararg values: String) : Int {
+    private fun getWordsCountOfStrings(vararg values: String): Int {
         return values.sumOf { it.split(" ").size }
     }
 
-    private fun getDiff(currentValue: Int, newValue: Int) : Int {
+    private fun getDiff(currentValue: Int, newValue: Int): Int {
         return newValue - currentValue
     }
 

@@ -18,12 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import database.Label
+import com.san.englishbender.domain.entities.LabelEntity
 
 @Composable
 fun LabelItem(
     modifier: Modifier = Modifier,
-    label: Label,
+    label: LabelEntity,
     containerColor: Color = Color.White,
     onDeleteClick: (String) -> Unit,
 ) {

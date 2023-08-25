@@ -14,6 +14,7 @@ import com.san.englishbender.android.core.extensions.exitTransitionRight
 import com.san.englishbender.android.navigation.Destinations
 import com.san.englishbender.android.navigation.DestinationsArgs
 import com.san.englishbender.android.navigation.Screens
+import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
 import org.koin.androidx.compose.getViewModel
@@ -21,9 +22,9 @@ import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun LabelsNavHost(
-    labels: List<Label>,
-    recordLabels: List<Label>,
-    onLabelClick: (List<Label>) -> Unit,
+    labels: List<LabelEntity>,
+    recordLabels: List<LabelEntity>,
+    onLabelClick: (List<LabelEntity>) -> Unit,
     dismiss: () -> Unit
 ) {
     val navController = rememberNavController()

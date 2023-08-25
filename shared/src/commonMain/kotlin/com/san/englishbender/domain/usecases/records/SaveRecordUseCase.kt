@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 class SaveRecordUseCase constructor(
     private val recordsRepository: IRecordsRepository
-) : UseCase<Unit, SaveRecordUseCase.Params> {
+) : UseCase<String, SaveRecordUseCase.Params> {
 
     data class Params(val record: RecordEntity)
 
-    override suspend fun invoke(params: Params): Flow<Result<Unit>> =
+    override suspend fun invoke(params: Params): Flow<Result<String>> =
         recordsRepository.saveRecord(params.record)
 }

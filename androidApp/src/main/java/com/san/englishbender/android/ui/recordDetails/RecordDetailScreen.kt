@@ -31,20 +31,18 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,6 +68,7 @@ import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundCol
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
+import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
@@ -86,14 +86,14 @@ fun RecordDetailScreen(
     onRecordSaved: () -> Unit,
     recordId: String?
 ) {
-    log(tag = "navigationFuck") { "RecordDetailScreen" }
-
-    val coroutineScope = rememberCoroutineScope()
     val viewModel: RecordDetailViewModel = getViewModel()
-//    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val detailUiState by viewModel.detailUiState.collectAsStateWithLifecycle()
+    val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    viewModel.recordId = recordId
+    recordId?.let {
+        LaunchedEffect(Unit) { viewModel.getRecord(it) }
+    }
+
+    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
 
     RecordDetailContent(
         onBackClick,
@@ -165,17 +165,24 @@ fun RecordDetailContent(
     }
 
     val randomGreeting = viewModel.randomGreeting
-    var title by rememberSaveable { mutableStateOf(recordData.title) }
-    var description by rememberSaveable { mutableStateOf(recordData.description) }
+    var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
+    var description by rememberSaveable(recordData.description) { mutableStateOf(recordData.description) }
+
+    log(tag = "selectedLabels") { "recordData: $recordData" }
 
     var backgroundColor by remember {
         mutableStateOf(
-            if (recordData.backgroundColor.isEmpty()) Color.White else recordData.backgroundColor.toColor
+            if (recordData.backgroundColor.isEmpty()) Color.White
+            else recordData.backgroundColor.toColor
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
     var labelsDialog by remember { mutableStateOf(false) }
-    var selectedLabels = remember { mutableStateListOf<Label>() }
+    val selectedLabels = remember(detailUiState.record) {
+        detailUiState.record?.labels?.let { labelIds ->
+            detailUiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
+        } ?: mutableStateListOf()
+    }
 
 //    val snackbarMessage by viewModel.snackbar.collectAsState()
 

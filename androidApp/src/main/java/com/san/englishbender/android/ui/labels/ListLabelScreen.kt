@@ -33,6 +33,7 @@ import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.theme.selectedLabelColor
+import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
 
@@ -40,9 +41,9 @@ import database.Label
 @Composable
 fun ListLabelScreen(
     labelsViewModel: LabelsViewModel,
-    recordLabels: List<Label>,
+    recordLabels: List<LabelEntity>,
     createLabel: (String?) -> Unit = {},
-    onLabelClick: (List<Label>) -> Unit,
+    onLabelClick: (List<LabelEntity>) -> Unit,
     dismiss: () -> Unit = {}
 ) {
     val uiState by labelsViewModel.uiState.collectAsStateWithLifecycle()
@@ -50,7 +51,7 @@ fun ListLabelScreen(
         labelsViewModel.getLabels()
     }
 
-    val selectedLabels = remember { mutableStateListOf<Label>() }
+    val selectedLabels = remember { mutableStateListOf<LabelEntity>() }
     recordLabels.forEach {
         if (!selectedLabels.contains(it)) selectedLabels.add(it)
     }
@@ -111,7 +112,7 @@ fun ListLabelScreen(
 
 @Composable
 fun LabelRow(
-    label: Label,
+    label: LabelEntity,
     isSelected: Boolean = false,
     onClick: (String) -> Unit,
     onEditClick: () -> Unit,

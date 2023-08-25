@@ -1,5 +1,6 @@
 package com.san.englishbender.data.repositories
 
+import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.Result
 import com.san.englishbender.data.local.dataSources.IRecordLabelDataStore
 import com.san.englishbender.domain.repositories.IRecordLabelRepository
@@ -12,5 +13,7 @@ class RecordLabelRepository(
 ) : IRecordLabelRepository {
 
     override suspend fun saveRecordLabel(recordLabel: RecordLabelCrossRef): Flow<Result<Unit>> =
-        flow { recordLabelDataStore.insert(recordLabel) }
+        flow {
+            emit(doQuery { recordLabelDataStore.insert(recordLabel) })
+        }
 }

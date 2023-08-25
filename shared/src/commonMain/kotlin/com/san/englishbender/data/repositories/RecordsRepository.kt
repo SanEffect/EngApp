@@ -16,11 +16,15 @@ import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.getSystemTimeInMillis
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
+import database.SelectRecordWithLabels
 import io.github.aakira.napier.log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -104,6 +108,10 @@ class RecordsRepository constructor(
         return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
     }
 
+    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> {
+        return recordsDataSource.getRecordWithLabels(id).map { it?.toEntity() }
+    }
+
     /*    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
             return withContext(ioDispatcher) {
                 // Respond immediately with cache if available
@@ -132,7 +140,7 @@ class RecordsRepository constructor(
 
     override fun getRecordsCount(): Flow<Long> = recordsDataSource.getRecordsCount()
 
-    override suspend fun saveRecord(record: RecordEntity): Flow<Result<Unit>> = flow {
+    override suspend fun saveRecord(record: RecordEntity): Flow<Result<String>> = flow {
         if (record.id.isEmpty()) {
             record.id = randomUUID()
             record.creationDate = getSystemTimeInMillis()

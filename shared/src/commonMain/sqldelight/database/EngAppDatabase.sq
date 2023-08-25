@@ -1,4 +1,7 @@
 
+selectLastInsertedRowId:
+SELECT last_insert_rowid();
+
 CREATE TABLE Record(
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -74,18 +77,34 @@ CREATE TABLE RecordLabelCrossRef(
 insertRecordLabelCrossRef:
 INSERT INTO RecordLabelCrossRef(recordId, labelId) VALUES (?, ?);
 
-selectAllByRecordId:
-SELECT R.*, label_info.label_names, label_info.label_colors
+selectRecordWithLabels:
+SELECT R.*, labels.labelIds
 FROM Record AS R
 JOIN (
-    SELECT RL.recordId,
-           GROUP_CONCAT(L.name) AS label_names,
-           GROUP_CONCAT(L.color) AS label_colors
+    SELECT RL.recordId, GROUP_CONCAT(L.id) AS labelIds
     FROM RecordLabelCrossRef AS RL
     JOIN Label AS L ON RL.labelId = L.id
     GROUP BY RL.recordId
-) AS label_info ON R.id = label_info.recordId
+) AS labels ON R.id = labels.recordId
 WHERE R.id = ?;
+
+deleteByRecordId:
+DELETE FROM RecordLabelCrossRef WHERE recordId = ?;
+
+deleteByLabelId:
+DELETE FROM RecordLabelCrossRef WHERE labelId = ?;
+
+-- SELECT R.*, label_info.label_names, label_info.label_colors
+-- FROM Record AS R
+-- JOIN (
+--     SELECT RL.recordId,
+--            GROUP_CONCAT(L.name) AS label_names,
+--            GROUP_CONCAT(L.color) AS label_colors
+--     FROM RecordLabelCrossRef AS RL
+--     JOIN Label AS L ON RL.labelId = L.id
+--     GROUP BY RL.recordId
+-- ) AS label_info ON R.id = label_info.recordId
+-- WHERE R.id = ?;
 
 -- selectAllByRecordId:
 -- SELECT *,

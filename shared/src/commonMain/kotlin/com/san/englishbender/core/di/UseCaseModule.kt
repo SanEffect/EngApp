@@ -1,10 +1,11 @@
 package com.san.englishbender.core.di
 
-import com.san.englishbender.domain.usecases.labels.GetAllLabelsUseCase
+import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
 import com.san.englishbender.domain.usecases.labels.SaveLabelUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
@@ -16,6 +17,7 @@ import org.koin.dsl.module
 val useCaseModule = module {
     // --- Records
     single { GetRecordUseCase(get()) }
+    single { GetRecordWithLabels(get()) }
     single { GetRecordFlowUseCase(get()) }
     single { GetRecordsUseCase(get()) }
     single { SaveRecordUseCase(get()) }
@@ -30,6 +32,6 @@ val useCaseModule = module {
     single { UpdateStatsUseCase(get(), get()) }
 
     // --- Labels
-    single { GetAllLabelsUseCase(get()) }
+    single { GetLabelsFlowUseCase(get()) }
     single { SaveLabelUseCase(get()) }
 }
