@@ -1,10 +1,35 @@
 package com.san.englishbender.core.extensions
 
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 inline fun <reified T : Any> Any.cast(): T {
     return this as T
 }
+
+inline fun <reified T> Any?.toFlow(): Flow<T> = flow {
+    emit(this@toFlow as T)
+}
+
+val Any?.isNull get() = this == null
+
+fun Any?.ifNull(block: () -> Unit) = run {
+    if (this == null) block()
+}
+
+fun String.ifEmpty(block: () -> Unit) = run {
+    if(this.isEmpty()) block()
+}
+
+val String.isDigitOnly: Boolean
+    get() = matches(Regex("^\\d*\$"))
+
+val String.isAlphabeticOnly: Boolean
+    get() = matches(Regex("^[a-zA-Z]*\$"))
+
+val String.isAlphanumericOnly: Boolean
+    get() = matches(Regex("^[a-zA-Z\\d]*\$"))
 
 fun truncateTitle(str: String) : String {
     val maxLength = RECORD_MAX_LENGTH_TITLE
@@ -50,22 +75,3 @@ fun truncateDescription(str: String) : String {
 //
 //    return truncatedText
 //}
-
-val Any?.isNull get() = this == null
-
-fun Any?.ifNull(block: () -> Unit) = run {
-    if (this == null) block()
-}
-
-fun String.ifEmpty(block: () -> Unit) = run {
-    if(this.isEmpty()) block()
-}
-
-val String.isDigitOnly: Boolean
-    get() = matches(Regex("^\\d*\$"))
-
-val String.isAlphabeticOnly: Boolean
-    get() = matches(Regex("^[a-zA-Z]*\$"))
-
-val String.isAlphanumericOnly: Boolean
-    get() = matches(Regex("^[a-zA-Z\\d]*\$"))

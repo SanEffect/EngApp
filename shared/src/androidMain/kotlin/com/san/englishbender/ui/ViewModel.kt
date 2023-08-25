@@ -2,14 +2,14 @@ package com.san.englishbender.ui
 
 import androidx.lifecycle.ViewModel
 import com.san.englishbender.data.Result
+import io.github.aakira.napier.log
 import kotlinx.coroutines.CoroutineExceptionHandler
-import androidx.lifecycle.viewModelScope as androidViewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import timber.log.Timber
+import androidx.lifecycle.viewModelScope as androidViewModelScope
 
 
 actual abstract class ViewModel actual constructor() : ViewModel() {
@@ -17,7 +17,7 @@ actual abstract class ViewModel actual constructor() : ViewModel() {
     actual val viewModelScope: CoroutineScope = androidViewModelScope
 
     protected actual val handler = CoroutineExceptionHandler { _, exception ->
-        Timber.tag(SAFE_LAUNCH_EXCEPTION).e(exception)
+        log(tag = SAFE_LAUNCH_EXCEPTION) { exception.toString() }
         handleError(exception)
     }
 
@@ -30,7 +30,7 @@ actual abstract class ViewModel actual constructor() : ViewModel() {
     }
 
     actual open fun handleError(exception: Throwable) {
-        Timber.tag("handleError").d("handleError: $exception")
+        log(tag = "handleError") { "handleError: $exception" }
     }
 
     open fun startLoading() {}

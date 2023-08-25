@@ -1,5 +1,6 @@
 package com.san.englishbender.android.navigation
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.rememberDrawerState
@@ -20,8 +21,6 @@ import com.san.englishbender.android.ui.recordDetails.RecordDetailScreen
 import com.san.englishbender.android.ui.records.RecordsScreen
 import io.github.aakira.napier.log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 
 @Composable
@@ -31,8 +30,8 @@ fun TodoNavGraph(
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     startDestination: String = Destinations.RECORD_ROUTE,
-    navActions: TodoNavigationActions = remember(navController) {
-        TodoNavigationActions(navController)
+    navActions: EBNavigationActions = remember(navController) {
+        EBNavigationActions(navController)
     }
 ) {
     val currentNavBackStackEntry by navController.currentBackStackEntryAsState()
@@ -50,9 +49,9 @@ fun TodoNavGraph(
 //            )
         ) { entry ->
             log( tag = "NavGraph") { "nav RecordsScreen" }
-            Timber.tag("NavGraph").d("nav RecordsScreen")
             RecordsScreen(
                 onRecordClick = { navActions.navigateToRecordDetail() },
+                openDrawer = {}
             )
         }
 
@@ -67,6 +66,7 @@ fun TodoNavGraph(
                 onBackClick = {
                     navActions.navigateToRecords()
                 },
+                onRecordSaved = {},
                 null
             )
         }

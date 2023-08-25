@@ -8,69 +8,41 @@ import com.san.englishbender.data.Result
 import com.san.englishbender.data.Result.Failure
 import com.san.englishbender.data.Result.Success
 import com.san.englishbender.data.local.dataSources.IRecordsDataSource
-import com.san.englishbender.dispatcherIO
-import com.san.englishbender.domain.entities.Record
+import com.san.englishbender.data.local.mappers.toData
+import com.san.englishbender.data.local.mappers.toEntity
+import com.san.englishbender.data.succeeded
+import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.getSystemTimeInMillis
+import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
+import database.SelectRecordWithLabels
 import io.github.aakira.napier.log
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class RecordsTestRepo constructor(
+class RecordsRepository constructor(
     private val recordsDataSource: IRecordsDataSource
 ) : IRecordsRepository {
-    override val records: Flow<List<Record>>
-        get() = flow { emit(listOf(Record("Test", "Fuck"))) }
 
-    override fun getRecordsStream(): Flow<List<Record>> = flow { emit(listOf(Record("Test2", "Fuck2"))) }
+    private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
 
-    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<Record>>> {
-        TODO("Not yet implemented")
-    }
+    override fun getRecordsStream(): Flow<List<RecordEntity>> =
+        recordsDataSource.getRecordsStream().map { list -> list.map { it.toEntity() } }
 
-    override suspend fun getRecords(forceUpdate: Boolean): Result<List<Record>> {
-        TODO("Not yet implemented")
-    }
+    override val records: Flow<List<RecordEntity>> = flow {
+        emit(recordsDataSource.getRecords().map { it.toEntity() })
+    }.flowOn(ioDispatcher)
 
-    override suspend fun saveRecord(record: Record): Flow<Result<Unit>> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<Record?> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun removeRecord(recordId: String): Flow<Result<Unit>> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun refreshRecords() {
-        TODO("Not yet implemented")
-    }
-
-}
-
-class RecordsRepository constructor(
-    private val recordsDataSource: IRecordsDataSource,
-//    private val ioDispatcher: CoroutineDispatcher = dispatcherIO
-) : IRecordsRepository {
-
-    private var cachedRecords = ConcurrentHashMap<String, Record>()
-
-    override fun getRecordsStream(): Flow<List<Record>> = recordsDataSource.getRecordsStream()
-
-    override val records: Flow<List<Record>> = flow {
-//        val records = recordDao.getRecords().toEntities()
-        emit(recordsDataSource.getRecords())
-    }.flowOn(dispatcherIO)
-
-    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<Record>>> =
-        withContext(dispatcherIO) {
+    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<RecordEntity>>> =
+        withContext(ioDispatcher) {
             return@withContext flow {
 
                 log { "get from cache" }
@@ -82,7 +54,7 @@ class RecordsRepository constructor(
                 }
 
                 log(tag = "Caching") { "get from db" }
-                val result = getResult { recordsDataSource.getRecords() }
+                val result = getResult { recordsDataSource.getRecords().map { it.toEntity() } }
 
                 (result as? Success)?.let { refreshCache(it.data) }
 
@@ -96,14 +68,15 @@ class RecordsRepository constructor(
             }
         }
 
-    override suspend fun getRecords(forceUpdate: Boolean): Result<List<Record>> {
+    override suspend fun getRecords(forceUpdate: Boolean): Result<List<RecordEntity>> {
 
-        return withContext(dispatcherIO) {
+        return withContext(ioDispatcher) {
 
             if (!forceUpdate) {
                 cachedRecords.let { cachedRecords ->
-
-                    return@withContext Success(cachedRecords.values.sortedByDescending { it.creationDate })
+                    return@withContext Success(
+                        cachedRecords.values.sortedByDescending { it.creationDate }
+                    )
                 }
             }
 
@@ -131,8 +104,12 @@ class RecordsRepository constructor(
         }
     }
 
-    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<Record?> {
-        return getResult { recordsDataSource.getRecordById(id) }
+    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
+        return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
+    }
+
+    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> {
+        return recordsDataSource.getRecordWithLabels(id).map { it?.toEntity() }
     }
 
     /*    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
@@ -161,31 +138,28 @@ class RecordsRepository constructor(
         TODO("Not yet implemented")
     }
 
-//    override suspend fun getLastRecord(): Result<Record> =
-//        doQuery(ioDispatcher) { recordDao.getLastRecord().toEntity() }
+    override fun getRecordsCount(): Flow<Long> = recordsDataSource.getRecordsCount()
 
-    override suspend fun saveRecord(record: Record): Flow<Result<Unit>> = flow {
-        cacheRecord(record)
-
-//        val recordData = record.toData()
-//        recordData.id.ifEmpty {
-//            recordData.id = UUID.randomUUID().toString()
-//            recordData.creationDate = System.currentTimeMillis()
-//        }
-//        emit(doQuery(ioDispatcher) { recordDao.insert(recordData) })
-
-        record.id.ifEmpty {
+    override suspend fun saveRecord(record: RecordEntity): Flow<Result<String>> = flow {
+        if (record.id.isEmpty()) {
             record.id = randomUUID()
             record.creationDate = getSystemTimeInMillis()
+            val result = doQuery { recordsDataSource.insertRecord(record.toData()) }
+            if (result.succeeded) cacheRecord(record)
+            emit(result)
+        } else {
+            val result = doQuery { recordsDataSource.updateRecord(record.toData()) }
+            if (result.succeeded) cacheRecord(record)
+            emit(result)
         }
-        emit(doQuery(dispatcherIO) { recordsDataSource.insertRecord(record) })
     }
 
-    override suspend fun removeRecord(recordId: String): Flow<Result<Unit>> {
-        return flow {
-            performIfSuccess(doQuery { recordsDataSource.deleteRecordById(recordId) }) {
-                cachedRecords.remove(recordId)
-            }
+    override fun getRecordFlowById(id: String): Flow<RecordEntity?> =
+        recordsDataSource.getRecordFlowById(id).map { it?.toEntity() }
+
+    override suspend fun removeRecord(recordId: String): Flow<Result<Unit>> = flow {
+        performIfSuccess(doQuery { recordsDataSource.deleteRecordById(recordId) }) {
+            cachedRecords.remove(recordId)
         }
     }
 
@@ -215,7 +189,7 @@ class RecordsRepository constructor(
 //        emit(result)
 //    }
 
-    private fun refreshCache(records: List<Record>) {
+    private fun refreshCache(records: List<RecordEntity>) {
         cachedRecords.apply {
             clear()
             records
@@ -225,17 +199,6 @@ class RecordsRepository constructor(
                 }
         }
     }
-
-    /*    private fun refreshCacheDto(records: List<Record>) {
-            cachedRecordDtos.apply {
-                clear()
-                records
-                    .sortedBy { it.creationDate }
-                    .forEach {
-                        put(it.id, it)
-                    }
-            }
-        }*/
 
     /*    private suspend fun <Type> cacheAndPerform(
             record: RecordDto,
@@ -253,31 +216,18 @@ class RecordsRepository constructor(
 //        perform(cachedRecord)
 //    }
 
-//    private fun cacheRecordDto(record: RecordDto): RecordDto {
-//        val cachedRecordDto = RecordDto(
+    private fun cacheRecord(record: RecordEntity): RecordEntity {
+//        val cachedRecord = RecordEntity(
 //            record.title,
 //            record.description,
-//            record.creationDate,
+//            record.id,
 //            record.isDeleted,
 //            record.isDraft,
-//            record.backgroundColor,
-//            record.id
+//            record.creationDate,
+//            record.backgroundColor
 //        )
-//        cachedRecords[cachedRecordDto.id] = cachedRecordDto
-//        return cachedRecordDto
-//    }
-
-    private fun cacheRecord(record: Record): Record {
-        val cachedRecord = Record(
-            record.title,
-            record.description,
-            record.id,
-            record.isDeleted,
-            record.isDraft,
-            record.creationDate,
-            record.backgroundColor
-        )
-        cachedRecords.put(cachedRecord.id, cachedRecord)
-        return cachedRecord
+//        cachedRecords.put(cachedRecord.id, cachedRecord)
+        cachedRecords.put(record.id, record)
+        return record
     }
 }

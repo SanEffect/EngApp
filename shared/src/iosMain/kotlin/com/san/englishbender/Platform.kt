@@ -34,9 +34,9 @@ actual fun platformModule() = module {
     single { DatabaseDriverFactory() }
 }
 
-actual val dispatcherMain: CoroutineDispatcher = NsQueueDispatcher(dispatch_get_main_queue())
-actual val dispatcherIO: CoroutineDispatcher = Dispatchers.Default
-actual val dispatcherDefault: CoroutineDispatcher = Dispatchers.Default
+actual val mainDispatcher: CoroutineDispatcher = NsQueueDispatcher(dispatch_get_main_queue())
+actual val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+actual val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
 internal class NsQueueDispatcher(
     private val dispatchQueue: dispatch_queue_t

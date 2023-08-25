@@ -1,4 +1,4 @@
-package com.san.englishbender.android.core
+package com.san.englishbender.android.core.extensions
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -18,7 +18,11 @@ fun Color.toHex(): String {
 }
 
 val String.toColor
-    get() = Color(android.graphics.Color.parseColor(this))
+    get() = try {
+        Color(android.graphics.Color.parseColor(this))
+    } catch (e: Exception) {
+        Color.Black
+    }
 
 fun truncateTitle(str: String) : String {
     val maxLength = RECORD_MAX_LENGTH_TITLE

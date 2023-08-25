@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,11 +44,14 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -54,87 +60,79 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.san.englishbender.android.core.toColor
-import com.san.englishbender.android.core.toHex
-import com.san.englishbender.android.ui.common.LabelsDialog
-import com.san.englishbender.android.ui.common.widgets.LoadingView
+import com.san.englishbender.android.core.extensions.toColor
+import com.san.englishbender.android.core.extensions.toHex
+import com.san.englishbender.android.ui.common.LabelItem
+import com.san.englishbender.android.ui.labels.LabelsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
-import com.san.englishbender.core.extensions.cast
-import com.san.englishbender.domain.entities.Label
-import com.san.englishbender.domain.entities.Record
-import com.san.englishbender.ui.recordDetail.NavTarget
+import com.san.englishbender.domain.entities.LabelEntity
+import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import com.san.englishbender.ui.recordDetail.RecordsDetailUiState
+import database.Label
+import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
-import timber.log.Timber
 import java.util.Calendar
 import java.util.Date
 
 
 @Composable
-//@ExperimentalMaterialApi
 fun RecordDetailScreen(
     onBackClick: () -> Unit,
+    onRecordSaved: () -> Unit,
     recordId: String?
 ) {
-    Timber.tag("onCleared").d("RecordDetailScreen (recordId: $recordId)")
-
-    val coroutineScope = rememberCoroutineScope()
     val viewModel: RecordDetailViewModel = getViewModel()
-//    val navigation by viewModel.navigation.collectAsStateWithLifecycle()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-//    LaunchedEffect(navigation) {
-//        navigation.getContentIfNotHandled()?.let { navTarget ->
-//            coroutineScope.launch {
-//                Timber.tag("onCleared").d("navigation")
-//                when (navTarget) {
-//                    is NavTarget.RecordsScreen -> onBackClick()
-//                    else -> {}
-//                }
-//            }
+    recordId?.let {
+        LaunchedEffect(Unit) { viewModel.getRecord(it) }
+    }
+
+    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
+
+    RecordDetailContent(
+        onBackClick,
+        onRecordSaved,
+        viewModel,
+        detailUiState,
+    )
+
+//    when(uiState) {
+//        is RecordsDetailUiState.Loading -> LoadingView()
+//        is RecordsDetailUiState.Success -> {
+//            RecordDetailContent(
+//                onBackClick,
+//                onRecordSaved,
+//                viewModel,
+//                uiState.cast<RecordsDetailUiState.Success>().record,
+//            )
+//        }
+//        is RecordsDetailUiState.Empty -> {
+//            RecordDetailContent(
+//                onBackClick,
+//                onRecordSaved,
+//                viewModel,
+//                null,
+//            )
+//        }
+//        is RecordsDetailUiState.Failure -> {
+//
 //        }
 //    }
-
-    when(uiState) {
-        is RecordsDetailUiState.Loading -> {
-            Timber.tag("onCleared").d("RecordDetailScreen Loading")
-            LoadingView()
-        }
-        is RecordsDetailUiState.Success -> {
-            Timber.tag("onCleared").d("RecordDetailContent Success")
-            RecordDetailContent(
-                onBackClick,
-                viewModel,
-                uiState.cast<RecordsDetailUiState.Success>().record,
-            )
-        }
-        is RecordsDetailUiState.Empty -> {
-            Timber.tag("onCleared").d("RecordDetailContent Empty")
-            RecordDetailContent(
-                onBackClick,
-                viewModel,
-                null,
-            )
-        }
-        is RecordsDetailUiState.Failure -> {
-            Timber.tag("onCleared").d("RecordDetailScreen Failure")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        when (recordId) {
-            null -> {
-                Timber.tag("onCleared").d("showEmptyScreen")
-                viewModel.showEmptyScreen()
-            }
-            else -> viewModel.loadRecord(recordId)
-        }
-    }
+//
+//    LaunchedEffect(Unit) {
+//        when (recordId) {
+//            null -> {
+//                viewModel.showEmptyScreen()
+//            }
+//            else -> viewModel.loadRecord(recordId)
+//        }
+//    }
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
 //
@@ -147,8 +145,9 @@ fun RecordDetailScreen(
 @Composable
 fun RecordDetailContent(
     onBackClick: () -> Unit,
+    onRecordSaved: () -> Unit,
     viewModel: RecordDetailViewModel,
-    record: Record?,
+    detailUiState: DetailUiState
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -161,20 +160,29 @@ fun RecordDetailContent(
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val recordData by rememberSaveable(record) { mutableStateOf(record ?: Record()) }
+    val recordData by rememberSaveable(detailUiState.record) {
+        mutableStateOf(detailUiState.record ?: RecordEntity())
+    }
 
     val randomGreeting = viewModel.randomGreeting
-    var title by rememberSaveable { mutableStateOf(recordData.title) }
-    var description by rememberSaveable { mutableStateOf(recordData.description) }
+    var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
+    var description by rememberSaveable(recordData.description) { mutableStateOf(recordData.description) }
+
+    log(tag = "selectedLabels") { "recordData: $recordData" }
 
     var backgroundColor by remember {
         mutableStateOf(
-            if (recordData.backgroundColor.isEmpty()) Color.White else recordData.backgroundColor.toColor
+            if (recordData.backgroundColor.isEmpty()) Color.White
+            else recordData.backgroundColor.toColor
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
-
     var labelsDialog by remember { mutableStateOf(false) }
+    val selectedLabels = remember(detailUiState.record) {
+        detailUiState.record?.labels?.let { labelIds ->
+            detailUiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
+        } ?: mutableStateListOf()
+    }
 
 //    val snackbarMessage by viewModel.snackbar.collectAsState()
 
@@ -207,7 +215,6 @@ fun RecordDetailContent(
                 ),
                 title = {
                     Text(
-//                        stringResource(titleResId),
                         if (recordData.title.isEmpty()) "New Record" else "Record Details",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
@@ -218,12 +225,14 @@ fun RecordDetailContent(
                     Icon(
                         rememberVectorPainter(Icons.Outlined.Save),
                         contentDescription = null,
-//                        tint = JetRortyColors.navigationBackIconColor,
                         modifier = Modifier
                             .padding(8.dp)
                             .clickable {
                                 coroutineScope.launch {
-                                    viewModel.saveRecord(recordData)
+                                    viewModel.saveRecord(
+                                        recordData,
+                                        selectedLabels
+                                    )
                                 }
                             }
                     )
@@ -232,7 +241,6 @@ fun RecordDetailContent(
                     Icon(
                         rememberVectorPainter(Icons.Filled.ArrowBack),
                         contentDescription = null,
-//                        tint = JetRortyColors.navigationBackIconColor,
                         modifier = Modifier
                             .padding(8.dp)
                             .clickable { onBackClick() }
@@ -270,24 +278,37 @@ fun RecordDetailContent(
                 }
             }
 
-            Row(modifier = Modifier.padding(
-                start = 12.dp,
-                end = 12.dp,
-                top = 12.dp,
-                bottom = 24.dp
-            )) {
-                Icon(
-                    rememberVectorPainter(Icons.Outlined.NewLabel),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clickable {
-                            labelsDialog = true
-//                            viewModel.insertTags()
+            LazyRow(
+                modifier = Modifier
+                    .height(100.dp)
+                    .padding(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 12.dp,
+                        bottom = 24.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Icon(
+                        rememberVectorPainter(Icons.Outlined.NewLabel),
+                        contentDescription = null,
+                        modifier = Modifier.clickable { labelsDialog = true }
+                    )
+                }
+                items(selectedLabels, key = { it.id }) { label ->
+                    LabelItem(
+                        label = label,
+                        containerColor = label.color.toColor,
+                        onDeleteClick = { labelId ->
+                            selectedLabels.removeIf { it.id == labelId }
                         }
-                )
+                    )
+                }
             }
 
-            // --- Title ---
+            // --- Title
             OutlinedTextField(
                 value = title,
                 label = { Text("Title") },
@@ -308,9 +329,7 @@ fun RecordDetailContent(
                 ),
             )
 
-//            Divider(modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 24.dp))
-
-            // --- Description ---
+            // --- Description
             SelectionContainer(Modifier.fillMaxSize()) {
                 OutlinedTextField(
                     value = description,
@@ -350,59 +369,29 @@ fun RecordDetailContent(
                     BottomNavItem.Translate -> TranslatedTextBSContent(
                         text = "Some translated text"
                     )
+
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             backgroundColor = color
                             recordData.backgroundColor = color.toHex()
                         }
                     )
+
                     else -> {}
                 }
             }
         }
-
-        if (labelsDialog) {
-            val labels = listOf(
-                Label("1", "Thoughts", ""),
-                Label("2", "Feelings", ""),
-                Label("3", "Ideas", ""),
-            )
-            LabelsDialog(
-                labels = labels,
-                onDismissRequest = {},
-                onLabelSelected = { label ->
-
-                }
-            )
-        }
-
-//        if (labelsDialog) {
-//            AlertDialog(labelsDialog) {
-//                Surface(
-//                    modifier = Modifier
-//                        .wrapContentWidth()
-//                        .wrapContentHeight(),
-//                    shape = MaterialTheme.shapes.large,
-//                    tonalElevation = AlertDialogDefaults.TonalElevation
-//                ) {
-//                    Column(modifier = Modifier.padding(16.dp)) {
-//                        Text(
-//                            text = "This area typically contains the supportive text " +
-//                                    "which presents the details regarding the Dialog's purpose.",
-//                        )
-//                        Spacer(modifier = Modifier.height(24.dp))
-//                        TextButton(
-//                            onClick = {
-//                                openDialog = false
-//                            },
-//                            modifier = Modifier.align(Alignment.End)
-//                        ) {
-//                            Text("Confirm")
-//                        }
-//                    }
-//                }
-//            }
-//        }
+    }
+    if (labelsDialog) {
+        LabelsNavHost(
+            labels = detailUiState.labels,
+            recordLabels = selectedLabels,
+            dismiss = { labelsDialog = false },
+            onLabelClick = { labels ->
+                selectedLabels.clear()
+                selectedLabels.addAll(labels)
+            }
+        )
     }
 }
 
@@ -415,7 +404,7 @@ fun BottomSheetLayout() {
 //        skipHalfExpanded = false
 //    )
 
-    val value by rememberInfiniteTransition().animateFloat(
+    val value by rememberInfiniteTransition(label = "").animateFloat(
         initialValue = 1.dp.value,
         targetValue = 16.dp.value,
         animationSpec = infiniteRepeatable(
@@ -423,7 +412,7 @@ fun BottomSheetLayout() {
                 durationMillis = 1000,
             ),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = ""
     )
 
     Card(

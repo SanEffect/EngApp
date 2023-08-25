@@ -36,9 +36,9 @@ expect interface CommonParceler<T>
 // For Android @TypeParceler to convert LocalDateTime to Parcel
 expect object LocalDateTimeParceler: CommonParceler<LocalDateTime>
 
-expect val dispatcherMain: CoroutineDispatcher
-expect val dispatcherIO: CoroutineDispatcher
-expect val dispatcherDefault: CoroutineDispatcher
+expect val mainDispatcher: CoroutineDispatcher
+expect val ioDispatcher: CoroutineDispatcher
+expect val defaultDispatcher: CoroutineDispatcher
 
 expect fun randomUUID(): String
 

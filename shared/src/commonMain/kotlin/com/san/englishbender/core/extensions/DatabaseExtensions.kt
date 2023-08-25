@@ -1,13 +1,13 @@
 package com.san.englishbender.core.extensions
 
+import com.san.englishbender.data.Result
+import com.san.englishbender.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import com.san.englishbender.data.Result
-import com.san.englishbender.dispatcherIO
 
 
 suspend fun <T> doQuery(
-    dispatcher: CoroutineDispatcher = dispatcherIO,
+    dispatcher: CoroutineDispatcher = ioDispatcher,
     fn: suspend () -> T
 ): Result<T> = withContext(dispatcher) {
     try {

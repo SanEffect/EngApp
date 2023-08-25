@@ -1,9 +1,22 @@
 package com.san.englishbender.data.local.mappers
 
-import com.san.englishbender.domain.entities.Record
-import database.RecordData
+import com.san.englishbender.domain.entities.RecordEntity
+import database.Label
+import database.Record
+import database.SelectRecordWithLabels
 
-fun RecordData.toEntity() : Record =
+fun Record.toEntity() : RecordEntity =
+    RecordEntity(
+        id = id,
+        title = title,
+        description = description,
+        creationDate = creationDate,
+        isDeleted = isDeleted,
+        isDraft = isDraft,
+        backgroundColor = backgroundColor
+    )
+
+fun RecordEntity.toData() : Record =
     Record(
         id = id,
         title = title,
@@ -14,13 +27,17 @@ fun RecordData.toEntity() : Record =
         backgroundColor = backgroundColor
     )
 
-fun Record.toData() : RecordData =
-    RecordData(
+fun SelectRecordWithLabels.toEntity() : RecordEntity =
+    RecordEntity(
         id = id,
         title = title,
         description = description,
         creationDate = creationDate,
         isDeleted = isDeleted,
         isDraft = isDraft,
-        backgroundColor = backgroundColor
+        backgroundColor = backgroundColor,
+        labels = when (labelIds.isNotEmpty()) {
+            true -> labelIds.split(",")
+            false -> emptyList()
+        }
     )
