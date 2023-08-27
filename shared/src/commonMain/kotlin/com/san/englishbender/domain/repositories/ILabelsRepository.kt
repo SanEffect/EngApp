@@ -9,7 +9,7 @@ interface ILabelsRepository {
     fun getAllLabelsFlow() : Flow<List<LabelEntity>>
     suspend fun getAllLabels() : List<LabelEntity>
 
-    suspend fun saveLabel(label: Label) : Flow<Result<Unit>>
+    suspend fun saveLabel(label: Label) : Result<Unit>
 
-    suspend fun deleteLabel(labelId: String) : Flow<Result<Unit>>
+    suspend fun deleteLabel(labelId: String) : Result<Unit>
 }

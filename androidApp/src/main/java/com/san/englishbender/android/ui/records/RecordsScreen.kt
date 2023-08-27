@@ -240,7 +240,7 @@ fun RecordItem(
     if (showDeleteDialog) {
         DeleteRecordDialog(
             confirmButton = {
-                viewModel.removeRecord(record.id)
+                viewModel.removeRecord(record)
                 showDeleteDialog = false
             },
             dismissButton = { showDeleteDialog = false }

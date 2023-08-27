@@ -8,10 +8,10 @@ import kotlinx.coroutines.withContext
 
 suspend fun <T> doQuery(
     dispatcher: CoroutineDispatcher = ioDispatcher,
-    fn: suspend () -> T
+    action: suspend () -> T
 ): Result<T> = withContext(dispatcher) {
     try {
-        Result.Success(fn.invoke())
+        Result.Success(action.invoke())
     } catch (e: Exception) {
         Result.Failure(e)
     }

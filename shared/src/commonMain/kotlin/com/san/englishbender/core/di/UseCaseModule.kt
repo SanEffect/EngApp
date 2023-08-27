@@ -21,7 +21,7 @@ val useCaseModule = module {
     single { GetRecordFlowUseCase(get()) }
     single { GetRecordsUseCase(get()) }
     single { SaveRecordUseCase(get()) }
-    single { RemoveRecordUseCase(get()) }
+    single { RemoveRecordUseCase(get(), get()) }
     single { GetRecordsCountUseCase(get()) }
 
     // --- RecordLabelCrossRef

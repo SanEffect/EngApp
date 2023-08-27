@@ -25,9 +25,7 @@ class RecordsViewModel constructor(
 
     val recordsUiState: StateFlow<RecordsUiState> =
         getRecordsUseCase(forceUpdate = false)
-            .map {
-                log(tag = "navigationFuck") { "getRecordsUseCase" }
-                RecordsUiState(records = it) }
+            .map { RecordsUiState(records = it) }
             .stateIn(
                 scope = viewModelScope,
                 started = WhileUiSubscribed,
@@ -49,9 +47,8 @@ class RecordsViewModel constructor(
 //        recordDao.insert(records)
 //    }
 
-    fun removeRecord(id: String) = safeLaunch {
-        call(removeRecordUseCase(RemoveRecordUseCase.Params(id))) { result ->
-
+    fun removeRecord(record: RecordEntity) = safeLaunch {
+        removeRecordUseCase(record).let { result ->
             log { "result: $result" }
 
 //            when (result) {
