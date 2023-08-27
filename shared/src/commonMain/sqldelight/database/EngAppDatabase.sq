@@ -94,6 +94,9 @@ DELETE FROM RecordLabelCrossRef WHERE recordId = ?;
 deleteByLabelId:
 DELETE FROM RecordLabelCrossRef WHERE labelId = ?;
 
+deleteByRecordLabelId:
+DELETE FROM RecordLabelCrossRef WHERE recordId = ? AND labelId = ?;
+
 -- SELECT R.*, label_info.label_names, label_info.label_colors
 -- FROM Record AS R
 -- JOIN (

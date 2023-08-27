@@ -1,4 +1,4 @@
-package com.san.englishbender.domain.usecases.records
+package com.san.englishbender.domain.usecases.recordLabels
 
 import com.san.englishbender.data.Result
 import com.san.englishbender.domain.repositories.IRecordLabelRepository

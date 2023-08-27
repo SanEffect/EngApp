@@ -14,13 +14,14 @@ import com.san.englishbender.data.succeeded
 import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
+import com.san.englishbender.domain.usecases.recordLabels.DeleteByRecordLabelIdUseCase
+import com.san.englishbender.domain.usecases.recordLabels.DeleteRecordLabelByRecordIdUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
-import com.san.englishbender.domain.usecases.records.SaveRecordLabelUseCase
+import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.ui.ViewModel
 import database.RecordLabelCrossRef
-import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +40,8 @@ class RecordDetailViewModel constructor(
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
     private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
-    private val saveRecordLabelUseCase: SaveRecordLabelUseCase
+    private val saveRecordLabelUseCase: SaveRecordLabelUseCase,
+    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -110,8 +112,8 @@ class RecordDetailViewModel constructor(
     }
 
     private fun deleteRecordLabels(recordId: String, labels: List<LabelEntity>) = safeLaunch {
-        labels.forEach {
-            // Delete labels by id
+        labels.forEach { label ->
+            deleteByRecordLabelIdUseCase(recordId, label.id)
         }
     }
 
