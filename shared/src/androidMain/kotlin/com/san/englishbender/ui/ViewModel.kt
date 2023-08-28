@@ -5,16 +5,18 @@ import com.san.englishbender.data.Result
 import io.github.aakira.napier.log
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope as androidViewModelScope
 
 
 actual abstract class ViewModel actual constructor() : ViewModel() {
 
-    actual val viewModelScope: CoroutineScope = androidViewModelScope
+    private val viewModelJob = SupervisorJob()
+    actual val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     protected actual val handler = CoroutineExceptionHandler { _, exception ->
         log(tag = SAFE_LAUNCH_EXCEPTION) { exception.toString() }

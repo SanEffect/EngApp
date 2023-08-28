@@ -20,9 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Snackbar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +52,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -80,16 +83,29 @@ fun RecordDetailScreen(
     recordId: String?
 ) {
     val viewModel: RecordDetailViewModel = getViewModel()
+
+    val lo = LocalLifecycleOwner.current
+    log(tag = "handleError") { "lo: $lo" }
+
     val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
+    log(tag = "resetUiState") { "RecordDetailScreen.recordId: $recordId" }
+
+    LaunchedEffect(viewModel) {
+        log(tag = "resetUiState") { "LaunchedEffect(viewModel)" }
         when (recordId.isNull) {
-            true -> viewModel.resetUiState()
-            false -> viewModel.getRecord(recordId)
+            true -> {
+                log(tag = "resetUiState") { "viewModel.resetUiState()" }
+                viewModel.resetUiState()
+            }
+            false -> {
+                log(tag = "resetUiState") { "viewModel.getRecord(recordId)" }
+                viewModel.getRecord(recordId)
+            }
         }
     }
 
-    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
+//    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
 
     RecordDetailContent(
         onBackClick,
@@ -147,6 +163,13 @@ fun RecordDetailContent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by viewModel.snackbar.collectAsStateWithLifecycle()
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage.getContentIfNotHandled()?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
 
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -157,6 +180,8 @@ fun RecordDetailContent(
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
     val recordData by remember(detailUiState.record) { mutableStateOf(detailUiState.record) }
+
+//    log(tag = "resetUiState") { "recordData: $recordData" }
 
     val randomGreeting = viewModel.randomGreeting
     var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
@@ -176,7 +201,6 @@ fun RecordDetailContent(
         } ?: mutableStateListOf()
     }
 
-//    val snackbarMessage by viewModel.snackbar.collectAsState()
 
 //    val formattedString = getAnnotatedString(description, russianWordList)
 //    var textFieldValueState by remember {
@@ -249,9 +273,7 @@ fun RecordDetailContent(
                     openBottomSheet = true
                 })
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
         Column(

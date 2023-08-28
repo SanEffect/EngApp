@@ -7,16 +7,22 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.san.englishbender.android.navigation.EBNavHost
+import com.san.englishbender.core.navigation.NavigationCommand
+import com.san.englishbender.core.navigation.Navigator
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 
 @Composable
 fun EnglishBenderApp(
+    navigator: Navigator,
     windowSizeClass: WindowSizeClass,
     appState: EBAppState = rememberEBAppState(
 //        networkMonitor = networkMonitor,
@@ -35,7 +41,10 @@ fun EnglishBenderApp(
         tonalElevation = if (tonalElevation == Dp.Unspecified) 0.dp else tonalElevation,
         modifier = Modifier.fillMaxSize(),
     ) {
-        EBNavHost(appState = appState, onShowSnackbar = { message, action ->
+        EBNavHost(
+            appState = appState,
+            navigator = navigator,
+            onShowSnackbar = { message, action ->
             snackbarHostState.showSnackbar(
                 message = message,
                 actionLabel = action,

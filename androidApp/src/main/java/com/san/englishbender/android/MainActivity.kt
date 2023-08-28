@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.LaunchedEffect
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -12,12 +13,16 @@ import com.san.englishbender.android.core.workers.DatabaseWorker
 import com.san.englishbender.android.ui.EnglishBenderApp
 import com.san.englishbender.android.ui.MainActivityViewModel
 import com.san.englishbender.android.ui.theme.EnglishBenderTheme
+import com.san.englishbender.core.navigation.NavigationCommand
+import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.dataStore.models.UserSettings
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.github.aakira.napier.log
 import io.realm.kotlin.ext.realmListOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 
@@ -35,6 +40,7 @@ class MainActivity : ComponentActivity() {
 
         prePopulateDatabase()
 
+        val navigator: Navigator by inject()
         val viewModel = getViewModel<MainActivityViewModel>()
 //        var uiState: MainActivityUiState by mutableStateOf(Loading)
 
@@ -63,6 +69,7 @@ class MainActivity : ComponentActivity() {
 
             EnglishBenderTheme {
                 EnglishBenderApp(
+                    navigator = navigator,
                     windowSizeClass = calculateWindowSizeClass(this)
                 )
             }

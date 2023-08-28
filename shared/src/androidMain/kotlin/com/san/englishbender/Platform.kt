@@ -2,6 +2,7 @@ package com.san.englishbender
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.local.DatabaseDriverFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -49,5 +50,6 @@ actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun getSystemTimeInMillis() = System.currentTimeMillis()
 
 actual fun platformModule() = module {
+    single { Navigator() }
     single { DatabaseDriverFactory(get()) }
 }

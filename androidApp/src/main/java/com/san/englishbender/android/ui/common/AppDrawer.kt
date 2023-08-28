@@ -22,10 +22,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.san.englishbender.android.navigation.Destinations
 import com.san.englishbender.android.navigation.EBNavigationActions
-import io.github.aakira.napier.log
+import com.san.englishbender.core.navigation.Destinations
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

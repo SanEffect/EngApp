@@ -9,19 +9,21 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import com.san.englishbender.core.AppConstants
+import com.san.englishbender.core.Event
+import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.Result
 import com.san.englishbender.data.succeeded
 import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
 import com.san.englishbender.domain.usecases.recordLabels.DeleteByRecordLabelIdUseCase
-import com.san.englishbender.domain.usecases.recordLabels.DeleteRecordLabelByRecordIdUseCase
-import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
 import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.ui.ViewModel
 import database.RecordLabelCrossRef
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,33 +43,35 @@ class RecordDetailViewModel constructor(
     private val updateStatsUseCase: UpdateStatsUseCase,
     private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
     private val saveRecordLabelUseCase: SaveRecordLabelUseCase,
-    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase
+    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase,
+    private val navigator: Navigator
 ) : ViewModel() {
+
+    private val _snackbar: MutableStateFlow<Event<String?>> = MutableStateFlow(Event(null))
+    val snackbar = _snackbar.asStateFlow()
 
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
+    private var prevRecordState: RecordEntity? = null
     val randomGreeting = AppConstants.GREETINGS.random()
 
-    private var prevRecordState: RecordEntity? = null
-
-    fun getRecord(recordId: String?) =
+    fun getRecord(recordId: String?) {
         combine(
             getRecordWithLabels(recordId),
             getLabelsFlowUseCase()
         ) { recordEntity, labels ->
-
-            recordEntity?.let { record ->
-                prevRecordState = record.copy()
-                _uiState.update {
-                    it.copy(
+            _uiState.update { state ->
+                recordEntity?.let { record ->
+                    prevRecordState = record.copy()
+                    state.copy(
                         record = record,
                         labels = labels
                     )
-                }
-            } ?: _uiState.update { it.copy(labels = labels) }
-
+                } ?: state.copy(labels = labels)
+            }
         }.launchIn(viewModelScope)
+    }
 
     fun saveRecord(
         currRecordState: RecordEntity,
@@ -77,9 +81,8 @@ class RecordDetailViewModel constructor(
         val description = currRecordState.description.trim()
 
         if (title.isEmpty() || description.isEmpty()) {
-//            _snackbarText.value = Event(R.string.empty_record_message)
 //            _snackBar.value = stringResource(id = R.string.empty_record_message)
-//            _snackBar.value = Event("Empty title or description")
+            _snackbar.value = Event("Empty title or description")
             return@safeLaunch
         }
 
@@ -95,6 +98,8 @@ class RecordDetailViewModel constructor(
                     prevRecordState = prevRecordState,
                     currRecordState = currRecordState
                 )
+
+                navigator.popBackStack()
             }
         }
     }
@@ -124,8 +129,6 @@ class RecordDetailViewModel constructor(
             )
         }
     }
-
-
 
     private val textResult = MutableStateFlow(listOf(""))
 
@@ -196,6 +199,7 @@ class RecordDetailViewModel constructor(
     }
 
     fun resetUiState() = safeLaunch {
+        log(tag = "resetUiState") { "resetUiState" }
         _uiState.update {
             it.copy(record = RecordEntity())
         }
