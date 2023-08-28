@@ -19,20 +19,14 @@ object Screens {
 }
 
 object DestinationsArgs {
-    const val USER_MESSAGE_ARG = "userMessage"
     const val RECORD_ID_ARG = "recordId"
     const val LABEL_ID_ARG = "labelId"
-    const val TITLE_ARG = "title"
 }
 
 object Destinations {
     const val STATS_ROUTE = STATS_SCREEN
     const val RECORD_ROUTE = RECORDS_SCREEN
-    //    const val RECORD_DETAIL_ROUTE = "$RECORD_DETAIL_SCREEN/{$RECORD_ID_ARG}"
-//    const val RECORD_DETAIL_ROUTE = "recordDetail/{$RECORD_ID_ARG}"
-//    const val RECORD_DETAIL_ROUTE = "recordDetail/{recordId}"
     const val RECORD_DETAIL_ROUTE = "$RECORD_DETAIL_SCREEN?recordId={recordId}"
-//    const val RECORD_DETAIL_ROUTE = "recordDetail?recordId={$RECORD_ID_ARG}"
 
     const val LABEL_LIST_ROUTE = LABEL_LIST_SCREEN
     const val LABEL_CREATE_ROUTE = "$LABEL_CREATE_SCREEN?labelId={labelId}"

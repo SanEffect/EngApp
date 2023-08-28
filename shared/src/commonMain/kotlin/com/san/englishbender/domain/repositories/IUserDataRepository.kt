@@ -1,14 +1,14 @@
 package com.san.englishbender.domain.repositories
 
-//import com.san.englishbender.data.local.dto.UserData
+import com.san.englishbender.data.local.dataStore.models.UserSettings
 import kotlinx.coroutines.flow.Flow
 
 interface IUserDataRepository {
 
     /**
-     * Stream of [UserData]
+     * Stream of [UserSettings]
      */
-//    val userData: Flow<UserData>
+    val userData: Flow<UserSettings>
 
     /**
      * Sets the user's currently followed topics

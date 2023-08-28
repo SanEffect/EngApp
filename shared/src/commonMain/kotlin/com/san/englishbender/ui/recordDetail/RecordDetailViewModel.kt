@@ -90,15 +90,18 @@ class RecordDetailViewModel constructor(
 
         saveRecordUseCase(currRecordState).let { result ->
             if (result.succeeded) {
-                updateRecordLabels(
-                    recordId = (result as Result.Success).data,
-                    selectedLabels = selectedLabels
-                )
-                updateStatsUseCase(
-                    prevRecordState = prevRecordState,
-                    currRecordState = currRecordState
-                )
-
+                launch {
+                    updateRecordLabels(
+                        recordId = (result as Result.Success).data,
+                        selectedLabels = selectedLabels
+                    )
+                }
+                launch {
+                    updateStatsUseCase(
+                        prevRecordState = prevRecordState,
+                        currRecordState = currRecordState
+                    )
+                }
                 navigator.popBackStack()
             }
         }

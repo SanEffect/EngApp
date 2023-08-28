@@ -15,6 +15,8 @@ class DataStoreRealm(
     private val realm: Realm
 ) : IDataStore {
 
+
+
     override fun getAppSettings(): AppSettings = realm.query<AppSettings>().first().find()
         ?: AppSettings().apply { isFirstLaunch = true }
 

@@ -1,6 +1,6 @@
 package com.san.englishbender.ui.stats
 
-import com.san.englishbender.core.WhileUiSubscribed
+import com.san.englishbender.core.extensions.WhileUiSubscribed
 import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.ui.ViewModel

@@ -20,11 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Snackbar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +50,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -66,10 +63,8 @@ import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTex
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.extensions.isNull
-import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
@@ -79,72 +74,23 @@ import java.util.Date
 @Composable
 fun RecordDetailScreen(
     onBackClick: () -> Unit,
-    onRecordSaved: () -> Unit,
     recordId: String?
 ) {
     val viewModel: RecordDetailViewModel = getViewModel()
-
-    val lo = LocalLifecycleOwner.current
-    log(tag = "handleError") { "lo: $lo" }
-
     val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    log(tag = "resetUiState") { "RecordDetailScreen.recordId: $recordId" }
-
     LaunchedEffect(viewModel) {
-        log(tag = "resetUiState") { "LaunchedEffect(viewModel)" }
         when (recordId.isNull) {
-            true -> {
-                log(tag = "resetUiState") { "viewModel.resetUiState()" }
-                viewModel.resetUiState()
-            }
-            false -> {
-                log(tag = "resetUiState") { "viewModel.getRecord(recordId)" }
-                viewModel.getRecord(recordId)
-            }
+            true -> viewModel.resetUiState()
+            false -> viewModel.getRecord(recordId)
         }
     }
 
-//    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
-
     RecordDetailContent(
         onBackClick,
-        onRecordSaved,
         viewModel,
         detailUiState,
     )
-
-//    when(uiState) {
-//        is RecordsDetailUiState.Loading -> LoadingView()
-//        is RecordsDetailUiState.Success -> {
-//            RecordDetailContent(
-//                onBackClick,
-//                onRecordSaved,
-//                viewModel,
-//                uiState.cast<RecordsDetailUiState.Success>().record,
-//            )
-//        }
-//        is RecordsDetailUiState.Empty -> {
-//            RecordDetailContent(
-//                onBackClick,
-//                onRecordSaved,
-//                viewModel,
-//                null,
-//            )
-//        }
-//        is RecordsDetailUiState.Failure -> {
-//
-//        }
-//    }
-//
-//    LaunchedEffect(Unit) {
-//        when (recordId) {
-//            null -> {
-//                viewModel.showEmptyScreen()
-//            }
-//            else -> viewModel.loadRecord(recordId)
-//        }
-//    }
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
 //
@@ -157,7 +103,6 @@ fun RecordDetailScreen(
 @Composable
 fun RecordDetailContent(
     onBackClick: () -> Unit,
-    onRecordSaved: () -> Unit,
     viewModel: RecordDetailViewModel,
     detailUiState: DetailUiState
 ) {
@@ -207,19 +152,6 @@ fun RecordDetailContent(
 //        mutableStateOf(TextFieldValue(annotatedString = formattedString))
 //    }
 //    val textFieldValue = textFieldValueState.copy(annotatedString = formattedString)
-//
-//    LaunchedEffect(snackbarMessage) {
-//        snackbarMessage.getContentIfNotHandled()?.let {
-//            coroutineScope.launch {
-//                scaffoldState.snackbarHostState.showSnackbar(it)
-//            }
-//        }
-//    }
-
-//    DisposableEffect(LocalLifecycleOwner.current) {
-//        //viewModel.onStart()
-//        onDispose { viewModel.saveDraft(record) }
-//    }
 
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
@@ -496,32 +428,5 @@ private fun formatString(text: String, boldWords: List<String>) = buildAnnotated
 //            start = startIndex,
 //            end = endIndex
 //        )
-//    }
-//}
-
-//@Preview
-//@Composable
-//fun Sandbox() {
-//
-//    Column(
-//        modifier = Modifier
-//            .background(Color.White)
-//    ) {
-//        Row(
-//            Modifier
-//                .weight(1F)
-//                .fillMaxWidth()
-//                .fillMaxHeight()
-//        ) {
-//            Text("desc 1")
-//        }
-//        Row(
-//            Modifier
-//                .weight(1F)
-//                .fillMaxWidth()
-//                .fillMaxHeight()
-//        ) {
-//            Text("desc 2")
-//        }
 //    }
 //}

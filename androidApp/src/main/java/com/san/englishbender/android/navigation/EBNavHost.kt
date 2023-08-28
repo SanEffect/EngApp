@@ -38,7 +38,6 @@ fun EBNavHost(
     appState: EBAppState,
     navigator: Navigator,
     navController: NavHostController = rememberNavController(),
-    onShowSnackbar: suspend (String, String?) -> Boolean,
     startDestination: String = Destinations.RECORD_ROUTE,
     navActions: EBNavigationActions = remember(navController) {
         EBNavigationActions(navController)
@@ -75,7 +74,6 @@ fun EBNavHost(
             log { "STATS_ROUTE" }
             AppDrawer(
                 drawerState,
-//                navController,
                 currentRoute,
                 navActions,
                 content = {
@@ -86,42 +84,18 @@ fun EBNavHost(
             )
         }
 
-        composable(
-//            route = Destinations.Records.route,
-            route = Destinations.RECORD_ROUTE,
-//            deepLinks = listOf(
-//                navDeepLink { uriPattern = DEEP_LINK_URI_PATTERN },
-//            ),
-//            arguments = listOf(
-//                navArgument(LINKED_NEWS_RESOURCE_ID) { type = NavType.StringType },
-//            ),
-        ) {
-            log { "RECORD_ROUTE" }
+        composable(route = Destinations.RECORD_ROUTE) {
             AppDrawer(
                 drawerState,
-//                navController,
                 currentRoute,
                 navActions,
                 content = {
                     RecordsScreen(
                         onRecordClick = { recordId ->
-
-                            log(tag = "resetUiState") { "EBNavHost.recordId: $recordId" }
-//                        appState.navigateToTopLevelDestination(Destinations.RecordDetail)
-//                        navController.navigate(Destinations.RecordDetail.route)
-
-//                        navController.navigate(Screens.RECORD_DETAIL_SCREEN + "/adoud-feds-u134dfdf")
-//                        navController.navigate(Screens.RECORD_DETAIL_SCREEN)
-
-                            var route = Screens.RECORD_DETAIL_SCREEN
-                            if (recordId != null) {
-                                route += "?recordId=$recordId"
+                            val route = Screens.RECORD_DETAIL_SCREEN.let { route ->
+                                recordId?.let { "$route?recordId=$it" } ?: route
                             }
-
                             navigator.navigateTo(route)
-
-//                        navController.navigate(Screens.RECORD_DETAIL_SCREEN + "?recordId=adoud-feds-u134dfdf")
-//                            navController.navigate(route)
                         },
                         openDrawer = { coroutineScope.launch { drawerState.open() } }
                     )
@@ -141,36 +115,10 @@ fun EBNavHost(
         ) { entry ->
             val recordId = entry.arguments?.getString(RECORD_ID_ARG)
 
-            log { "RECORD_DETAIL_ROUTE" }
-
             RecordDetailScreen(
-                onBackClick = {
-
-//                        appState.navigateToTopLevelDestination(Destinations.Records)
-//                        navController.navigate(Destinations.Records.route)
-//                    navigator.navigateTo(Destinations.RECORD_ROUTE)
-                    navigator.popBackStack()
-//                    navController.navigate(Destinations.RECORD_ROUTE)
-                },
-                onRecordSaved = {},
+                onBackClick = { navigator.popBackStack() },
                 recordId
             )
         }
-
-//        composable(
-//            Destinations.RecordDetail.route + "/{recordId}",
-//            arguments = listOf(navArgument("recordId") {
-//                type = NavType.StringType
-//            })
-//        ) { backStackEntry ->
-//            val recordId = backStackEntry.arguments?.getString("recordId")
-//            RecordDetailScreen(
-//                onBackClick = {
-//
-//                },
-//                recordId
-//            )
-//        }
-
     }
 }

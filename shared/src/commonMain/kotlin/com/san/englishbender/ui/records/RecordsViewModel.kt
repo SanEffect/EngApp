@@ -1,6 +1,6 @@
 package com.san.englishbender.ui.records
 
-import com.san.englishbender.core.WhileUiSubscribed
+import com.san.englishbender.core.extensions.WhileUiSubscribed
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
