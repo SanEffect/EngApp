@@ -1,5 +1,6 @@
 package com.san.englishbender
 
+import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.local.DatabaseDriverFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ actual class Platform actual constructor() {
 actual fun getPlatform(): Platform = IOSPlatform()
 
 actual fun platformModule() = module {
+    single { Navigator() }
     single { DatabaseDriverFactory() }
 }
 

@@ -73,8 +73,6 @@ class LabelsViewModel(
     }
 
     fun saveLabel(label: Label) = safeLaunch {
-        execute(saveLabelUseCase(SaveLabelUseCase.Params(label))) {
-            // navigate back
-        }
+        saveLabelUseCase(label)
     }
 }

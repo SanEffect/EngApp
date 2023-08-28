@@ -78,9 +78,9 @@ insertRecordLabelCrossRef:
 INSERT INTO RecordLabelCrossRef(recordId, labelId) VALUES (?, ?);
 
 selectRecordWithLabels:
-SELECT R.*, labels.labelIds
+SELECT R.*, COALESCE(labels.labelIds, '') AS labelIds
 FROM Record AS R
-JOIN (
+LEFT JOIN (
     SELECT RL.recordId, GROUP_CONCAT(L.id) AS labelIds
     FROM RecordLabelCrossRef AS RL
     JOIN Label AS L ON RL.labelId = L.id
@@ -93,6 +93,9 @@ DELETE FROM RecordLabelCrossRef WHERE recordId = ?;
 
 deleteByLabelId:
 DELETE FROM RecordLabelCrossRef WHERE labelId = ?;
+
+deleteByRecordLabelId:
+DELETE FROM RecordLabelCrossRef WHERE recordId = ? AND labelId = ?;
 
 -- SELECT R.*, label_info.label_names, label_info.label_colors
 -- FROM Record AS R

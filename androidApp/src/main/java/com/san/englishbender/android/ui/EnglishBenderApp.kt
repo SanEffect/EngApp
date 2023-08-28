@@ -1,22 +1,20 @@
 package com.san.englishbender.android.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.san.englishbender.android.navigation.EBNavHost
+import com.san.englishbender.core.navigation.Navigator
 
 
 @Composable
 fun EnglishBenderApp(
+    navigator: Navigator,
     windowSizeClass: WindowSizeClass,
     appState: EBAppState = rememberEBAppState(
 //        networkMonitor = networkMonitor,
@@ -28,20 +26,15 @@ fun EnglishBenderApp(
     val color = Color.Transparent
     val tonalElevation = 0.dp
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
     Surface(
         color = if (color == Color.Unspecified) Color.Transparent else color,
         tonalElevation = if (tonalElevation == Dp.Unspecified) 0.dp else tonalElevation,
         modifier = Modifier.fillMaxSize(),
     ) {
-        EBNavHost(appState = appState, onShowSnackbar = { message, action ->
-            snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = action,
-                duration = SnackbarDuration.Short,
-            ) == SnackbarResult.ActionPerformed
-        })
+        EBNavHost(
+            appState = appState,
+            navigator = navigator
+        )
 
 //        Scaffold(
 //            modifier = Modifier.semantics {

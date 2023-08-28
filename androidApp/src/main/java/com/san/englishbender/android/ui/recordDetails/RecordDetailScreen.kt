@@ -14,10 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,7 +22,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,7 +47,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -62,18 +57,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
-import com.san.englishbender.android.ui.common.LabelItem
 import com.san.englishbender.android.ui.labels.LabelsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
-import com.san.englishbender.domain.entities.LabelEntity
-import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.core.extensions.isNull
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import database.Label
-import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
@@ -83,56 +74,23 @@ import java.util.Date
 @Composable
 fun RecordDetailScreen(
     onBackClick: () -> Unit,
-    onRecordSaved: () -> Unit,
     recordId: String?
 ) {
     val viewModel: RecordDetailViewModel = getViewModel()
     val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    recordId?.let {
-        LaunchedEffect(Unit) { viewModel.getRecord(it) }
+    LaunchedEffect(viewModel) {
+        when (recordId.isNull) {
+            true -> viewModel.resetUiState()
+            false -> viewModel.getRecord(recordId)
+        }
     }
-
-    log(tag = "selectedLabels") { "detailUiState: $detailUiState" }
 
     RecordDetailContent(
         onBackClick,
-        onRecordSaved,
         viewModel,
         detailUiState,
     )
-
-//    when(uiState) {
-//        is RecordsDetailUiState.Loading -> LoadingView()
-//        is RecordsDetailUiState.Success -> {
-//            RecordDetailContent(
-//                onBackClick,
-//                onRecordSaved,
-//                viewModel,
-//                uiState.cast<RecordsDetailUiState.Success>().record,
-//            )
-//        }
-//        is RecordsDetailUiState.Empty -> {
-//            RecordDetailContent(
-//                onBackClick,
-//                onRecordSaved,
-//                viewModel,
-//                null,
-//            )
-//        }
-//        is RecordsDetailUiState.Failure -> {
-//
-//        }
-//    }
-//
-//    LaunchedEffect(Unit) {
-//        when (recordId) {
-//            null -> {
-//                viewModel.showEmptyScreen()
-//            }
-//            else -> viewModel.loadRecord(recordId)
-//        }
-//    }
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
 //
@@ -145,12 +103,18 @@ fun RecordDetailScreen(
 @Composable
 fun RecordDetailContent(
     onBackClick: () -> Unit,
-    onRecordSaved: () -> Unit,
     viewModel: RecordDetailViewModel,
     detailUiState: DetailUiState
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by viewModel.snackbar.collectAsStateWithLifecycle()
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage.getContentIfNotHandled()?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
 
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -160,15 +124,13 @@ fun RecordDetailContent(
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val recordData by rememberSaveable(detailUiState.record) {
-        mutableStateOf(detailUiState.record ?: RecordEntity())
-    }
+    val recordData by remember(detailUiState.record) { mutableStateOf(detailUiState.record) }
+
+//    log(tag = "resetUiState") { "recordData: $recordData" }
 
     val randomGreeting = viewModel.randomGreeting
     var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
     var description by rememberSaveable(recordData.description) { mutableStateOf(recordData.description) }
-
-    log(tag = "selectedLabels") { "recordData: $recordData" }
 
     var backgroundColor by remember {
         mutableStateOf(
@@ -179,31 +141,17 @@ fun RecordDetailContent(
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
     var labelsDialog by remember { mutableStateOf(false) }
     val selectedLabels = remember(detailUiState.record) {
-        detailUiState.record?.labels?.let { labelIds ->
+        detailUiState.record.labels?.let { labelIds ->
             detailUiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
         } ?: mutableStateListOf()
     }
 
-//    val snackbarMessage by viewModel.snackbar.collectAsState()
 
 //    val formattedString = getAnnotatedString(description, russianWordList)
 //    var textFieldValueState by remember {
 //        mutableStateOf(TextFieldValue(annotatedString = formattedString))
 //    }
 //    val textFieldValue = textFieldValueState.copy(annotatedString = formattedString)
-//
-//    LaunchedEffect(snackbarMessage) {
-//        snackbarMessage.getContentIfNotHandled()?.let {
-//            coroutineScope.launch {
-//                scaffoldState.snackbarHostState.showSnackbar(it)
-//            }
-//        }
-//    }
-
-//    DisposableEffect(LocalLifecycleOwner.current) {
-//        //viewModel.onStart()
-//        onDispose { viewModel.saveDraft(record) }
-//    }
 
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
@@ -257,9 +205,7 @@ fun RecordDetailContent(
                     openBottomSheet = true
                 })
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
         Column(
@@ -278,35 +224,14 @@ fun RecordDetailContent(
                 }
             }
 
-            LazyRow(
-                modifier = Modifier
-                    .height(100.dp)
-                    .padding(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = 12.dp,
-                        bottom = 24.dp
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                item {
-                    Icon(
-                        rememberVectorPainter(Icons.Outlined.NewLabel),
-                        contentDescription = null,
-                        modifier = Modifier.clickable { labelsDialog = true }
-                    )
-                }
-                items(selectedLabels, key = { it.id }) { label ->
-                    LabelItem(
-                        label = label,
-                        containerColor = label.color.toColor,
-                        onDeleteClick = { labelId ->
-                            selectedLabels.removeIf { it.id == labelId }
-                        }
-                    )
-                }
-            }
+            // --- Labels
+            LabelsRow(
+                selectedLabels = selectedLabels,
+                onDeleteLabelClick = { labelId ->
+                    selectedLabels.removeIf { it.id == labelId }
+                },
+                onMoreLabelsClick = { labelsDialog = true }
+            )
 
             // --- Title
             OutlinedTextField(
@@ -503,32 +428,5 @@ private fun formatString(text: String, boldWords: List<String>) = buildAnnotated
 //            start = startIndex,
 //            end = endIndex
 //        )
-//    }
-//}
-
-//@Preview
-//@Composable
-//fun Sandbox() {
-//
-//    Column(
-//        modifier = Modifier
-//            .background(Color.White)
-//    ) {
-//        Row(
-//            Modifier
-//                .weight(1F)
-//                .fillMaxWidth()
-//                .fillMaxHeight()
-//        ) {
-//            Text("desc 1")
-//        }
-//        Row(
-//            Modifier
-//                .weight(1F)
-//                .fillMaxWidth()
-//                .fillMaxHeight()
-//        ) {
-//            Text("desc 2")
-//        }
 //    }
 //}

@@ -2,7 +2,9 @@ package com.san.englishbender.android.core.extensions
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -30,3 +32,10 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
         onClick()
     }
 }
+
+@Composable
+fun LazyListState.isScrolledToTheTopDerived() =
+    remember { derivedStateOf { layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0 } }
+
+
+fun LazyListState.isScrolledToTheTop() = layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0

@@ -9,16 +9,20 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import com.san.englishbender.core.AppConstants
+import com.san.englishbender.core.Event
+import com.san.englishbender.core.navigation.Navigator
+import com.san.englishbender.data.Result
+import com.san.englishbender.data.succeeded
 import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
+import com.san.englishbender.domain.usecases.recordLabels.DeleteByRecordLabelIdUseCase
+import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
-import com.san.englishbender.domain.usecases.records.SaveRecordLabelUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.ui.ViewModel
 import database.RecordLabelCrossRef
-import database.Stats
 import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DetailUiState(
-    val record: RecordEntity? = null,
+    val record: RecordEntity = RecordEntity(),
     val labels: List<LabelEntity> = emptyList()
 )
 
@@ -38,153 +42,96 @@ class RecordDetailViewModel constructor(
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
     private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
-    private val saveRecordLabelUseCase: SaveRecordLabelUseCase
+    private val saveRecordLabelUseCase: SaveRecordLabelUseCase,
+    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase,
+    private val navigator: Navigator
 ) : ViewModel() {
+
+    private val _snackbar: MutableStateFlow<Event<String?>> = MutableStateFlow(Event(null))
+    val snackbar = _snackbar.asStateFlow()
 
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
+    private var prevRecordState: RecordEntity? = null
     val randomGreeting = AppConstants.GREETINGS.random()
 
-    private var stats: Stats? = null
-    private var currentRecord: RecordEntity? = null
-
-    private var currentWordsCount = 0
-    private var currentLettersCount = 0
-
-//    val detailUiState: StateFlow<DetailUiState> = combine(
-//        getRecordWithLabels(recordId),
-////        getRecordFlowUseCase(recordId),
-//        getLabelsFlowUseCase()
-//    ) { recordEntity, labels ->
-//
-//        log(tag = "selectedLabels") { "recordId: $recordId" }
-//        log(tag = "selectedLabels") { "recordEntity: $recordEntity" }
-//        log(tag = "selectedLabels") { "recordEntity.labels: ${recordEntity?.labels}" }
-//
-////        recordEntity?.labels = labels.filter { it.contains(it.id) }
-//
-//
-//        DetailUiState(
-//            record = recordEntity,
-//            labels = labels
-//        )
-//    }
-//        .stateIn(
-//            scope = viewModelScope,
-//            started = WhileUiSubscribed,
-//            initialValue = DetailUiState()
-//        )
-
-    fun getRecord(recordId: String?) =
+    fun getRecord(recordId: String?) {
         combine(
             getRecordWithLabels(recordId),
             getLabelsFlowUseCase()
-        ) { record, labels ->
-            _uiState.update {
-                it.copy(
-                    record = record,
-                    labels = labels
-                )
+        ) { recordEntity, labels ->
+            _uiState.update { state ->
+                recordEntity?.let { record ->
+                    prevRecordState = record.copy()
+                    state.copy(
+                        record = record,
+                        labels = labels
+                    )
+                } ?: state.copy(labels = labels)
             }
         }.launchIn(viewModelScope)
+    }
 
     fun saveRecord(
-        record: RecordEntity,
+        currRecordState: RecordEntity,
         selectedLabels: List<LabelEntity>
     ) = safeLaunch {
-        val title = record.title.trim()
-        val description = record.description.trim()
+        val title = currRecordState.title.trim()
+        val description = currRecordState.description.trim()
 
         if (title.isEmpty() || description.isEmpty()) {
-//            Timber.tag("recordDesc").d("currentTitle: $currentTitle")
-//            Timber.tag("recordDesc").d("currentDescription: $currentDescription")
-//            _snackbarText.value = Event(R.string.empty_record_message)
 //            _snackBar.value = stringResource(id = R.string.empty_record_message)
-//            _snackBar.value = Event("Empty title or description")
+            _snackbar.value = Event("Empty title or description")
             return@safeLaunch
         }
 
-        record.isDraft = false
-        val wordsCount = getDiff(currentWordsCount, getWordsCountOfStrings(title, description))
-        val lettersCount = getDiff(currentLettersCount, getLettersOfStrings(title, description))
+        currRecordState.isDraft = false
 
-        currentWordsCount = 0
-        currentLettersCount = 0
-
-        execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) { recordId ->
-            updateRecordLabels(
-                isNewRecord = record.id.isEmpty(),
-                recordId = recordId,
-                selectedLabels = selectedLabels
-            )
-            saveStats(wordsCount, lettersCount)
+        saveRecordUseCase(currRecordState).let { result ->
+            if (result.succeeded) {
+                launch {
+                    updateRecordLabels(
+                        recordId = (result as Result.Success).data,
+                        selectedLabels = selectedLabels
+                    )
+                }
+                launch {
+                    updateStatsUseCase(
+                        prevRecordState = prevRecordState,
+                        currRecordState = currRecordState
+                    )
+                }
+                navigator.popBackStack()
+            }
         }
     }
 
     private fun updateRecordLabels(
-        isNewRecord: Boolean,
         recordId: String,
         selectedLabels: List<LabelEntity>
     ) = safeLaunch {
-        when (isNewRecord) {
-            true -> saveRecordLabes(recordId, selectedLabels)
-            false -> {
-                val initialLabels = _uiState.value.labels
-                val deletedLabels = initialLabels.subtract(selectedLabels.toSet()).toList()
-                val addedLabels = selectedLabels.subtract(initialLabels.toSet()).toList()
+        val initialLabels = _uiState.value.labels
+        val deletedLabels = initialLabels.subtract(selectedLabels.toSet()).toList()
+        val addedLabels = selectedLabels.subtract(initialLabels.toSet()).toList()
 
-                deleteRecordLabels(recordId, deletedLabels)
-                saveRecordLabes(recordId, addedLabels)
-            }
-        }
+        deleteRecordLabels(recordId, deletedLabels)
+        saveRecordLabels(recordId, addedLabels)
     }
 
     private fun deleteRecordLabels(recordId: String, labels: List<LabelEntity>) = safeLaunch {
-        labels.forEach {
-            // Delete labels by id
+        labels.forEach { label ->
+            deleteByRecordLabelIdUseCase(recordId, label.id)
         }
     }
 
-    private fun saveRecordLabes(recordId: String, labels: List<LabelEntity>) = safeLaunch {
+    private fun saveRecordLabels(recordId: String, labels: List<LabelEntity>) = safeLaunch {
         labels.forEach { label ->
-            val params = SaveRecordLabelUseCase.Params(
+            saveRecordLabelUseCase(
                 RecordLabelCrossRef(recordId = recordId, labelId = label.id)
             )
-            execute(saveRecordLabelUseCase(params)) {
-                log(tag = "saveRecordUseCase") { "recordLabels saved" }
-            }
         }
     }
-
-    private fun saveStats(wordsCount: Int, lettersCount: Int) = safeLaunch {
-        val statParams = UpdateStatsUseCase.Params(
-            recordsCount = 1,
-            wordsCount = wordsCount,
-            lettersCount = lettersCount
-        )
-        execute(updateStatsUseCase(statParams)) { result ->
-            log(tag = "saveRecordUseCase") { "updateStatsUseCase result: $result" }
-        }
-    }
-
-//    fun loadRecord(id: String) = safeLaunch {
-//        val params = GetRecordUseCase.Params(id)
-//        execute(getRecordUseCase(params)) { record ->
-//            currentRecord = record?.copy()
-//
-//            currentRecord?.let {
-//                currentWordsCount = getWordsCountOfStrings(it.title, it.description)
-//                currentLettersCount = getLettersOfStrings(it.title, it.description)
-//            }
-//
-//            detailUiState.update {
-//
-//            }
-//
-//            _uiState.emit(RecordsDetailUiState.Success(record))
-//        }
-//    }
 
     private val textResult = MutableStateFlow(listOf(""))
 
@@ -254,6 +201,13 @@ class RecordDetailViewModel constructor(
 //        val completion: ChatCompletion = openAI.chatCompletion(chatCompletionRequest)
     }
 
+    fun resetUiState() = safeLaunch {
+        log(tag = "resetUiState") { "resetUiState" }
+        _uiState.update {
+            it.copy(record = RecordEntity())
+        }
+    }
+
     fun insertTags() = viewModelScope.launch {
         try {
 //            val tagId1 = UUID.randomUUID().toString()
@@ -297,46 +251,33 @@ class RecordDetailViewModel constructor(
         }
     }
 
-    private fun getLettersOfString(value: String): Int = value.replace(" ", "").length
-    private fun getLettersOfStrings(vararg values: String): Int {
-        return values.sumOf { it.replace(" ", "").length }
-    }
-
-    private fun getWordsCountOfStrings(vararg values: String): Int {
-        return values.sumOf { it.split(" ").size }
-    }
-
-    private fun getDiff(currentValue: Int, newValue: Int): Int {
-        return newValue - currentValue
-    }
-
-    fun saveDraft(record: RecordEntity) = safeLaunch {
-        val title = record.title.trim()
-        val description = record.description.trim()
-
-        if (title.isEmpty() && description.isEmpty()) return@safeLaunch
-
-        // Check difference
-        if (currentRecord?.title == title && currentRecord?.description == description) return@safeLaunch
-
-        record.isDraft = true
-
-//        execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) {
-////            navigationManager.navigate(NavigationDirection.records)
-//        }
-    }
-
-    private fun isThereSomeChanges(record: RecordEntity): Boolean {
-        val currRecordTitle = currentRecord?.title?.trim()
-        val currRecordDesc = currentRecord?.description?.trim()
-
-        val newTitle = record.title.trim()
-        val newDesc = record.description.trim()
-
-//        val res = currentRecord?.equals(record)
-
-        return (currRecordTitle != newTitle || currRecordDesc != newDesc)
-    }
+//    fun saveDraft(record: RecordEntity) = safeLaunch {
+//        val title = record.title.trim()
+//        val description = record.description.trim()
+//
+//        if (title.isEmpty() && description.isEmpty()) return@safeLaunch
+//
+//        // Check difference
+//        if (currRecordState?.title == title && currRecordState?.description == description) return@safeLaunch
+//
+//        record.isDraft = true
+//
+////        execute(saveRecordUseCase(SaveRecordUseCase.Params(record))) {
+//////            navigationManager.navigate(NavigationDirection.records)
+////        }
+//    }
+//
+//    private fun isThereSomeChanges(record: RecordEntity): Boolean {
+//        val currRecordTitle = currRecordState?.title?.trim()
+//        val currRecordDesc = currRecordState?.description?.trim()
+//
+//        val newTitle = record.title.trim()
+//        val newDesc = record.description.trim()
+//
+////        val res = currentRecord?.equals(record)
+//
+//        return (currRecordTitle != newTitle || currRecordDesc != newDesc)
+//    }
 
 //    suspend fun showEmptyScreen() {
 //        _uiState.emit(RecordsDetailUiState.Empty)

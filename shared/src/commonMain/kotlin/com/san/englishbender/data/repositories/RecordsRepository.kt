@@ -16,15 +16,11 @@ import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.getSystemTimeInMillis
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
-import database.SelectRecordWithLabels
 import io.github.aakira.napier.log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -35,7 +31,9 @@ class RecordsRepository constructor(
     private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
 
     override fun getRecordsStream(): Flow<List<RecordEntity>> =
-        recordsDataSource.getRecordsStream().map { list -> list.map { it.toEntity() } }
+        recordsDataSource.getRecordsStream()
+            .map { list -> list.map { it.toEntity() } }
+            .flowOn(ioDispatcher)
 
     override val records: Flow<List<RecordEntity>> = flow {
         emit(recordsDataSource.getRecords().map { it.toEntity() })
@@ -108,9 +106,10 @@ class RecordsRepository constructor(
         return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
     }
 
-    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> {
-        return recordsDataSource.getRecordWithLabels(id).map { it?.toEntity() }
-    }
+    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
+        recordsDataSource.getRecordWithLabels(id)
+            .map { it?.toEntity() }
+            .flowOn(ioDispatcher)
 
     /*    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
             return withContext(ioDispatcher) {
@@ -138,30 +137,38 @@ class RecordsRepository constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getRecordsCount(): Flow<Long> = recordsDataSource.getRecordsCount()
+    override fun getRecordsCount(): Flow<Long> =
+        recordsDataSource.getRecordsCount().flowOn(ioDispatcher)
 
-    override suspend fun saveRecord(record: RecordEntity): Flow<Result<String>> = flow {
-        if (record.id.isEmpty()) {
-            record.id = randomUUID()
-            record.creationDate = getSystemTimeInMillis()
-            val result = doQuery { recordsDataSource.insertRecord(record.toData()) }
+    override suspend fun saveRecord(record: RecordEntity): Result<String> {
+        return if (record.id.isEmpty()) {
+            val result = doQuery {
+                record.id = randomUUID()
+                record.creationDate = getSystemTimeInMillis()
+                recordsDataSource.insertRecord(record.toData())
+            }
             if (result.succeeded) cacheRecord(record)
-            emit(result)
+            result
         } else {
             val result = doQuery { recordsDataSource.updateRecord(record.toData()) }
             if (result.succeeded) cacheRecord(record)
-            emit(result)
+            result
         }
     }
 
     override fun getRecordFlowById(id: String): Flow<RecordEntity?> =
-        recordsDataSource.getRecordFlowById(id).map { it?.toEntity() }
+        recordsDataSource.getRecordFlowById(id)
+            .map { it?.toEntity() }
+            .flowOn(ioDispatcher)
 
-    override suspend fun removeRecord(recordId: String): Flow<Result<Unit>> = flow {
-        performIfSuccess(doQuery { recordsDataSource.deleteRecordById(recordId) }) {
+    override suspend fun removeRecord(recordId: String): Result<Unit> = withContext(ioDispatcher) {
+        return@withContext performIfSuccess(
+            doQuery { recordsDataSource.deleteRecordById(recordId) }
+        ) {
             cachedRecords.remove(recordId)
         }
     }
+
 
 //    override suspend fun removeRecords(): Result<Unit> {
 //        return performIfSuccess(doQuery(ioDispatcher) { recordDao.clear() }) {

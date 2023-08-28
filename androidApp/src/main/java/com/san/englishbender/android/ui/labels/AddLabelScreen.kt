@@ -35,14 +35,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.core.extensions.isNull
 import com.san.englishbender.ui.LabelsViewModel
 import database.Label
-import io.github.aakira.napier.log
 
 
 @Composable

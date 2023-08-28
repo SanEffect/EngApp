@@ -35,7 +35,6 @@ import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.theme.selectedLabelColor
 import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.ui.LabelsViewModel
-import database.Label
 
 
 @Composable
@@ -47,9 +46,7 @@ fun ListLabelScreen(
     dismiss: () -> Unit = {}
 ) {
     val uiState by labelsViewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) {
-        labelsViewModel.getLabels()
-    }
+    LaunchedEffect(Unit) { labelsViewModel.getLabels() }
 
     val selectedLabels = remember { mutableStateListOf<LabelEntity>() }
     recordLabels.forEach {

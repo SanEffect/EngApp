@@ -11,12 +11,11 @@ import com.san.englishbender.android.core.extensions.enterTransitionLeft
 import com.san.englishbender.android.core.extensions.enterTransitionRight
 import com.san.englishbender.android.core.extensions.exitTransitionLeft
 import com.san.englishbender.android.core.extensions.exitTransitionRight
-import com.san.englishbender.android.navigation.Destinations
-import com.san.englishbender.android.navigation.DestinationsArgs
-import com.san.englishbender.android.navigation.Screens
+import com.san.englishbender.core.navigation.Destinations
+import com.san.englishbender.core.navigation.DestinationsArgs
+import com.san.englishbender.core.navigation.Screens
 import com.san.englishbender.domain.entities.LabelEntity
 import com.san.englishbender.ui.LabelsViewModel
-import database.Label
 import org.koin.androidx.compose.getViewModel
 
 

@@ -22,4 +22,16 @@ class RecordLabelDataSource(db: Database) : IRecordLabelDataStore {
             labelId = recordLabelCrossRef.labelId
         )
     }
+
+    override suspend fun deleteByRecordId(recordId: String) {
+        queries.deleteByRecordId(recordId)
+    }
+
+    override suspend fun deleteByLabelId(labelId: String) {
+        queries.deleteLabelById(labelId)
+    }
+
+    override suspend fun deleteByRecordLabelId(recordId: String, labelId: String) {
+        queries.deleteByRecordLabelId(recordId, labelId)
+    }
 }
