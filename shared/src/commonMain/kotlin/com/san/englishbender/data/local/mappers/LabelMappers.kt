@@ -10,7 +10,7 @@ fun Label.toEntity() =
         color = color
     )
 
-fun LabelEntity.toData() =
+fun LabelEntity.toLocal() =
     Label(
         id = id,
         name = name,

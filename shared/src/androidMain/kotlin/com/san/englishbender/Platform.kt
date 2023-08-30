@@ -1,9 +1,14 @@
 package com.san.englishbender
 
+import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.local.DatabaseDriverFactory
+import dev.icerock.moko.resources.StringResource
+import dev.icerock.moko.resources.desc.Resource
+import dev.icerock.moko.resources.desc.StringDesc
+import dev.icerock.moko.resources.format
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.LocalDateTime
@@ -52,4 +57,16 @@ actual fun getSystemTimeInMillis() = System.currentTimeMillis()
 actual fun platformModule() = module {
     single { Navigator() }
     single { DatabaseDriverFactory(get()) }
+}
+
+actual class Strings(
+    private val context: Context
+) {
+    actual fun get(id: StringResource, args: List<Any>): String {
+        return if (args.isEmpty()) {
+            StringDesc.Resource(id).toString(context)
+        } else {
+            id.format(*args.toTypedArray()).toString(context)
+        }
+    }
 }

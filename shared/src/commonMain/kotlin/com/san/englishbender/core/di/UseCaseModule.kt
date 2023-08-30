@@ -8,7 +8,7 @@ import com.san.englishbender.domain.usecases.recordLabels.DeleteRecordLabelByRec
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordUseCase
-import com.san.englishbender.domain.usecases.records.GetRecordWithLabels
+import com.san.englishbender.domain.usecases.records.GetRecordWithLabelsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
@@ -20,7 +20,7 @@ import org.koin.dsl.module
 val useCaseModule = module {
     // --- Records
     single { GetRecordUseCase(get()) }
-    single { GetRecordWithLabels(get()) }
+    single { GetRecordWithLabelsUseCase(get()) }
     single { GetRecordFlowUseCase(get()) }
     single { GetRecordsUseCase(get()) }
     single { SaveRecordUseCase(get()) }

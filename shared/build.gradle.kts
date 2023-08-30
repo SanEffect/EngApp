@@ -5,6 +5,7 @@ plugins {
     id("kotlin-kapt")
     id("com.squareup.sqldelight")
     id("io.realm.kotlin") version "1.10.0"
+    id("dev.icerock.mobile.multiplatform-resources")
 }
 
 kotlin {
@@ -23,6 +24,8 @@ kotlin {
     ).forEach {
         it.binaries.framework {
             baseName = "shared"
+            export("dev.icerock.moko:resources:0.22.3")
+            export("dev.icerock.moko:graphics:0.9.0")
         }
     }
 
@@ -82,6 +85,9 @@ kotlin {
                 api("io.realm.kotlin:library-base:1.10.0") // Add to only use the local database
                 api("io.realm.kotlin:library-sync:1.10.0") // Add to use Device Sync
 
+                // Moco
+                api("dev.icerock.moko:resources:0.22.3")
+
                 //
                 implementation("co.touchlab:stately-concurrency:2.0.0-rc3")
                 // implementation("co.touchlab:stately-iso-collections:2.0.0-rc3")
@@ -93,6 +99,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2")
             }
         }
         val androidMain by getting {
@@ -141,7 +149,17 @@ kotlin {
                 implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
             }
         }
-        val androidUnitTest by getting
+        val androidUnitTest by getting {
+            dependencies {
+                implementation("junit:junit:4.13.2")
+                implementation("androidx.test:core:1.5.0")
+                implementation("androidx.test:rules:1.5.0")
+                implementation("androidx.test:runner:1.5.2")
+                implementation("app.cash.turbine:turbine:0.12.1")
+                implementation("androidx.test.espresso:espresso-core:3.5.1")
+                implementation("com.google.truth:truth:1.1.2")
+            }
+        }
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
@@ -149,6 +167,7 @@ kotlin {
             dependencies {
                 implementation("com.squareup.sqldelight:native-driver:1.5.5")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:1.3.8")
+
             }
 
             dependsOn(commonMain)
@@ -183,4 +202,9 @@ sqldelight {
         packageName = "com.san.englishbender.database"
         sourceFolders = listOf("sqldelight")
     }
+}
+
+multiplatformResources {
+    multiplatformResourcesPackage = "com.san.englishbender"
+    multiplatformResourcesClassName = "SharedRes"
 }

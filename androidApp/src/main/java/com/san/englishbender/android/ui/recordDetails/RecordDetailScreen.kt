@@ -22,7 +22,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,13 +49,16 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
+import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.labels.LabelsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
@@ -77,7 +79,7 @@ fun RecordDetailScreen(
     recordId: String?
 ) {
     val viewModel: RecordDetailViewModel = getViewModel()
-    val detailUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {
         when (recordId.isNull) {
@@ -87,9 +89,9 @@ fun RecordDetailScreen(
     }
 
     RecordDetailContent(
-        onBackClick,
+        uiState,
         viewModel,
-        detailUiState,
+        onBackClick,
     )
 
 //        DisposableEffect(LocalLifecycleOwner.current) {
@@ -102,17 +104,17 @@ fun RecordDetailScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordDetailContent(
-    onBackClick: () -> Unit,
+    uiState: DetailUiState,
     viewModel: RecordDetailViewModel,
-    detailUiState: DetailUiState
+    onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val snackbarMessage by viewModel.snackbar.collectAsStateWithLifecycle()
 
-    LaunchedEffect(snackbarMessage) {
-        snackbarMessage.getContentIfNotHandled()?.let {
-            snackbarHostState.showSnackbar(it)
+    LaunchedEffect(uiState.userMessage) {
+        uiState.userMessage.getContentIfNotHandled()?.let {
+            snackbarHostState.showSnackbar(Strings(context).get(it))
         }
     }
 
@@ -124,7 +126,7 @@ fun RecordDetailContent(
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val recordData by remember(detailUiState.record) { mutableStateOf(detailUiState.record) }
+    val recordData by remember(uiState.record) { mutableStateOf(uiState.record) }
 
 //    log(tag = "resetUiState") { "recordData: $recordData" }
 
@@ -132,7 +134,7 @@ fun RecordDetailContent(
     var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
     var description by rememberSaveable(recordData.description) { mutableStateOf(recordData.description) }
 
-    var backgroundColor by remember {
+    var containerColor by remember {
         mutableStateOf(
             if (recordData.backgroundColor.isEmpty()) Color.White
             else recordData.backgroundColor.toColor
@@ -140,9 +142,9 @@ fun RecordDetailContent(
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
     var labelsDialog by remember { mutableStateOf(false) }
-    val selectedLabels = remember(detailUiState.record) {
-        detailUiState.record.labels?.let { labelIds ->
-            detailUiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
+    val selectedLabels = remember(uiState.record) {
+        uiState.record.labels?.let { labelIds ->
+            uiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
         } ?: mutableStateListOf()
     }
 
@@ -154,12 +156,13 @@ fun RecordDetailContent(
 //    val textFieldValue = textFieldValueState.copy(annotatedString = formattedString)
 
     Scaffold(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = backgroundColor,
+        modifier = Modifier.fillMaxSize(),
+        containerColor = containerColor,
         topBar = {
             TopAppBar(
+                modifier = Modifier.fillMaxWidth(),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor
+                    containerColor = containerColor
                 ),
                 title = {
                     Text(
@@ -169,49 +172,43 @@ fun RecordDetailContent(
 //                        style = JetRortyTypography.h2
                     )
                 },
-                actions = {
-                    Icon(
-                        rememberVectorPainter(Icons.Outlined.Save),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable {
-                                coroutineScope.launch {
-                                    viewModel.saveRecord(
-                                        recordData,
-                                        selectedLabels
-                                    )
-                                }
-                            }
-                    )
-                },
                 navigationIcon = {
                     Icon(
                         rememberVectorPainter(Icons.Filled.ArrowBack),
                         contentDescription = null,
                         modifier = Modifier
-                            .padding(8.dp)
+                            .padding(start = 8.dp)
                             .clickable { onBackClick() }
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                actions = {
+                    EBOutlinedButton(
+                        modifier = Modifier.padding(end = 8.dp),
+                        text = "Save",
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.saveRecord(recordData, selectedLabels)
+                            }
+                        }
+                    )
+                }
             )
         },
         bottomBar = {
             NavigationBar(
-                containerColor = backgroundColor,
+                containerColor = containerColor,
                 navItemClicked = { navItem ->
                     bottomNavItem = navItem
                     openBottomSheet = true
                 })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
+    ) { paddingValues ->
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(padding)
+                .padding(paddingValues)
         ) {
             if (recordData.isDraft) {
                 Row(
@@ -297,7 +294,7 @@ fun RecordDetailContent(
 
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
-                            backgroundColor = color
+                            containerColor = color
                             recordData.backgroundColor = color.toHex()
                         }
                     )
@@ -309,7 +306,7 @@ fun RecordDetailContent(
     }
     if (labelsDialog) {
         LabelsNavHost(
-            labels = detailUiState.labels,
+            labels = uiState.labels,
             recordLabels = selectedLabels,
             dismiss = { labelsDialog = false },
             onLabelClick = { labels ->

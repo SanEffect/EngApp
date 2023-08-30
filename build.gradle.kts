@@ -2,6 +2,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
+        classpath("dev.icerock.moko:resources-generator:0.22.3")
     }
 }
 plugins {

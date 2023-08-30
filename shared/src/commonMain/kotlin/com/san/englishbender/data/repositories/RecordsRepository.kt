@@ -8,7 +8,7 @@ import com.san.englishbender.data.Result
 import com.san.englishbender.data.Result.Failure
 import com.san.englishbender.data.Result.Success
 import com.san.englishbender.data.local.dataSources.IRecordsDataSource
-import com.san.englishbender.data.local.mappers.toData
+import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.succeeded
 import com.san.englishbender.domain.entities.RecordEntity
@@ -140,19 +140,35 @@ class RecordsRepository constructor(
     override fun getRecordsCount(): Flow<Long> =
         recordsDataSource.getRecordsCount().flowOn(ioDispatcher)
 
-    override suspend fun saveRecord(record: RecordEntity): Result<String> {
+//    override suspend fun saveRecord(record: RecordEntity): Result<String> {
+//        return if (record.id.isEmpty()) {
+//            val result = doQuery {
+//                record.id = randomUUID()
+//                record.creationDate = getSystemTimeInMillis()
+//                recordsDataSource.insertRecord(record.toLocal())
+//            }
+//            if (result.succeeded) cacheRecord(record)
+//            result
+//        } else {
+//            val result = doQuery { recordsDataSource.updateRecord(record.toLocal()) }
+//            if (result.succeeded) cacheRecord(record)
+//            result
+//        }
+//    }
+
+    override suspend fun saveRecord(record: RecordEntity): String {
         return if (record.id.isEmpty()) {
-            val result = doQuery {
+            doQuery {
                 record.id = randomUUID()
                 record.creationDate = getSystemTimeInMillis()
-                recordsDataSource.insertRecord(record.toData())
+                recordsDataSource.insertRecord(record.toLocal())
             }
-            if (result.succeeded) cacheRecord(record)
-            result
+            cacheRecord(record)
+            record.id
         } else {
-            val result = doQuery { recordsDataSource.updateRecord(record.toData()) }
-            if (result.succeeded) cacheRecord(record)
-            result
+            doQuery { recordsDataSource.updateRecord(record.toLocal()) }
+            cacheRecord(record)
+            record.id
         }
     }
 
@@ -168,6 +184,10 @@ class RecordsRepository constructor(
             cachedRecords.remove(recordId)
         }
     }
+//    override suspend fun removeRecord(recordId: String): Unit = withContext(ioDispatcher) {
+//        doQuery { recordsDataSource.deleteRecordById(recordId) }
+//        cachedRecords.remove(recordId)
+//    }
 
 
 //    override suspend fun removeRecords(): Result<Unit> {

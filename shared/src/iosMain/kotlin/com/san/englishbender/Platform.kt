@@ -2,6 +2,10 @@ package com.san.englishbender
 
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.local.DatabaseDriverFactory
+import dev.icerock.moko.resources.StringResource
+import dev.icerock.moko.resources.desc.Resource
+import dev.icerock.moko.resources.desc.StringDesc
+import dev.icerock.moko.resources.format
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
@@ -53,3 +57,13 @@ internal class NsQueueDispatcher(
 actual fun randomUUID(): String = NSUUID().UUIDString()
 
 actual fun getSystemTimeInMillis() = getTimeMillis()
+
+actual class Strings {
+    actual fun get(id: StringResource, args: List<Any>): String {
+        return if (args.isEmpty()) {
+            StringDesc.Resource(id).localized()
+        } else {
+            id.format(*args.toTypedArray()).localized()
+        }
+    }
+}

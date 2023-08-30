@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 
-class GetRecordWithLabels(
+class GetRecordWithLabelsUseCase(
     private val recordsRepository: IRecordsRepository,
 //    private val getLabelsUseCase: GetLabelsUseCase,
 ) {

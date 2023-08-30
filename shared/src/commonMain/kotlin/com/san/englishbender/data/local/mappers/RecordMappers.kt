@@ -1,7 +1,6 @@
 package com.san.englishbender.data.local.mappers
 
 import com.san.englishbender.domain.entities.RecordEntity
-import database.Label
 import database.Record
 import database.SelectRecordWithLabels
 
@@ -16,7 +15,7 @@ fun Record.toEntity() : RecordEntity =
         backgroundColor = backgroundColor
     )
 
-fun RecordEntity.toData() : Record =
+fun RecordEntity.toLocal() : Record =
     Record(
         id = id,
         title = title,
@@ -26,6 +25,9 @@ fun RecordEntity.toData() : Record =
         isDraft = isDraft,
         backgroundColor = backgroundColor
     )
+
+fun List<Record>.toEntity() = this.map { it.toEntity() }
+fun List<RecordEntity>.toLocal() = this.map { it.toLocal() }
 
 fun SelectRecordWithLabels.toEntity() : RecordEntity =
     RecordEntity(

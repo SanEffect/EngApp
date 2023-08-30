@@ -1,5 +1,6 @@
 package com.san.englishbender
 
+import dev.icerock.moko.resources.StringResource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.datetime.LocalDateTime
 import org.koin.core.module.Module
@@ -49,4 +50,8 @@ expect fun platformModule(): Module
 // KMP Class Definition
 expect class Platform() {
     val name: String
+}
+
+expect class Strings {
+    fun get(id: StringResource, args: List<Any> = emptyList()): String
 }

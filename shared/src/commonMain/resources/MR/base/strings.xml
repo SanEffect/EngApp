@@ -5,6 +5,9 @@
     <string name="text_retry">Retry</string>
     <string name="text_no_data_found">No suitable data found.</string>
     <string name="empty_title_message">Title cannot be empty</string>
+    <string name="loading_records_error">Error while loading records</string>
+    <string name="loading_record_error">Error while loading record</string>
+    <string name="save_record_error">Failed to save the record</string>
     <string name="title_records">Records</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_dictionary">Dictionary</string>

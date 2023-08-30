@@ -14,3 +14,12 @@ data class RecordEntity(
     var backgroundColor: String = "",
     var labels: List<String>? = null
 ) : CommonParcelable
+
+fun RecordEntity.isNotEqual(other: RecordEntity): Boolean {
+    val isLabelsChanged = this.labels?.equals(other.labels) ?: false
+
+    return (this.title.trim() != other.title.trim() ||
+            this.description.trim() != other.description.trim() ||
+            this.backgroundColor != other.backgroundColor ||
+            isLabelsChanged)
+}

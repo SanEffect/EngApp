@@ -17,6 +17,17 @@ suspend fun <T> doQuery(
     }
 }
 
+suspend fun <T> doQueryEx(
+    dispatcher: CoroutineDispatcher = ioDispatcher,
+    action: suspend () -> T
+): T = withContext(dispatcher) {
+    try {
+        action.invoke()
+    } catch (e: Exception) {
+        throw Exception(e)
+    }
+}
+
 suspend fun <T> getResult(action: suspend () -> T) = try {
     Result.Success(action.invoke())
 } catch (e: Exception) {

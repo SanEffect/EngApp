@@ -8,9 +8,12 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
+import com.san.englishbender.Strings
+import dev.icerock.moko.resources.StringResource
 import kotlinx.coroutines.flow.Flow
 
 
@@ -39,3 +42,8 @@ fun LazyListState.isScrolledToTheTopDerived() =
 
 
 fun LazyListState.isScrolledToTheTop() = layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0
+
+@Composable
+fun stringResource(id: StringResource, vararg args: Any): String {
+    return Strings(LocalContext.current).get(id, args.toList())
+}

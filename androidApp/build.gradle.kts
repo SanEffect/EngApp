@@ -94,7 +94,7 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     // DON'T USE IT
-    implementation("androidx.navigation:navigation-compose:2.7.0-rc01")
+    implementation("androidx.navigation:navigation-compose:2.7.1")
 
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.0.4")
