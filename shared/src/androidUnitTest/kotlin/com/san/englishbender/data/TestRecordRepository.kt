@@ -8,7 +8,7 @@ import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
-import com.san.englishbender.records.samplesRecords
+import com.san.englishbender.ui.samplesRecords
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,7 +76,7 @@ class TestRecordRepository : IRecordsRepository {
         return getResult { localDataSource.getRecords().toEntity() }
     }
 
-    override suspend fun saveRecord(record: RecordEntity): Result<String> {
+    override suspend fun saveRecord(record: RecordEntity): String {
         TODO("Not yet implemented")
     }
 
@@ -84,7 +84,7 @@ class TestRecordRepository : IRecordsRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
+    override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? {
         TODO("Not yet implemented")
     }
 

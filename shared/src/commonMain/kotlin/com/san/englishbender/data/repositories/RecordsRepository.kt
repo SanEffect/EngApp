@@ -2,15 +2,10 @@ package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.core.extensions.getResult
-import com.san.englishbender.core.extensions.performIfSuccess
 import com.san.englishbender.data.ConcurrentHashMap
-import com.san.englishbender.data.Result
-import com.san.englishbender.data.Result.Failure
-import com.san.englishbender.data.Result.Success
 import com.san.englishbender.data.local.dataSources.IRecordsDataSource
-import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.mappers.toEntity
-import com.san.englishbender.data.succeeded
+import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.getSystemTimeInMillis
@@ -30,80 +25,57 @@ class RecordsRepository constructor(
 
     private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
 
-    override fun getRecordsStream(): Flow<List<RecordEntity>> =
-        recordsDataSource.getRecordsStream()
-            .map { list -> list.map { it.toEntity() } }
-            .flowOn(ioDispatcher)
+//    override fun getRecordsStream(): Flow<List<RecordEntity>> =
+//        recordsDataSource.getRecordsStream()
+//            .map { list -> list.map { it.toEntity() } }
+//            .flowOn(ioDispatcher)
 
     override val records: Flow<List<RecordEntity>> = flow {
         emit(recordsDataSource.getRecords().map { it.toEntity() })
     }.flowOn(ioDispatcher)
 
-    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<RecordEntity>>> =
-        withContext(ioDispatcher) {
-            return@withContext flow {
+    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> = flow {
 
-                log { "get from cache" }
-
-                if (!forceUpdate && cachedRecords.isNotEmpty()) {
-                    log(tag = "Caching") { "get from cache" }
-                    emit(Success(cachedRecords.values.sortedByDescending { it.creationDate }))
-                    return@flow
-                }
-
-                log(tag = "Caching") { "get from db" }
-                val result = getResult { recordsDataSource.getRecords().map { it.toEntity() } }
-
-                (result as? Success)?.let { refreshCache(it.data) }
-
-                if (cachedRecords.isNotEmpty()) {
-                    cachedRecords.values.let { records ->
-                        emit(Success(records.sortedByDescending { it.creationDate }))
-                        return@flow
-                    }
-                }
-                return@flow emit(Failure(Exception("Illegal state")))
-            }
+        if (!forceUpdate && cachedRecords.isNotEmpty()) {
+            log(tag = "Caching") { "get from cache" }
+            emit(cachedRecords.values.sortedByDescending { it.creationDate })
+            return@flow
         }
 
-    override suspend fun getRecords(forceUpdate: Boolean): Result<List<RecordEntity>> {
+        log(tag = "Caching") { "get from db" }
+        val result = getResult { recordsDataSource.getRecordsFlow().map { it.toEntity() } }
 
-        return withContext(ioDispatcher) {
+//        refreshCache(result)
+
+//        (result as? Success)?.let { refreshCache(it.data) }
+
+        if (cachedRecords.isNotEmpty()) {
+            cachedRecords.values.let { records ->
+                emit(records.sortedByDescending { it.creationDate })
+                return@flow
+            }
+        }
+        throw Exception("Illegal state")
+    }
+
+    override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> =
+        withContext(ioDispatcher) {
 
             if (!forceUpdate) {
                 cachedRecords.let { cachedRecords ->
-                    return@withContext Success(
-                        cachedRecords.values.sortedByDescending { it.creationDate }
-                    )
+                    return@withContext cachedRecords.values.sortedByDescending { it.creationDate }
                 }
             }
 
-//            val newRecords = doQuery(ioDispatcher) { recordsDao.getRecords().toEntities() }
-//
-//            // Refresh the cache with the new records
-//            (newRecords as? Success)?.let {
-//                refreshCache(it.data)
-//            }
+            val newRecords = doQuery(ioDispatcher) { recordsDataSource.getRecords().toEntity() }
+            refreshCache(newRecords)
 
-            cachedRecords.values.let { records ->
-//                val record = records.first()
-//
-//                var recs = records.map { it.toDto() }
-//
-//                val success = Success(recs)
-
-                //                return@withContext success
-
-                //                val recordsDto = records.map { it.toDto() }.sortedByDescending { it.creationDate }
-                ////                return@withContext Success(recordsDto)
-                //                return@withContext Success(records.sortedByDescending { it.creationDate })
-            }
-            return@withContext Failure(Exception("Illegal state"))
+            return@withContext cachedRecords.values.toList()
         }
-    }
 
-    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
-        return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
+    override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? {
+        return recordsDataSource.getRecordById(id)?.toEntity()
+//        return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
     }
 
     override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
@@ -177,13 +149,18 @@ class RecordsRepository constructor(
             .map { it?.toEntity() }
             .flowOn(ioDispatcher)
 
-    override suspend fun removeRecord(recordId: String): Result<Unit> = withContext(ioDispatcher) {
-        return@withContext performIfSuccess(
-            doQuery { recordsDataSource.deleteRecordById(recordId) }
-        ) {
-            cachedRecords.remove(recordId)
-        }
+    override suspend fun removeRecord(recordId: String): Unit = doQuery {
+        recordsDataSource.deleteRecordById(recordId)
+        cachedRecords.remove(recordId)
     }
+
+//    override suspend fun removeRecord(recordId: String) = withContext(ioDispatcher) {
+//        return@withContext performIfSuccess(
+//            doQuery { recordsDataSource.deleteRecordById(recordId) }
+//        ) {
+//            cachedRecords.remove(recordId)
+//        }
+//    }
 //    override suspend fun removeRecord(recordId: String): Unit = withContext(ioDispatcher) {
 //        doQuery { recordsDataSource.deleteRecordById(recordId) }
 //        cachedRecords.remove(recordId)

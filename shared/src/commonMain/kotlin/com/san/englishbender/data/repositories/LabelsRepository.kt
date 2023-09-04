@@ -23,10 +23,10 @@ class LabelsRepository(
     override suspend fun getAllLabels(): List<LabelEntity> =
         labelsDataSource.getAllLabels().map { it.toEntity() }
 
-    override suspend fun saveLabel(label: Label): Result<Unit> =
+    override suspend fun saveLabel(label: Label): Unit =
         labelsDataSource.upsertLabel(label)
 
-    override suspend fun deleteLabel(labelId: String): Result<Unit> =
+    override suspend fun deleteLabel(labelId: String): Unit =
         labelsDataSource.deleteLabel(labelId)
 
 }

@@ -17,6 +17,8 @@ sealed class Result<out R> {
     data class Success<out T>(val data: T) : Result<T>()
     data class Failure(val exception: Throwable) : Result<Nothing>()
 
+//    object Loading : Result<Nothing>()
+
     override fun toString(): String {
         return when (this) {
             is Success<*> -> "Success[data=$data]"
@@ -79,3 +81,10 @@ fun <T> Flow<Result<T>>.ifFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
         it
     }
 }
+
+//fun <T> Flow<Result<T>>.ifLoading(block: () -> Unit): Flow<Result<T>> {
+//    return this.map {
+//        if (it is Result.Loading) block()
+//        it
+//    }
+//}

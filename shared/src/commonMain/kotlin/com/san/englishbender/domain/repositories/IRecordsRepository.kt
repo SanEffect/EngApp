@@ -1,6 +1,5 @@
 package com.san.englishbender.domain.repositories
 
-import com.san.englishbender.data.Result
 import com.san.englishbender.domain.entities.RecordEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -8,26 +7,24 @@ interface IRecordsRepository {
 
     val records: Flow<List<RecordEntity>>
 
-    fun getRecordsStream(): Flow<List<RecordEntity>>
+    fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>>
 
-    suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<RecordEntity>>>
+    suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity>
 
-    suspend fun getRecords(forceUpdate: Boolean): Result<List<RecordEntity>>
-
-//    suspend fun getLastRecord(): Result<Record?>
+//    suspend fun getLastRecord(): Record?
 
     suspend fun saveRecord(record: RecordEntity): String
 
     fun getRecordFlowById(id: String): Flow<RecordEntity?>
-    suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?>
+    suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity?
 
     fun getRecordWithLabels(id: String): Flow<RecordEntity?>
 
-    suspend fun removeRecord(recordId: String): Result<Unit>
+    suspend fun removeRecord(recordId: String)
 
-//    suspend fun removeRecords(): Result<Unit>
-//
-//    suspend fun deleteRecords(recordIds: List<String>): Result<Unit>
+//    suspend fun removeRecords()
+
+//    suspend fun deleteRecords(recordIds: List<String>)
 
     suspend fun refreshRecords()
 

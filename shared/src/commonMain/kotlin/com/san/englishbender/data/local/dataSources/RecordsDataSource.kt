@@ -18,12 +18,12 @@ class RecordsDataSource(db: Database) : IRecordsDataSource {
 
     private val queries = db.dbQueries
 
-    override fun getRecordsStream(): Flow<List<Record>> =
+    override fun getRecordsFlow(): Flow<List<Record>> =
         queries.selectAllRecord().asFlow().mapToList().flowOn(ioDispatcher)
 
-    suspend fun getRecordsFlow(): Flow<Result<List<Record>>> = flow {
-        emit(getResult { queries.selectAllRecord().executeAsList() })
-    }.flowOn(ioDispatcher)
+//    suspend fun getRecordsFlow(): Flow<Result<List<Record>>> = flow {
+//        emit(getResult { queries.selectAllRecord().executeAsList() })
+//    }.flowOn(ioDispatcher)
 
     override suspend fun getRecords(): List<Record> =
         queries.selectAllRecord().executeAsList()

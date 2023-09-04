@@ -15,7 +15,7 @@ import org.junit.runner.Description
  * for the duration of the test.
  */
 class MainDispatcherRule @OptIn(ExperimentalCoroutinesApi::class) constructor(
-    val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
+    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
 ) : TestWatcher() {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun starting(description: Description) {

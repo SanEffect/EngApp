@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DetailUiState(
+    val saveInProgress: Boolean = false,
     val record: RecordEntity = RecordEntity(),
     val labels: List<LabelEntity> = emptyList(),
     val userMessage: Event<StringResource?> = Event(null)
@@ -54,9 +55,9 @@ class RecordDetailViewModel constructor(
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
+    private var saveInProgress = false
     private var prevRecordState: RecordEntity? = null
     val randomGreeting = AppConstants.GREETINGS.random()
-    private var saveInProgress = false
 
     fun getRecord(recordId: String?) {
         combine(

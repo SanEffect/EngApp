@@ -6,18 +6,18 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 
-suspend fun <T> doQuery(
-    dispatcher: CoroutineDispatcher = ioDispatcher,
-    action: suspend () -> T
-): Result<T> = withContext(dispatcher) {
-    try {
-        Result.Success(action.invoke())
-    } catch (e: Exception) {
-        Result.Failure(e)
-    }
-}
+//suspend fun <T> doQuery(
+//    dispatcher: CoroutineDispatcher = ioDispatcher,
+//    action: suspend () -> T
+//): Result<T> = withContext(dispatcher) {
+//    try {
+//        Result.Success(action.invoke())
+//    } catch (e: Exception) {
+//        Result.Failure(e)
+//    }
+//}
 
-suspend fun <T> doQueryEx(
+suspend fun <T> doQuery(
     dispatcher: CoroutineDispatcher = ioDispatcher,
     action: suspend () -> T
 ): T = withContext(dispatcher) {

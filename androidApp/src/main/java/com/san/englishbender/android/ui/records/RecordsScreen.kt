@@ -62,7 +62,7 @@ fun RecordsScreen(
 //    val context = LocalContext.current
 
     val viewModel: RecordsViewModel = getViewModel()
-    val uiState by viewModel.recordsUiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
 //    when(uiState) {
 //        is RecordsUiState.Loading -> LoadingView()
@@ -134,13 +134,8 @@ fun RecordsScreen(
                 )
             }
         }
-    ) { innerPadding ->
-
-        LazyColumn(modifier = Modifier.padding(innerPadding)) {
-//            items(40) {
-//                Text("Text for check")
-//            }
-
+    ) { paddingValues ->
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
             items(items = uiState.records, key = { it.id }) { record ->
                 RecordItem(record, viewModel, onRecordClick)
             }
@@ -176,10 +171,8 @@ fun RecordItem(
     ) {
         Column(
             modifier = Modifier.padding(
-                top = 18.dp,
-                bottom = 18.dp,
-                start = 12.dp,
-                end = 12.dp
+                vertical = 18.dp,
+                horizontal = 12.dp
             )
         ) {
             Row(
@@ -232,7 +225,7 @@ fun DeleteRecordDialog(
                 onClick = { confirmButton() },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.Transparent,
-                    contentColor = Color.White
+                    contentColor = Color.Red
                 )
             ) {
                 Text("Yes")

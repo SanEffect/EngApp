@@ -1,6 +1,5 @@
 package com.san.englishbender.domain.usecases.stats
 
-import com.san.englishbender.data.Result
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IStatsRepository
 import database.Stats
@@ -17,8 +16,8 @@ class UpdateStatsUseCase(
         isDeletion: Boolean = false,
         prevRecordState: RecordEntity? = null,
         currRecordState: RecordEntity
-    ): Result<Unit> {
-        return getStatsUseCase().first()?.let {
+    ) {
+        getStatsUseCase().first()?.let {
             val title = currRecordState.title
             val description = currRecordState.description
 
@@ -39,8 +38,7 @@ class UpdateStatsUseCase(
                 lettersCount = it.lettersCount + (lettersCount * multiplier)
             )
             statsRepository.updateStats(newStats)
-
-        } ?: Result.Failure(Exception("Failed to get stats"))
+        }
     }
 
     private fun getLettersOfStrings(vararg values: String): Int {

@@ -111,7 +111,7 @@ kotlin {
                 // ViewModel & LiveData
                 implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion")
                 implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
-                implementation("androidx.activity:activity-compose:1.8.0-alpha06")
+                implementation("androidx.activity:activity-compose:1.8.0-alpha07")
 
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -152,12 +152,22 @@ kotlin {
         val androidUnitTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
+                // JUnit 5 dependencies
+//                implementation("org.junit.platform:junit-platform-launcher:1.10.0")
+//                implementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+//                implementation("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+//                implementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
+//                implementation("org.junit.vintage:junit-vintage-engine:5.10.0")
+//                implementation("org.apache.maven.plugins:maven-surefire-plugin:2.21.0")
+
+                implementation("io.mockk:mockk:1.13.7")
                 implementation("androidx.test:core:1.5.0")
                 implementation("androidx.test:rules:1.5.0")
                 implementation("androidx.test:runner:1.5.2")
                 implementation("app.cash.turbine:turbine:0.12.1")
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("com.google.truth:truth:1.1.2")
+                implementation("org.slf4j:slf4j-simple:1.6.1")
             }
         }
         val iosX64Main by getting
@@ -192,13 +202,32 @@ android {
     compileSdk = 34
     defaultConfig {
         minSdk = 24
-//        targetSdk = 34
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Always show the result of every unit test, even if it passes.
+    testOptions.unitTests {
+        isIncludeAndroidResources = true
+
+        all { test ->
+            with(test) {
+                testLogging {
+                    events = setOf(
+                        org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+                        org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+                        org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
+                        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR,
+                    )
+                }
+            }
+        }
     }
 }
 
 sqldelight {
     database("EngAppDatabase") {
-//        packageName = "com.san.englishbender.data.local"
         packageName = "com.san.englishbender.database"
         sourceFolders = listOf("sqldelight")
     }

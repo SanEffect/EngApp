@@ -186,9 +186,7 @@ fun RecordDetailContent(
                         modifier = Modifier.padding(end = 8.dp),
                         text = "Save",
                         onClick = {
-                            coroutineScope.launch {
-                                viewModel.saveRecord(recordData, selectedLabels)
-                            }
+                            viewModel.saveRecord(recordData, selectedLabels)
                         }
                     )
                 }

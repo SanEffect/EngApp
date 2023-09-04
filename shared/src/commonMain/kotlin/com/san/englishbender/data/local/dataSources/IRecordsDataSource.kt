@@ -5,7 +5,7 @@ import database.SelectRecordWithLabels
 import kotlinx.coroutines.flow.Flow
 
 interface IRecordsDataSource {
-    fun getRecordsStream(): Flow<List<Record>>
+    fun getRecordsFlow(): Flow<List<Record>>
     suspend fun getRecords(): List<Record>
     suspend fun getRecordById(id: String): Record?
     fun getRecordWithLabels(id: String): Flow<SelectRecordWithLabels?>

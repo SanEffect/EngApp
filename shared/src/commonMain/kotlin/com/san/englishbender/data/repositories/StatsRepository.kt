@@ -1,7 +1,6 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
-import com.san.englishbender.data.Result
 import com.san.englishbender.data.local.dataSources.IStatsDataSource
 import com.san.englishbender.domain.repositories.IStatsRepository
 import com.san.englishbender.ioDispatcher
@@ -17,15 +16,15 @@ class StatsRepository(
     override fun getAllStats(): Flow<Stats?> =
         statsDataSource.getAllStats().flowOn(ioDispatcher)
 
-    override suspend fun insertStats(stats: Stats): Result<Unit> = doQuery {
+    override suspend fun insertStats(stats: Stats): Unit = doQuery {
         statsDataSource.insertStats(stats)
     }
 
-    override suspend fun updateStats(stats: Stats): Result<Unit> = doQuery {
+    override suspend fun updateStats(stats: Stats): Unit = doQuery {
         statsDataSource.updateStats(stats)
     }
 
-    override suspend fun deleteStats(): Result<Unit> = doQuery {
+    override suspend fun deleteStats(): Unit = doQuery {
         statsDataSource.deleteStats()
     }
 }
