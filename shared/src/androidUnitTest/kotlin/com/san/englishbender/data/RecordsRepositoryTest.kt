@@ -38,7 +38,7 @@ class RecordsRepositoryTest {
     }
 
     @Test
-    fun getRecordsStream() = runTest {
+    fun getRecordsFlow() = runTest {
         val record = Record(
             id = "1",
             title = "Record",
@@ -49,13 +49,13 @@ class RecordsRepositoryTest {
             backgroundColor = ""
         )
 
-        every { recordsDataSource.getRecordsStream() } returns flowOf(listOf(record))
+        every { recordsDataSource.getRecordsFlow() } returns flowOf(listOf(record))
 
-        recordsRepository.getRecordsStream().test {
+        recordsRepository.getRecordsFlow(false).test {
             assertThat(awaitItem()).isEqualTo(listOf(record.toEntity()))
             cancelAndConsumeRemainingEvents()
 
-            verify { recordsDataSource.getRecordsStream() }
+            verify { recordsDataSource.getRecordsFlow() }
         }
     }
 
@@ -91,11 +91,13 @@ class RecordsRepositoryTest {
             title = "New Record Title",
             description = "Desc",
         )
-        coEvery { recordsDataSource.insertRecord(newRecordEntity.toLocal()) } returns newRecordEntity.id
+        val record = newRecordEntity.toLocal()
+        coEvery { recordsDataSource.insertRecord(record) } returns newRecordEntity.id
 
-        val result = recordsRepository.saveRecord(newRecordEntity)
+//        val result = recordsRepository.saveRecord(newRecordEntity)
+        val result = recordsRepository.insertRecord(newRecordEntity)
 
-        coVerify { recordsRepository.saveRecord(newRecordEntity) }
+        coVerify { recordsDataSource.insertRecord(record) }
         assertEquals(result, newRecordEntity.id)
     }
 
@@ -107,11 +109,12 @@ class RecordsRepositoryTest {
             title = "Title",
             description = "Desc",
         )
-        coEvery { recordsDataSource.updateRecord(newRecordEntity.toLocal()) } returns newRecordEntity.id
+        val record = newRecordEntity.toLocal()
+        coEvery { recordsDataSource.updateRecord(record) } returns newRecordEntity.id
 
         val result = recordsRepository.saveRecord(newRecordEntity)
 
-        coVerify { recordsRepository.saveRecord(newRecordEntity) }
+        coVerify { recordsDataSource.updateRecord(record) }
         assertEquals(result, newRecordEntity.id)
     }
 

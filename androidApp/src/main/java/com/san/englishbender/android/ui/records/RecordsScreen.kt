@@ -42,42 +42,49 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
+import com.san.englishbender.android.ui.common.widgets.ErrorView
+import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
+import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.core.utils.DateConverters.convertLongToDate
 import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.ui.records.RecordsUiState
 import com.san.englishbender.ui.records.RecordsViewModel
 import org.koin.androidx.compose.getViewModel
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordsScreen(
     onRecordClick: (String?) -> Unit,
     openDrawer: () -> Unit
-
 ) {
 //    val appContext: Context = remember { GlobalContext.get().get() }
 //    val lifecycleOwner = LocalLifecycleOwner.current
-//    val context = LocalContext.current
 
     val viewModel: RecordsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-//    when(uiState) {
-//        is RecordsUiState.Loading -> LoadingView()
-//        is RecordsUiState.Success -> {
-//            RecordsContent(
-//                onRecordClick,
-//                viewModel,
-//                uiState.cast<RecordsUiState.Success>().records
-//            )
-//        }
-//        is RecordsUiState.Failure -> {
-//            ErrorView(e = uiState.cast<RecordsUiState.Failure>().exception)
-//        }
-//    }
+    when {
+        uiState.isLoading -> LoadingView()
+        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
+        else -> RecordsContent(
+            viewModel,
+            uiState,
+            onRecordClick = onRecordClick,
+            openDrawer = openDrawer
+        )
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecordsContent(
+    viewModel: RecordsViewModel,
+    uiState: RecordsUiState,
+    onRecordClick: (String?) -> Unit,
+    openDrawer: () -> Unit
+) {
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.surfaceVariant,

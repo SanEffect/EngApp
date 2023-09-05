@@ -21,7 +21,7 @@ class RecordsDataSourceTest(
         records = initialRecords
     }
 
-    override fun getRecordsStream(): Flow<List<Record>> {
+    override fun getRecordsFlow(): Flow<List<Record>> {
         TODO("Not yet implemented")
     }
 

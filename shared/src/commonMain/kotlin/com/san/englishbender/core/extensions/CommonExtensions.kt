@@ -13,6 +13,7 @@ inline fun <reified T> Any?.toFlow(): Flow<T> = flow {
 }
 
 val Any?.isNull get() = this == null
+val Any?.isNotNull get() = this != null
 
 fun Any?.ifNull(block: () -> Unit) = run {
     if (this == null) block()

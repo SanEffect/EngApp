@@ -1,8 +1,6 @@
 package com.san.englishbender.data.local.dataSources
 
 import com.san.englishbender.core.di.Database
-import com.san.englishbender.core.extensions.getResult
-import com.san.englishbender.data.Result
 import com.san.englishbender.ioDispatcher
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
@@ -10,7 +8,6 @@ import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import database.Record
 import database.SelectRecordWithLabels
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 
@@ -20,10 +17,6 @@ class RecordsDataSource(db: Database) : IRecordsDataSource {
 
     override fun getRecordsFlow(): Flow<List<Record>> =
         queries.selectAllRecord().asFlow().mapToList().flowOn(ioDispatcher)
-
-//    suspend fun getRecordsFlow(): Flow<Result<List<Record>>> = flow {
-//        emit(getResult { queries.selectAllRecord().executeAsList() })
-//    }.flowOn(ioDispatcher)
 
     override suspend fun getRecords(): List<Record> =
         queries.selectAllRecord().executeAsList()

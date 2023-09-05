@@ -47,7 +47,7 @@ class GetRecordsUseCaseTest {
     @Test
     fun getRecordsUseCaseUnitTest() = runTest {
 
-        every { recordsRepository.getRecordsStream() } returns flowOf(samplesRecords)
+        every { recordsRepository.getRecordsFlow(false) } returns flowOf(samplesRecords)
 
         getRecordsUseCase().test {
             assertThat(awaitItem()).isEqualTo(samplesRecords)

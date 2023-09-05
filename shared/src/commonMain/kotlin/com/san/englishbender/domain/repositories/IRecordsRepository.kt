@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface IRecordsRepository {
 
-    val records: Flow<List<RecordEntity>>
-
     fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>>
 
     suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity>

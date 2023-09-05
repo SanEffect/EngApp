@@ -2,9 +2,9 @@ package com.san.englishbender.domain.usecases.records
 
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
-import com.san.englishbender.domain.usecases.records.RecordsSort.NONE
 import com.san.englishbender.domain.usecases.records.RecordsSort.ASC
 import com.san.englishbender.domain.usecases.records.RecordsSort.DESC
+import com.san.englishbender.domain.usecases.records.RecordsSort.NONE
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

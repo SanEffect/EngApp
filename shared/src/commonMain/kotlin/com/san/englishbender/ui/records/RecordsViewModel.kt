@@ -2,15 +2,15 @@ package com.san.englishbender.ui.records
 
 import com.san.englishbender.SharedRes
 import com.san.englishbender.core.extensions.WhileUiSubscribed
+import com.san.englishbender.data.getResultFlow
+import com.san.englishbender.data.ifFailure
 import com.san.englishbender.domain.entities.RecordEntity
-import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
+import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.ui.ViewModel
 import database.Label
 import dev.icerock.moko.resources.StringResource
-import io.github.aakira.napier.log
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -26,6 +26,7 @@ data class RecordsUiState(
 
 class RecordsViewModel constructor(
     private val getRecordsUseCase: GetRecordsUseCase,
+    private val saveRecordUseCase: SaveRecordUseCase,
     private val removeRecordUseCase: RemoveRecordUseCase
 ) : ViewModel() {
 
@@ -40,29 +41,19 @@ class RecordsViewModel constructor(
             )
 
 //    fun saveRecords() = safeLaunch {
-//        val records = mutableListOf<RecordDto>()
-//        repeat(100) { i ->
-//            records.add(
-//                RecordDto(
-//                    id = UUID.randomUUID().toString(),
-//                    title = "$i",
-//                    creationDate = System.currentTimeMillis() + i
-//                )
+//        repeat(200) { i ->
+//            val n = i + 79
+//            val rec = RecordEntity(
+//                id = "",
+//                title = "Title $n",
+//                description = "Description"
 //            )
+//            saveRecordUseCase(rec)
 //        }
-//
-//        recordDao.insert(records)
 //    }
 
     fun removeRecord(record: RecordEntity) = safeLaunch {
-        removeRecordUseCase(record).let { result ->
-            log { "result: $result" }
-
-//            when (result) {
-////                is Success -> loadRecordsPaging()
-////                is Failure -> setState(BaseViewState.Error(result.exception))
-//                else -> {}
-//            }
-        }
+        getResultFlow { removeRecordUseCase(record) }
+            .ifFailure { RecordsUiState(userMessage = SharedRes.strings.remove_record_error) }
     }
 }

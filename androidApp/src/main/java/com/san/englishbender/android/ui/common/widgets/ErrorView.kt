@@ -1,7 +1,6 @@
 package com.san.englishbender.android.ui.common.widgets
 
 //import androidx.compose.material.icons.filled.ErrorOutline
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -15,23 +14,25 @@ import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import com.san.englishbender.SharedRes
 import com.san.englishbender.android.R
-import com.san.englishbender.android.ui.theme.EnglishBenderTheme
+import com.san.englishbender.android.core.extensions.stringResource
 import com.san.englishbender.ui.common.SmallSpacer
+import dev.icerock.moko.resources.StringResource
 
 @Suppress("ForbiddenComment")
 @Composable
-fun ErrorView(modifier: Modifier = Modifier, e: Throwable, action: () -> Unit = {}) {
-    // todo: handleThrowable- create extension method
-    e.printStackTrace()
+fun ErrorView(
+    modifier: Modifier = Modifier,
+    userMessage: StringResource?,
+    action: () -> Unit = {}
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .wrapContentHeight(Alignment.CenterVertically)
     ) {
         Icon(
-//            painter = rememberVectorPainter(Icons.Default.ErrorOutline),
             painter = rememberVectorPainter(Icons.Default.AccountBox),
             contentDescription = null,
             tint = Red,
@@ -41,7 +42,7 @@ fun ErrorView(modifier: Modifier = Modifier, e: Throwable, action: () -> Unit = 
         )
         SmallSpacer()
         Text(
-            text = "${e.localizedMessage}",
+            text = stringResource(userMessage ?: SharedRes.strings.something_went_wrong),
             modifier = modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
@@ -59,18 +60,18 @@ fun ErrorView(modifier: Modifier = Modifier, e: Throwable, action: () -> Unit = 
     }
 }
 
-@Preview(
-    showBackground = true,
-    name = "Light Mode"
-)
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    name = "Dark Mode"
-)
-@Composable
-fun ErrorPageViewPreview() {
-    EnglishBenderTheme {
-        ErrorView(e = Exception()) {}
-    }
-}
+//@Preview(
+//    showBackground = true,
+//    name = "Light Mode"
+//)
+//@Preview(
+//    showBackground = true,
+//    uiMode = Configuration.UI_MODE_NIGHT_YES,
+//    name = "Dark Mode"
+//)
+//@Composable
+//fun ErrorPageViewPreview() {
+//    EnglishBenderTheme {
+//        ErrorView(e = Exception()) {}
+//    }
+//}

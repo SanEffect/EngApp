@@ -1,12 +1,9 @@
 package com.san.englishbender.data
 
-import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 
 /**
  * A generic class that holds a value with its loading status.
@@ -82,9 +79,10 @@ fun <T> Flow<Result<T>>.ifFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
     }
 }
 
-//fun <T> Flow<Result<T>>.ifLoading(block: () -> Unit): Flow<Result<T>> {
-//    return this.map {
-//        if (it is Result.Loading) block()
-//        it
-//    }
-//}
+suspend fun ifFailure(action: suspend () -> Unit, block: (Throwable) -> Unit) {
+    try {
+        action()
+    } catch (e: Exception) {
+        block(e)
+    }
+}

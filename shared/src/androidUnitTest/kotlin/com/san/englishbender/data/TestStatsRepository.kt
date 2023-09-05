@@ -9,15 +9,15 @@ class TestStatsRepository : IStatsRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun insertStats(stats: Stats): Result<Unit> {
+    override suspend fun insertStats(stats: Stats) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateStats(stats: Stats): Result<Unit> {
+    override suspend fun updateStats(stats: Stats) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteStats(): Result<Unit> {
+    override suspend fun deleteStats() {
         TODO("Not yet implemented")
     }
 }

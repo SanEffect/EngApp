@@ -1,10 +1,9 @@
 package com.san.englishbender.data
 
 import androidx.annotation.VisibleForTesting
-import com.san.englishbender.core.extensions.getResult
 import com.san.englishbender.data.dataSources.RecordsDataSourceTest
-import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.mappers.toEntity
+import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
@@ -56,11 +55,6 @@ class TestRecordRepository : IRecordsRepository {
         )
     }
 
-    override val records: Flow<List<RecordEntity>>
-        get() = TODO("Not yet implemented")
-
-    override fun getRecordsStream(): Flow<List<RecordEntity>> = observableRecords
-
     /**
      * A test-only API to allow controlling the list of topics from tests.
      */
@@ -68,12 +62,16 @@ class TestRecordRepository : IRecordsRepository {
 //        recordsFlow.tryEmit(topics)
 //    }
 
-    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<Result<List<RecordEntity>>> {
+    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getRecords(forceUpdate: Boolean): Result<List<RecordEntity>> {
-        return getResult { localDataSource.getRecords().toEntity() }
+    override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> {
+        return localDataSource.getRecords().toEntity()
+    }
+
+    override suspend fun insertRecord(record: RecordEntity): String {
+        TODO("Not yet implemented")
     }
 
     override suspend fun saveRecord(record: RecordEntity): String {
@@ -92,14 +90,13 @@ class TestRecordRepository : IRecordsRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeRecord(recordId: String): Result<Unit> {
+    override suspend fun removeRecord(recordId: String) {
         localDataSource.deleteRecordById(recordId)
 //        _savedRecords.update { records ->
 //            val newTasks = LinkedHashMap<String, RecordEntity>(records)
 //            newTasks.remove(recordId)
 //            newTasks
 //        }
-        return Result.Success(Unit)
     }
 
     override suspend fun refreshRecords() {

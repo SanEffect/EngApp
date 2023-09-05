@@ -1,7 +1,6 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
-import com.san.englishbender.core.extensions.getResult
 import com.san.englishbender.data.ConcurrentHashMap
 import com.san.englishbender.data.local.dataSources.IRecordsDataSource
 import com.san.englishbender.data.local.mappers.toEntity
@@ -25,37 +24,24 @@ class RecordsRepository constructor(
 
     private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
 
-//    override fun getRecordsStream(): Flow<List<RecordEntity>> =
-//        recordsDataSource.getRecordsStream()
-//            .map { list -> list.map { it.toEntity() } }
-//            .flowOn(ioDispatcher)
+    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> {
 
-    override val records: Flow<List<RecordEntity>> = flow {
-        emit(recordsDataSource.getRecords().map { it.toEntity() })
-    }.flowOn(ioDispatcher)
+        return recordsDataSource.getRecordsFlow().map { it.toEntity() }
 
-    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> = flow {
-
-        if (!forceUpdate && cachedRecords.isNotEmpty()) {
-            log(tag = "Caching") { "get from cache" }
-            emit(cachedRecords.values.sortedByDescending { it.creationDate })
-            return@flow
-        }
-
-        log(tag = "Caching") { "get from db" }
-        val result = getResult { recordsDataSource.getRecordsFlow().map { it.toEntity() } }
-
-//        refreshCache(result)
-
-//        (result as? Success)?.let { refreshCache(it.data) }
-
-        if (cachedRecords.isNotEmpty()) {
-            cachedRecords.values.let { records ->
-                emit(records.sortedByDescending { it.creationDate })
-                return@flow
-            }
-        }
-        throw Exception("Illegal state")
+//        if (!forceUpdate && cachedRecords.isNotEmpty()) {
+//            log(tag = "GetRecordsUseCase") { "get from cache" }
+//            return flow {
+//                emit(cachedRecords.values.sortedByDescending { it.creationDate })
+//            }
+//        }
+//
+//        log(tag = "GetRecordsUseCase") { "get from db" }
+//        return recordsDataSource.getRecordsFlow().map { records ->
+//            log(tag = "GetRecordsUseCase") { "getRecordsFlow records: $records" }
+//            val recordEntities = records.toEntity().sortedByDescending { it.creationDate }
+//            refreshCache(recordEntities)
+//            recordEntities
+//        }
     }
 
     override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> =
@@ -67,16 +53,14 @@ class RecordsRepository constructor(
                 }
             }
 
-            val newRecords = doQuery(ioDispatcher) { recordsDataSource.getRecords().toEntity() }
+            val newRecords = doQuery { recordsDataSource.getRecords().toEntity() }
             refreshCache(newRecords)
 
             return@withContext cachedRecords.values.toList()
         }
 
-    override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? {
-        return recordsDataSource.getRecordById(id)?.toEntity()
-//        return getResult { recordsDataSource.getRecordById(id)?.toEntity() }
-    }
+    override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? =
+        recordsDataSource.getRecordById(id)?.toEntity()
 
     override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
         recordsDataSource.getRecordWithLabels(id)
@@ -102,31 +86,12 @@ class RecordsRepository constructor(
             }
         }*/
 
-    //    private fun getRecordWithId(recordId: String) = cachedRecords[recordId]
-    private fun getRecordWithId(recordId: String) = cachedRecords.get(recordId)
-
     override suspend fun refreshRecords() {
         TODO("Not yet implemented")
     }
 
     override fun getRecordsCount(): Flow<Long> =
         recordsDataSource.getRecordsCount().flowOn(ioDispatcher)
-
-//    override suspend fun saveRecord(record: RecordEntity): Result<String> {
-//        return if (record.id.isEmpty()) {
-//            val result = doQuery {
-//                record.id = randomUUID()
-//                record.creationDate = getSystemTimeInMillis()
-//                recordsDataSource.insertRecord(record.toLocal())
-//            }
-//            if (result.succeeded) cacheRecord(record)
-//            result
-//        } else {
-//            val result = doQuery { recordsDataSource.updateRecord(record.toLocal()) }
-//            if (result.succeeded) cacheRecord(record)
-//            result
-//        }
-//    }
 
     override suspend fun saveRecord(record: RecordEntity): String {
         return if (record.id.isEmpty()) {
@@ -154,19 +119,6 @@ class RecordsRepository constructor(
         cachedRecords.remove(recordId)
     }
 
-//    override suspend fun removeRecord(recordId: String) = withContext(ioDispatcher) {
-//        return@withContext performIfSuccess(
-//            doQuery { recordsDataSource.deleteRecordById(recordId) }
-//        ) {
-//            cachedRecords.remove(recordId)
-//        }
-//    }
-//    override suspend fun removeRecord(recordId: String): Unit = withContext(ioDispatcher) {
-//        doQuery { recordsDataSource.deleteRecordById(recordId) }
-//        cachedRecords.remove(recordId)
-//    }
-
-
 //    override suspend fun removeRecords(): Result<Unit> {
 //        return performIfSuccess(doQuery(ioDispatcher) { recordDao.clear() }) {
 //            cachedRecords.entries.clear()
@@ -181,16 +133,6 @@ class RecordsRepository constructor(
 //            recordIds.forEach { recId -> cachedRecords.remove(recId) }
 //
 //        return result
-//    }
-
-//    override suspend fun getRecordsCount(): Flow<Result<Long>> = flow {
-//        val result = doQuery(ioDispatcher) { recordDao.getRecordsCount() }
-//        emit(result)
-//    }
-//
-//    override suspend fun getWordsCount(): Flow<Result<Long>> = flow {
-//        val result = doQuery(ioDispatcher) { recordDao.getWordsCount() }
-//        emit(result)
 //    }
 
     private fun refreshCache(records: List<RecordEntity>) {
@@ -221,17 +163,16 @@ class RecordsRepository constructor(
 //    }
 
     private fun cacheRecord(record: RecordEntity): RecordEntity {
-//        val cachedRecord = RecordEntity(
-//            record.title,
-//            record.description,
-//            record.id,
-//            record.isDeleted,
-//            record.isDraft,
-//            record.creationDate,
-//            record.backgroundColor
-//        )
-//        cachedRecords.put(cachedRecord.id, cachedRecord)
-        cachedRecords.put(record.id, record)
-        return record
+        val cachedRecord = RecordEntity(
+            record.title,
+            record.description,
+            record.id,
+            record.isDeleted,
+            record.isDraft,
+            record.creationDate,
+            record.backgroundColor
+        )
+        cachedRecords.put(cachedRecord.id, cachedRecord)
+        return cachedRecord
     }
 }
