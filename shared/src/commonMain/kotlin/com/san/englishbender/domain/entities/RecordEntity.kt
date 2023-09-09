@@ -12,11 +12,11 @@ data class RecordEntity(
     var isDraft: Boolean = false,
     var creationDate: Long = 0,
     var backgroundColor: String = "",
-    var labels: List<String>? = null
+    var tags: List<String>? = null
 ) : CommonParcelable
 
 fun RecordEntity.isNotEqual(other: RecordEntity): Boolean {
-    val isLabelsChanged = this.labels?.equals(other.labels) ?: false
+    val isLabelsChanged = this.tags?.equals(other.tags) ?: false
 
     return (this.title.trim() != other.title.trim() ||
             this.description.trim() != other.description.trim() ||

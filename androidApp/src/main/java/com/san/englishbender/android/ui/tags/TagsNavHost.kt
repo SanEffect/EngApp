@@ -20,10 +20,10 @@ import org.koin.androidx.compose.getViewModel
 
 
 @Composable
-fun LabelsNavHost(
-    labels: List<TagEntity>,
-    recordLabels: List<TagEntity>,
-    onLabelClick: (List<TagEntity>) -> Unit,
+fun TagsNavHost(
+    tags: List<TagEntity>,
+    recordTags: List<TagEntity>,
+    onTagClick: (List<TagEntity>) -> Unit,
     dismiss: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -34,46 +34,46 @@ fun LabelsNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Destinations.LABEL_LIST_ROUTE
+        startDestination = Destinations.TAG_LIST_ROUTE
     ) {
         composable(
-            route = Destinations.LABEL_LIST_ROUTE,
+            route = Destinations.TAG_LIST_ROUTE,
             enterTransition = enterTransitionRight(),
             exitTransition = exitTransitionLeft()
         ) {
-            ListLabelScreen(
+            TagsScreen(
                 tagsViewModel = tagsViewModel,
-                recordLabels = recordLabels,
-                createLabel = { labelId ->
+                recordTags = recordTags,
+                createTag = { tagId ->
                     navController.navigate(
-                        Screens.LABEL_CREATE_SCREEN.let {
-                            if (labelId != null) "$it?labelId=$labelId" else it
+                        Screens.TAG_CREATE_SCREEN.let {
+                            if (tagId != null) "$it?tagId=$tagId" else it
                         }
                     )
                 },
-                onLabelClick = onLabelClick,
+                onTagClick = onTagClick,
                 dismiss = dismiss
             )
         }
 
         composable(
-            route = Destinations.LABEL_CREATE_ROUTE,
+            route = Destinations.TAG_CREATE_ROUTE,
 //            enterTransition = enterTransitionLeft(),
 //            exitTransition = exitTransitionRight(),
             enterTransition = enterTransition,
             exitTransition = exitTransition,
             arguments = listOf(
-                navArgument(DestinationsArgs.LABEL_ID_ARG) {
+                navArgument(DestinationsArgs.TAG_ID_ARG) {
                     nullable = true
                     defaultValue = null
                     type = NavType.StringType
                 },
             ),
         ) { entry ->
-            val labelId = entry.arguments?.getString(DestinationsArgs.LABEL_ID_ARG)
+            val tagId = entry.arguments?.getString(DestinationsArgs.TAG_ID_ARG)
 
-            AddLabelScreen(
-                labelId = labelId,
+            AddTagScreen(
+                tagId = tagId,
                 tagsViewModel = tagsViewModel,
                 onColorPicker = {
 
@@ -90,7 +90,7 @@ fun LabelsNavHost(
                 onBack = {
                     enterTransition = enterTransitionLeft()
                     exitTransition = exitTransitionRight()
-                    navController.navigate(Destinations.LABEL_LIST_ROUTE) },
+                    navController.navigate(Destinations.TAG_LIST_ROUTE) },
                 dismiss = dismiss
             )
         }

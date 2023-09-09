@@ -38,19 +38,19 @@ import com.san.englishbender.ui.TagsViewModel
 
 
 @Composable
-fun ListLabelScreen(
+fun TagsScreen(
     tagsViewModel: TagsViewModel,
-    recordLabels: List<TagEntity>,
-    createLabel: (String?) -> Unit = {},
-    onLabelClick: (List<TagEntity>) -> Unit,
+    recordTags: List<TagEntity>,
+    createTag: (String?) -> Unit = {},
+    onTagClick: (List<TagEntity>) -> Unit,
     dismiss: () -> Unit = {}
 ) {
     val uiState by tagsViewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { tagsViewModel.getTags() }
 
-    val selectedLabels = remember { mutableStateListOf<TagEntity>() }
-    recordLabels.forEach {
-        if (!selectedLabels.contains(it)) selectedLabels.add(it)
+    val selectedTags = remember { mutableStateListOf<TagEntity>() }
+    recordTags.forEach {
+        if (!selectedTags.contains(it)) selectedTags.add(it)
     }
 
     BaseDialogContent(
@@ -63,7 +63,7 @@ fun ListLabelScreen(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(bottom = 16.dp),
-                text = "Labels",
+                text = "Tags",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -71,19 +71,19 @@ fun ListLabelScreen(
             Column(modifier = Modifier.weight(1f)) {
                 LazyColumn {
                     items(uiState.tags.size) { index ->
-                        val label = uiState.tags[index]
-                        val hasLabel = selectedLabels.any { it.id == label.id }
+                        val tag = uiState.tags[index]
+                        val hasTag = selectedTags.any { it.id == tag.id }
 
-                        LabelRow(
-                            label = label,
-                            isSelected = hasLabel,
+                        TagRow(
+                            tag = tag,
+                            isSelected = hasTag,
                             onClick = {
-                                if (hasLabel) selectedLabels.removeIf { it.id == label.id }
-                                else selectedLabels.add(label)
+                                if (hasTag) selectedTags.removeIf { it.id == tag.id }
+                                else selectedTags.add(tag)
 
-                                onLabelClick(selectedLabels.toList())
+                                onTagClick(selectedTags.toList())
                             },
-                            onEditClick = { createLabel(label.id) }
+                            onEditClick = { createTag(tag.id) }
                         )
                     }
                 }
@@ -95,7 +95,7 @@ fun ListLabelScreen(
             ) {
                 EBOutlinedButton(
                     text = "Create",
-                    onClick = { createLabel(null) }
+                    onClick = { createTag(null) }
                 )
 
                 EBOutlinedButton(
@@ -108,8 +108,8 @@ fun ListLabelScreen(
 }
 
 @Composable
-fun LabelRow(
-    label: TagEntity,
+fun TagRow(
+    tag: TagEntity,
     isSelected: Boolean = false,
     onClick: (String) -> Unit,
     onEditClick: () -> Unit,
@@ -130,13 +130,13 @@ fun LabelRow(
             modifier = Modifier
                 .weight(7f)
                 .padding(2.dp)
-                .background(label.color.toColor, shape = RoundedCornerShape(4.dp))
+                .background(tag.color.toColor, shape = RoundedCornerShape(4.dp))
                 .then(border)
-                .clickable { onClick(label.id) }
+                .clickable { onClick(tag.id) }
         ) {
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = label.name,
+                text = tag.name,
                 fontSize = 12.sp
             )
         }

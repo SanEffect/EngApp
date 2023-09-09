@@ -42,8 +42,8 @@ import com.san.englishbender.ui.TagsViewModel
 
 
 @Composable
-fun AddLabelScreen(
-    labelId: String? = null,
+fun AddTagScreen(
+    tagId: String? = null,
     tagsViewModel: TagsViewModel,
     onColorPicker: () -> Unit,
     onBack: () -> Unit,
@@ -54,8 +54,8 @@ fun AddLabelScreen(
     var hexCode by remember { mutableStateOf("") }
     var color: Color by remember { mutableStateOf(Color.Black) }
 
-    val label = uiState.tags.firstOrNull { it.id == labelId }
-    val title = if (labelId.isNull) "Add label" else "Edit label"
+    val tag = uiState.tags.firstOrNull { it.id == tagId }
+    val title = if (tagId.isNull) "Add label" else "Edit label"
 
     LaunchedEffect(Unit) {
         tagsViewModel.getTagColors()

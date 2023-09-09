@@ -2,19 +2,18 @@ package com.san.englishbender.data
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.san.englishbender.data.local.dataSources.RecordsDataSource
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.randomUUID
-import database.Record
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
+import io.realm.kotlin.Realm
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers
@@ -22,19 +21,23 @@ import org.hamcrest.MatcherAssert
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import com.san.englishbender.data.local.models.Record
+import com.san.englishbender.data.local.models.RecordTagRef
+import com.san.englishbender.data.local.models.Tag
+import io.realm.kotlin.ext.realmListOf
 
 
 class RecordsRepositoryTest {
 
     @MockK
-    lateinit var recordsDataSource: RecordsDataSource
+    lateinit var realm: Realm
 
     private lateinit var recordsRepository: RecordsRepository
 
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-        recordsRepository = RecordsRepository(recordsDataSource)
+        recordsRepository = RecordsRepository(realm)
     }
 
     @Test
@@ -46,16 +49,17 @@ class RecordsRepositoryTest {
             creationDate = 0L,
             isDeleted = false,
             isDraft = false,
-            backgroundColor = ""
+            backgroundColor = "",
+            tags = realmListOf()
         )
 
-        every { recordsDataSource.getRecordsFlow() } returns flowOf(listOf(record))
+//        every { recordsDataSource.getRecordsFlow() } returns flowOf(listOf(record))
 
         recordsRepository.getRecordsFlow(false).test {
             assertThat(awaitItem()).isEqualTo(listOf(record.toEntity()))
             cancelAndConsumeRemainingEvents()
 
-            verify { recordsDataSource.getRecordsFlow() }
+            verify { recordsRepository.getRecordsFlow(false) }
         }
     }
 
@@ -68,7 +72,8 @@ class RecordsRepositoryTest {
             creationDate = 0L,
             isDeleted = false,
             isDraft = false,
-            backgroundColor = ""
+            backgroundColor = "",
+            tags = realmListOf()
         )
         coEvery { recordsDataSource.getRecordById("1") } returns record
 

@@ -26,7 +26,6 @@ import com.san.englishbender.core.navigation.DestinationsArgs.RECORD_ID_ARG
 import com.san.englishbender.core.navigation.NavigationCommand
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.core.navigation.Screens
-import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -71,7 +70,6 @@ fun EBNavHost(
         composable(
             route = Destinations.STATS_ROUTE,
         ) {
-            log { "STATS_ROUTE" }
             AppDrawer(
                 drawerState,
                 currentRoute,

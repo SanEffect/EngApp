@@ -1,6 +1,5 @@
 package com.san.englishbender.android.ui.common.widgets
 
-//import androidx.compose.material.icons.filled.HourglassEmpty
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

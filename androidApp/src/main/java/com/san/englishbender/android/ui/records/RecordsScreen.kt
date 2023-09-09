@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
+import com.san.englishbender.android.ui.common.widgets.EmptyView
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
@@ -72,16 +73,17 @@ fun RecordsScreen(
         openDrawer = openDrawer
     )
 
-//    when {
-//        uiState.isLoading -> LoadingView()
-//        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
-//        else -> RecordsContent(
-//            viewModel,
-//            uiState,
-//            onRecordClick = onRecordClick,
-//            openDrawer = openDrawer
-//        )
-//    }
+    when {
+        uiState.isLoading -> LoadingView()
+        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
+        uiState.records.isEmpty() -> EmptyView()
+        else -> RecordsContent(
+            viewModel,
+            uiState,
+            onRecordClick = onRecordClick,
+            openDrawer = openDrawer
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

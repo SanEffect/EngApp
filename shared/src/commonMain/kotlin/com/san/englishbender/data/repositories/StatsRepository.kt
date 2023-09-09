@@ -18,10 +18,10 @@ class StatsRepository(
     private val realm: Realm
 ) : IStatsRepository {
 
-    override fun getAllStats(): Flow<Stats?> = flow  {
+    override fun getAllStats(): Flow<Stats?> = flow {
         realm.query<Stats>().first().asFlow().collect { changes: SingleQueryChange<Stats> ->
             when (changes) {
-                is InitialResults<*> -> emit(changes.obj)
+                is InitialResults<*>,
                 is UpdatedResults<*> -> emit(changes.obj)
                 else -> {}
             }
@@ -29,15 +29,11 @@ class StatsRepository(
     }.flowOn(ioDispatcher)
 
     override suspend fun updateStats(stats: Stats): Unit = doQuery {
-        realm.write {
-            copyToRealm(stats)
-        }
+        realm.write { copyToRealm(stats) }
     }
 
     override suspend fun deleteStats(): Unit = doQuery {
         val stats = realm.query<Stats>().find()
-        realm.write {
-            delete(stats)
-        }
+        realm.write { delete(stats) }
     }
 }

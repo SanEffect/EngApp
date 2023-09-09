@@ -8,6 +8,8 @@ import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.ui.samplesRecords
+import io.mockk.impl.annotations.MockK
+import io.realm.kotlin.Realm
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +41,9 @@ class TestRecordRepository : IRecordsRepository {
     }
 
     // Test dependencies
-    private var localDataSource = RecordsDataSourceTest(samplesRecords.toLocal())
+//    private var localDataSource = RecordsDataSourceTest(samplesRecords.toLocal())
+    @MockK
+    private var realm: Realm
 
     private var testDispatcher = UnconfinedTestDispatcher()
     private var testScope = TestScope(testDispatcher)

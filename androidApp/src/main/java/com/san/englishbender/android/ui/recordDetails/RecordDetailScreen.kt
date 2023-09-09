@@ -59,7 +59,7 @@ import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.EBOutlinedButton
-import com.san.englishbender.android.ui.tags.LabelsNavHost
+import com.san.englishbender.android.ui.tags.TagsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
@@ -142,10 +142,10 @@ fun RecordDetailContent(
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
-    var labelsDialog by remember { mutableStateOf(false) }
-    val selectedLabels = remember(uiState.record) {
-        uiState.record.labels?.let { labelIds ->
-            uiState.labels.filter { labelIds.contains(it.id) }.toMutableStateList()
+    var tagsDialog by remember { mutableStateOf(false) }
+    val selectedTags = remember(uiState.record) {
+        uiState.record.tags?.let { tagIds ->
+            uiState.tags.filter { tagIds.contains(it.id) }.toMutableStateList()
         } ?: mutableStateListOf()
     }
 
@@ -187,7 +187,7 @@ fun RecordDetailContent(
                         modifier = Modifier.padding(end = 8.dp),
                         text = "Save",
                         onClick = {
-                            viewModel.saveRecord(recordData, selectedLabels)
+                            viewModel.saveRecord(recordData, selectedTags)
                         }
                     )
                 }
@@ -222,11 +222,11 @@ fun RecordDetailContent(
 
             // --- Labels
             LabelsRow(
-                selectedLabels = selectedLabels,
+                selectedLabels = selectedTags,
                 onDeleteLabelClick = { labelId ->
-                    selectedLabels.removeIf { it.id == labelId }
+                    selectedTags.removeIf { it.id == labelId }
                 },
-                onMoreLabelsClick = { labelsDialog = true }
+                onMoreLabelsClick = { tagsDialog = true }
             )
 
             // --- Title
@@ -303,14 +303,14 @@ fun RecordDetailContent(
             }
         }
     }
-    if (labelsDialog) {
-        LabelsNavHost(
-            labels = uiState.labels,
-            recordLabels = selectedLabels,
-            dismiss = { labelsDialog = false },
-            onLabelClick = { labels ->
-                selectedLabels.clear()
-                selectedLabels.addAll(labels)
+    if (tagsDialog) {
+        TagsNavHost(
+            tags = uiState.tags,
+            recordTags = selectedTags,
+            dismiss = { tagsDialog = false },
+            onTagClick = { labels ->
+                selectedTags.clear()
+                selectedTags.addAll(labels)
             }
         )
     }
