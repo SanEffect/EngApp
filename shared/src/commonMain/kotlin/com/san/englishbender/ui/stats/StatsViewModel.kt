@@ -1,8 +1,8 @@
 package com.san.englishbender.ui.stats
 
 import com.san.englishbender.core.extensions.WhileUiSubscribed
-import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
+import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.ui.ViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -25,7 +25,7 @@ class StatsViewModel(
         getStatsUseCase()
     ) { recordsCount, stats ->
         StatsUiState(
-            recordsCount = recordsCount,
+            recordsCount = recordsCount ?: 0,
             wordsCount = stats?.wordsCount ?: 0,
             lettersCount = stats?.lettersCount ?: 0
         )

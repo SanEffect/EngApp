@@ -6,15 +6,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 
-class GetRecordWithLabelsUseCase(
-    private val recordsRepository: IRecordsRepository,
-//    private val getLabelsUseCase: GetLabelsUseCase,
-) {
-    operator fun invoke(id: String?): Flow<RecordEntity?> = when (id) {
-        null -> flow { emit(RecordEntity()) }
-        else -> recordsRepository.getRecordWithLabels(id)
-    }
-}
+//class GetRecordWithLabelsUseCase(
+//    private val recordsRepository: IRecordsRepository,
+////    private val getLabelsUseCase: GetLabelsUseCase,
+//) {
+//    operator fun invoke(id: String?): Flow<RecordEntity?> = when (id) {
+//        null -> flow { emit(RecordEntity()) }
+//        else -> recordsRepository.getRecordWithLabels(id)
+//    }
+//}
 
 //class GetRecordWithLabels(
 //    private val recordRepository: IRecordsRepository

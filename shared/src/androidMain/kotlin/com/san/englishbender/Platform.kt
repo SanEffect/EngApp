@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import com.san.englishbender.core.navigation.Navigator
-import com.san.englishbender.data.local.DatabaseDriverFactory
 import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc
@@ -56,7 +55,6 @@ actual fun getSystemTimeInMillis() = System.currentTimeMillis()
 
 actual fun platformModule() = module {
     single { Navigator() }
-    single { DatabaseDriverFactory(get()) }
 }
 
 actual class Strings(

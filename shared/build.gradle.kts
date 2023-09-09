@@ -3,8 +3,7 @@ plugins {
     id("com.android.library")
     id("kotlin-parcelize")
     id("kotlin-kapt")
-    id("com.squareup.sqldelight")
-    id("io.realm.kotlin") version "1.10.0"
+    id("io.realm.kotlin") version "1.11.0"
     id("dev.icerock.mobile.multiplatform-resources")
 }
 
@@ -50,8 +49,6 @@ kotlin {
                 implementation("io.insert-koin:koin-android-compat:$koinAndroidVersion")
                 // Jetpack WorkManager
                 implementation("io.insert-koin:koin-androidx-workmanager:$koinAndroidVersion")
-//                // Navigation Graph
-//                implementation("io.insert-koin:koin-androidx-navigation:$koinAndroidVersion")
 
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -76,14 +73,12 @@ kotlin {
 //                api("com.arkivanov.essenty:parcelable:0.1.3")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
-                // SQLDelight
-                implementation("com.squareup.sqldelight:runtime:1.5.5")
-                implementation("com.squareup.sqldelight:coroutines-extensions:1.5.5")
-
                 // Realm
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2") // Add to use coroutines with the SDK
-                api("io.realm.kotlin:library-base:1.10.0") // Add to only use the local database
-                api("io.realm.kotlin:library-sync:1.10.0") // Add to use Device Sync
+                api("io.realm.kotlin:library-base:1.11.0") // Add to only use the local database
+                api("io.realm.kotlin:library-sync:1.11.0") // Add to use Device Sync
+                compileOnly("io.realm.kotlin:library-base:1.11.0")
+//                implementation("com.github.vicpinm:krealmextensions:2.5.0")
 
                 // Moco
                 api("dev.icerock.moko:resources:0.22.3")
@@ -118,14 +113,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
                 implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:$retrofitCoroutineAdapterVersion")
 
-                // SQLDelight
-                implementation("com.squareup.sqldelight:android-driver:1.5.5")
-
-                // Room
-//                implementation("androidx.room:room-runtime:$roomVersion")
-//                implementation("androidx.room:room-ktx:$roomVersion")
-//                implementation("androidx.room:room-paging:$roomPagingVersion")
-//
 //                configurations.getByName("kapt").dependencies.add(
 //                    org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency(
 //                        "androidx.room",
@@ -174,11 +161,7 @@ kotlin {
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
         val iosMain by creating {
-            dependencies {
-                implementation("com.squareup.sqldelight:native-driver:1.5.5")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:1.3.8")
-
-            }
+            dependencies {}
 
             dependsOn(commonMain)
             iosX64Main.dependsOn(this)
@@ -226,11 +209,9 @@ android {
     }
 }
 
-sqldelight {
-    database("EngAppDatabase") {
-        packageName = "com.san.englishbender.database"
-        sourceFolders = listOf("sqldelight")
-    }
+// Don't cache SNAPSHOT (changing) dependencies.
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
 }
 
 multiplatformResources {

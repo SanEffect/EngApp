@@ -62,7 +62,7 @@ class TestRecordRepository : IRecordsRepository {
 //        recordsFlow.tryEmit(topics)
 //    }
 
-    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> {
+    override suspend fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> {
         TODO("Not yet implemented")
     }
 

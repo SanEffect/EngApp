@@ -24,12 +24,12 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.san.englishbender.android.core.extensions.toColor
-import com.san.englishbender.domain.entities.LabelEntity
+import com.san.englishbender.domain.entities.TagEntity
 
 @Composable
 fun LabelsRow(
     modifier: Modifier = Modifier,
-    selectedLabels: List<LabelEntity>,
+    selectedLabels: List<TagEntity>,
     onDeleteLabelClick: (String) -> Unit,
     onMoreLabelsClick: () -> Unit,
 ) {
@@ -65,7 +65,7 @@ fun LabelsRow(
 @Composable
 fun LabelItem(
     modifier: Modifier = Modifier,
-    label: LabelEntity,
+    label: TagEntity,
     containerColor: Color = Color.White,
     onDeleteClick: (String) -> Unit,
 ) {

@@ -1,7 +1,7 @@
 package com.san.englishbender.data.local.dataStore
 
-import com.san.englishbender.data.local.dataStore.models.AppSettings
-import com.san.englishbender.data.local.dataStore.models.UserSettings
+import com.san.englishbender.data.local.models.AppSettings
+import com.san.englishbender.data.local.models.UserSettings
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 

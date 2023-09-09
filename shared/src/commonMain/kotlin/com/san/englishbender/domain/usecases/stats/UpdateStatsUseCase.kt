@@ -1,8 +1,9 @@
 package com.san.englishbender.domain.usecases.stats
 
+import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IStatsRepository
-import database.Stats
+//import com.san.englishbender.domain.repositories.IStatsRepository
 import kotlinx.coroutines.flow.first
 
 class UpdateStatsUseCase(
@@ -32,7 +33,6 @@ class UpdateStatsUseCase(
             val multiplier = if (isDeletion) -1 else 1
 
             val newStats = Stats(
-                id = 1,
                 recordsCount = it.recordsCount + (recordInc * multiplier),
                 wordsCount = it.wordsCount + (wordsCount * multiplier),
                 lettersCount = it.lettersCount + (lettersCount * multiplier)

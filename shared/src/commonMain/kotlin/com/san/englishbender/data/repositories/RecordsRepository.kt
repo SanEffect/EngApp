@@ -1,32 +1,43 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
-import com.san.englishbender.data.ConcurrentHashMap
-import com.san.englishbender.data.local.dataSources.IRecordsDataSource
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.local.mappers.toLocal
+import com.san.englishbender.data.local.models.Record
+import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
-import com.san.englishbender.getSystemTimeInMillis
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
-import io.github.aakira.napier.log
+import io.realm.kotlin.Realm
+import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.InitialResults
+import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 
 class RecordsRepository constructor(
-    private val recordsDataSource: IRecordsDataSource
+    private val realm: Realm,
 ) : IRecordsRepository {
 
-    private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
+//    private var cachedRecords = ConcurrentHashMap<String, RecordEntity>()
 
-    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> {
+    override fun getRecordsFlow(forceUpdate: Boolean): Flow<List<RecordEntity>> = flow {
+        realm.query<Record>().find().asFlow().collect { changes ->
+            when (changes) {
+                is InitialResults,
+                is UpdatedResults -> emit(changes.list.toList().toEntity())
+                else -> {}
+            }
+        }
 
-        return recordsDataSource.getRecordsFlow().map { it.toEntity() }
+//        return flow { realm.query<Record>().find().toList().map { it.toEntity() } }
+
+//        return recordsDataSource.getRecordsFlow().map { it.toEntity() }
 
 //        if (!forceUpdate && cachedRecords.isNotEmpty()) {
 //            log(tag = "GetRecordsUseCase") { "get from cache" }
@@ -47,25 +58,27 @@ class RecordsRepository constructor(
     override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> =
         withContext(ioDispatcher) {
 
-            if (!forceUpdate) {
-                cachedRecords.let { cachedRecords ->
-                    return@withContext cachedRecords.values.sortedByDescending { it.creationDate }
-                }
-            }
+            return@withContext realm.query<Record>().find().map { it.toEntity() }.toList()
 
-            val newRecords = doQuery { recordsDataSource.getRecords().toEntity() }
-            refreshCache(newRecords)
-
-            return@withContext cachedRecords.values.toList()
+//            if (!forceUpdate) {
+//                cachedRecords.let { cachedRecords ->
+//                    return@withContext cachedRecords.values.sortedByDescending { it.creationDate }
+//                }
+//            }
+//
+//            val newRecords = doQuery { recordsDataSource.getRecords().toEntity() }
+//            refreshCache(newRecords)
+//
+//            return@withContext cachedRecords.values.toList()
         }
 
     override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? =
-        recordsDataSource.getRecordById(id)?.toEntity()
+        realm.query<Record>("id == $0", id).first().find()?.toEntity()
 
-    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
-        recordsDataSource.getRecordWithLabels(id)
-            .map { it?.toEntity() }
-            .flowOn(ioDispatcher)
+//    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
+//        recordsDataSource.getRecordWithLabels(id)
+//            .map { it?.toEntity() }
+//            .flowOn(ioDispatcher)
 
     /*    override suspend fun getRecordById(id: String, forceUpdate: Boolean): Result<RecordEntity?> {
             return withContext(ioDispatcher) {
@@ -86,44 +99,48 @@ class RecordsRepository constructor(
             }
         }*/
 
-    override suspend fun refreshRecords() {
-        TODO("Not yet implemented")
-    }
+    override fun getRecordsCount(): Flow<Long?> = realm.query(Record::class).count().asFlow()
 
-    override fun getRecordsCount(): Flow<Long> =
-        recordsDataSource.getRecordsCount().flowOn(ioDispatcher)
+//    override fun getRecordsCount(): Flow<Long?> = flow {
+//
+//        realm.query(Record::class).count().asFlow().collect { changes: SingleQueryChange<Long> ->
+//            when (changes) {
+//                is InitialResults<*> -> emit(0L)
+////                is UpdatedResults<*> -> {
+////                    val res = changes.obj
+////                    emit(changes.obj)
+////                }
+////                else -> {}
+//            }
+//        }
+//    }.flowOn(ioDispatcher)
+
 
     override suspend fun saveRecord(record: RecordEntity): String {
-        return if (record.id.isEmpty()) {
-            doQuery {
-                record.id = randomUUID()
-                record.creationDate = getSystemTimeInMillis()
-                recordsDataSource.insertRecord(record.toLocal())
-            }
-            cacheRecord(record)
-            record.id
-        } else {
-            doQuery { recordsDataSource.updateRecord(record.toLocal()) }
-            cacheRecord(record)
-            record.id
+        realm.write {
+            record.id = randomUUID()
+            copyToRealm(record.toLocal())
         }
+        return record.id
+//        return if (record.id.isEmpty()) {
+//            doQuery {
+//                record.id = randomUUID()
+//                record.creationDate = getSystemTimeInMillis()
+//                recordsDataSource.insertRecord(record.toLocal())
+//            }
+//            cacheRecord(record)
+//            record.id
+//        } else {
+//            doQuery { recordsDataSource.updateRecord(record.toLocal()) }
+//            cacheRecord(record)
+//            record.id
+//        }
     }
-
-    override fun getRecordFlowById(id: String): Flow<RecordEntity?> =
-        recordsDataSource.getRecordFlowById(id)
-            .map { it?.toEntity() }
-            .flowOn(ioDispatcher)
 
     override suspend fun removeRecord(recordId: String): Unit = doQuery {
-        recordsDataSource.deleteRecordById(recordId)
-        cachedRecords.remove(recordId)
+        val record = realm.query<Record>("id == $0", recordId).first()
+        realm.write { delete(record) }
     }
-
-//    override suspend fun removeRecords(): Result<Unit> {
-//        return performIfSuccess(doQuery(ioDispatcher) { recordDao.clear() }) {
-//            cachedRecords.entries.clear()
-//        }
-//    }
 
 //    override suspend fun deleteRecords(recordIds: List<String>): Result<Unit> {
 //
@@ -135,16 +152,16 @@ class RecordsRepository constructor(
 //        return result
 //    }
 
-    private fun refreshCache(records: List<RecordEntity>) {
-        cachedRecords.apply {
-            clear()
-            records
-                .sortedBy { it.creationDate }
-                .forEach {
-                    put(it.id, it)
-                }
-        }
-    }
+//    private fun refreshCache(records: List<RecordEntity>) {
+//        cachedRecords.apply {
+//            clear()
+//            records
+//                .sortedBy { it.creationDate }
+//                .forEach {
+//                    put(it.id, it)
+//                }
+//        }
+//    }
 
     /*    private suspend fun <Type> cacheAndPerform(
             record: RecordDto,
@@ -162,17 +179,80 @@ class RecordsRepository constructor(
 //        perform(cachedRecord)
 //    }
 
-    private fun cacheRecord(record: RecordEntity): RecordEntity {
-        val cachedRecord = RecordEntity(
-            record.title,
-            record.description,
-            record.id,
-            record.isDeleted,
-            record.isDraft,
-            record.creationDate,
-            record.backgroundColor
-        )
-        cachedRecords.put(cachedRecord.id, cachedRecord)
-        return cachedRecord
-    }
+//    private fun cacheRecord(record: RecordEntity): RecordEntity {
+//        val cachedRecord = RecordEntity(
+//            record.title,
+//            record.description,
+//            record.id,
+//            record.isDeleted,
+//            record.isDraft,
+//            record.creationDate,
+//            record.backgroundColor
+//        )
+//        cachedRecords.put(cachedRecord.id, cachedRecord)
+//        return cachedRecord
+//    }
+
+//    override val randomTagId = listOf(
+//        "3c95bf1c-bf1e-4109-9f68-fc3ec4efb667",
+//        "fd970f1c-0208-4d72-8d08-c9a35a247dc5",
+//        "a3a7ff98-ca46-4362-b2d8-306277ca7dd1",
+//        "f0dfe494-d9d9-4c65-97b2-e8bb38feaed1",
+//        "b70d231e-cab1-44af-86b6-4614fe99635e",
+//        "f57046ce-410e-4851-b944-479be3b22c54",
+//    )
+//
+//    override suspend fun insertRecordsTest() = withContext(ioDispatcher) {
+//
+//        val refs = mutableListOf<String>()
+//        val recTags = realmListOf<RecordLabelCrossRef>()
+//
+//        repeat(1000) { i ->
+//            val recId = randomUUID()
+//            val record = Record(
+//                id = recId,
+//                title = "Rec $i",
+//                description = "Desc",
+//                creationDate = 0L,
+//                isDraft = false,
+//                isDeleted = false,
+//                backgroundColor = "",
+//            )
+//            recordsDataSource.insertRecord(record)
+//
+//            val randomCount = (0..randomTagId.size).random()
+//            refs.clear()
+//            recTags.clear()
+//
+//            repeat(randomCount) {
+//                val tId = randomTagId.random()
+//                if (!refs.contains(tId)) refs.add(tId)
+//            }
+//            refs.forEach {
+//                val ref = RecordLabelCrossRef(
+//                    recordId = recId,
+//                    labelId = it
+//                )
+//                recordLabelRepository.saveRecordLabel(ref)
+//            }
+//        }
+//    }
+//
+//    override suspend fun readRecordsTest(): List<Record> = withContext(ioDispatcher) {
+//        val records = recordsDataSource.getRecords()
+//        records.forEach {
+//            log(tag = "showAllRecords") { "record: $it" }
+//        }
+//        log(tag = "showAllRecords") { "----------------------" }
+//        return@withContext records
+//    }
+//
+//    override suspend fun getRecordsByTagIdTest(id: String): List<Record> = withContext(ioDispatcher) {
+//        val records = recordsDataSource.getRecordsByTagId(id)
+//        records.forEach {
+//            log(tag = "showAllRecords") { "record: $it" }
+//        }
+//        log(tag = "showAllRecords") { "----------------------" }
+//        return@withContext records
+//    }
 }

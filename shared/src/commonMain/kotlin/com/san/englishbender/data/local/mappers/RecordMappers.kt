@@ -1,8 +1,8 @@
 package com.san.englishbender.data.local.mappers
 
+import com.san.englishbender.data.local.models.Record
 import com.san.englishbender.domain.entities.RecordEntity
-import database.Record
-import database.SelectRecordWithLabels
+import io.realm.kotlin.ext.realmListOf
 
 fun Record.toEntity() : RecordEntity =
     RecordEntity(
@@ -23,23 +23,9 @@ fun RecordEntity.toLocal() : Record =
         creationDate = creationDate,
         isDeleted = isDeleted,
         isDraft = isDraft,
-        backgroundColor = backgroundColor
+        backgroundColor = backgroundColor,
+        tags = realmListOf()
     )
 
 fun List<Record>.toEntity() = this.map { it.toEntity() }
 fun List<RecordEntity>.toLocal() = this.map { it.toLocal() }
-
-fun SelectRecordWithLabels.toEntity() : RecordEntity =
-    RecordEntity(
-        id = id,
-        title = title,
-        description = description,
-        creationDate = creationDate,
-        isDeleted = isDeleted,
-        isDraft = isDraft,
-        backgroundColor = backgroundColor,
-        labels = when (labelIds.isNotEmpty()) {
-            true -> labelIds.split(",")
-            false -> emptyList()
-        }
-    )

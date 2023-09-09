@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.san.englishbender.android.ui.MainActivityUiState.Loading
 import com.san.englishbender.android.ui.MainActivityUiState.Success
-import com.san.englishbender.data.local.dataStore.models.UserSettings
+import com.san.englishbender.data.local.models.UserSettings
 import com.san.englishbender.domain.repositories.IUserDataRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

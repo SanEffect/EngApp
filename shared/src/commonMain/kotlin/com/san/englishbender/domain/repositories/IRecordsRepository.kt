@@ -13,10 +13,10 @@ interface IRecordsRepository {
 
     suspend fun saveRecord(record: RecordEntity): String
 
-    fun getRecordFlowById(id: String): Flow<RecordEntity?>
+//    fun getRecordFlowById(id: String): Flow<RecordEntity?>
     suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity?
 
-    fun getRecordWithLabels(id: String): Flow<RecordEntity?>
+//    fun getRecordWithLabels(id: String): Flow<RecordEntity?>
 
     suspend fun removeRecord(recordId: String)
 
@@ -24,7 +24,7 @@ interface IRecordsRepository {
 
 //    suspend fun deleteRecords(recordIds: List<String>)
 
-    suspend fun refreshRecords()
+//    suspend fun refreshRecords()
 
-    fun getRecordsCount(): Flow<Long>
+    fun getRecordsCount(): Flow<Long?>
 }

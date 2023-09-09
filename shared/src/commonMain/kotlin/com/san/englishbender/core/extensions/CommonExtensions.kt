@@ -1,6 +1,8 @@
 package com.san.englishbender.core.extensions
 
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
+import com.san.englishbender.getSystemTimeInMillis
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -58,6 +60,16 @@ fun truncateDescription(str: String) : String {
     val result = dropped.joinToString(" ")
 
     return if(result.length > maxLength) truncateDescription(result) else result
+}
+
+inline fun measureTimeMillis(operationName: String, block: () -> Unit): Long {
+    val start = getSystemTimeInMillis()
+    block()
+    val timeInMillis = getSystemTimeInMillis() - start
+    log(tag = "measureTimeMillis") {"---------------------------------" }
+    log(tag = "measureTimeMillis") {"$operationName operation took $timeInMillis ms" }
+    log(tag = "measureTimeMillis") {"---------------------------------" }
+    return timeInMillis
 }
 
 //fun truncateText(inputText: String, maxLength: Int): String {

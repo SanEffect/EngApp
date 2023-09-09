@@ -65,16 +65,23 @@ fun RecordsScreen(
     val viewModel: RecordsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    when {
-        uiState.isLoading -> LoadingView()
-        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
-        else -> RecordsContent(
-            viewModel,
-            uiState,
-            onRecordClick = onRecordClick,
-            openDrawer = openDrawer
-        )
-    }
+    RecordsContent(
+        viewModel,
+        uiState,
+        onRecordClick = onRecordClick,
+        openDrawer = openDrawer
+    )
+
+//    when {
+//        uiState.isLoading -> LoadingView()
+//        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
+//        else -> RecordsContent(
+//            viewModel,
+//            uiState,
+//            onRecordClick = onRecordClick,
+//            openDrawer = openDrawer
+//        )
+//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

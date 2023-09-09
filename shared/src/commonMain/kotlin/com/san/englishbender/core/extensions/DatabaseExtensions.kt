@@ -2,6 +2,7 @@ package com.san.englishbender.core.extensions
 
 import com.san.englishbender.data.Result
 import com.san.englishbender.ioDispatcher
+import io.github.aakira.napier.log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -13,6 +14,7 @@ suspend fun <T> doQuery(
     try {
         action.invoke()
     } catch (e: Exception) {
+        log(tag = "ExceptionHandling") { "doQuery exception: $e" }
         throw Exception(e)
     }
 }

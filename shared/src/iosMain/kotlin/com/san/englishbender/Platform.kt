@@ -1,7 +1,6 @@
 package com.san.englishbender
 
 import com.san.englishbender.core.navigation.Navigator
-import com.san.englishbender.data.local.DatabaseDriverFactory
 import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.desc.Resource
 import dev.icerock.moko.resources.desc.StringDesc

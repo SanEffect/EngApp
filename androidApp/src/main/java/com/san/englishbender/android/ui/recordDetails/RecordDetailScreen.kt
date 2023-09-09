@@ -59,7 +59,7 @@ import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.EBOutlinedButton
-import com.san.englishbender.android.ui.labels.LabelsNavHost
+import com.san.englishbender.android.ui.tags.LabelsNavHost
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
@@ -67,7 +67,6 @@ import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.extensions.isNull
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
 import java.util.Date
@@ -84,7 +83,9 @@ fun RecordDetailScreen(
     LaunchedEffect(viewModel) {
         when (recordId.isNull) {
             true -> viewModel.resetUiState()
-            false -> viewModel.getRecord(recordId)
+            false -> {
+                //viewModel.getRecord(recordId)
+            }
         }
     }
 

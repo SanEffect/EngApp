@@ -1,5 +1,6 @@
 package com.san.englishbender.ui.recordDetail
 
+//import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
@@ -15,40 +16,32 @@ import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.getResultFlow
 import com.san.englishbender.data.ifFailure
 import com.san.englishbender.data.ifSuccess
-import com.san.englishbender.domain.entities.LabelEntity
+import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.entities.isNotEqual
-import com.san.englishbender.domain.usecases.labels.GetLabelsFlowUseCase
-import com.san.englishbender.domain.usecases.recordLabels.DeleteByRecordLabelIdUseCase
-import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
-import com.san.englishbender.domain.usecases.records.GetRecordWithLabelsUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
-import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.ui.ViewModel
-import database.RecordLabelCrossRef
 import dev.icerock.moko.resources.StringResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DetailUiState(
     val saveInProgress: Boolean = false,
     val record: RecordEntity = RecordEntity(),
-    val labels: List<LabelEntity> = emptyList(),
+    val labels: List<TagEntity> = emptyList(),
     val userMessage: Event<StringResource?> = Event(null)
 )
 
 class RecordDetailViewModel constructor(
-    private val getRecordWithLabelsUseCase: GetRecordWithLabelsUseCase,
+//    private val getRecordWithLabelsUseCase: GetRecordWithLabelsUseCase,
     private val saveRecordUseCase: SaveRecordUseCase,
-    private val updateStatsUseCase: UpdateStatsUseCase,
-    private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
-    private val saveRecordLabelUseCase: SaveRecordLabelUseCase,
-    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase,
+//    private val updateStatsUseCase: UpdateStatsUseCase,
+//    private val getLabelsFlowUseCase: GetLabelsFlowUseCase,
+//    private val saveRecordLabelUseCase: SaveRecordLabelUseCase,
+//    private val deleteByRecordLabelIdUseCase: DeleteByRecordLabelIdUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -59,26 +52,26 @@ class RecordDetailViewModel constructor(
     private var prevRecordState: RecordEntity? = null
     val randomGreeting = AppConstants.GREETINGS.random()
 
-    fun getRecord(recordId: String?) {
-        combine(
-            getRecordWithLabelsUseCase(recordId),
-            getLabelsFlowUseCase()
-        ) { recordEntity, labels ->
-            _uiState.update { state ->
-                recordEntity?.let { record ->
-                    prevRecordState = record.copy()
-                    state.copy(
-                        record = record,
-                        labels = labels
-                    )
-                } ?: state.copy(labels = labels)
-            }
-        }.launchIn(viewModelScope)
-    }
+//    fun getRecord(recordId: String?) {
+//        combine(
+//            getRecordWithLabelsUseCase(recordId),
+//            getLabelsFlowUseCase()
+//        ) { recordEntity, labels ->
+//            _uiState.update { state ->
+//                recordEntity?.let { record ->
+//                    prevRecordState = record.copy()
+//                    state.copy(
+//                        record = record,
+//                        labels = labels
+//                    )
+//                } ?: state.copy(labels = labels)
+//            }
+//        }.launchIn(viewModelScope)
+//    }
 
     fun saveRecord(
         currRecordState: RecordEntity,
-        selectedLabels: List<LabelEntity>
+        selectedLabels: List<TagEntity>
     ) = safeLaunch {
         if (currRecordState.title.trim().isEmpty()) {
             showUserMessage(SharedRes.strings.empty_title_message)
@@ -95,18 +88,18 @@ class RecordDetailViewModel constructor(
                 showUserMessage(SharedRes.strings.save_record_error)
             }
             .ifSuccess { recordId ->
-                launch {
-                    updateRecordLabels(
-                        recordId = recordId,
-                        selectedLabels = selectedLabels
-                    )
-                }
-                launch {
-                    updateStatsUseCase(
-                        prevRecordState = prevRecordState,
-                        currRecordState = currRecordState
-                    )
-                }
+//                launch {
+//                    updateRecordLabels(
+//                        recordId = recordId,
+//                        selectedLabels = selectedLabels
+//                    )
+//                }
+//                launch {
+//                    updateStatsUseCase(
+//                        prevRecordState = prevRecordState,
+//                        currRecordState = currRecordState
+//                    )
+//                }
                 saveInProgress = false
                 navigator.popBackStack()
             }
@@ -114,21 +107,21 @@ class RecordDetailViewModel constructor(
 
     private fun updateRecordLabels(
         recordId: String,
-        selectedLabels: List<LabelEntity>
+        selectedLabels: List<TagEntity>
     ) = safeLaunch {
         val initialLabels = _uiState.value.labels
         val deletedLabels = initialLabels.subtract(selectedLabels.toSet()).toList()
         val addedLabels = selectedLabels.subtract(initialLabels.toSet()).toList()
 
-        deletedLabels.forEach { label ->
-            deleteByRecordLabelIdUseCase(recordId, label.id)
-        }
+//        deletedLabels.forEach { label ->
+//            deleteByRecordLabelIdUseCase(recordId, label.id)
+//        }
 
-        addedLabels.forEach { label ->
-            saveRecordLabelUseCase(
-                RecordLabelCrossRef(recordId = recordId, labelId = label.id)
-            )
-        }
+//        addedLabels.forEach { label ->
+//            saveRecordLabelUseCase(
+//                RecordLabelCrossRef(recordId = recordId, labelId = label.id)
+//            )
+//        }
     }
 
     fun resetUiState() = safeLaunch {

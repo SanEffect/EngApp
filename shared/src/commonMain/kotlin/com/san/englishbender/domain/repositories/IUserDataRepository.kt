@@ -1,6 +1,6 @@
 package com.san.englishbender.domain.repositories
 
-import com.san.englishbender.data.local.dataStore.models.UserSettings
+import com.san.englishbender.data.local.models.UserSettings
 import kotlinx.coroutines.flow.Flow
 
 interface IUserDataRepository {
