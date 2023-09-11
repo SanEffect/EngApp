@@ -1,5 +1,6 @@
 package com.san.englishbender.data
 
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -74,7 +75,10 @@ suspend fun <T> Flow<Result<T>>.ifSuccess(block: (T) -> Unit) {
 
 fun <T> Flow<Result<T>>.ifFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
     return this.map {
-        if (it is Result.Failure) block(it.exception)
+        if (it is Result.Failure) {
+            log(tag = "ifFailureException") { "ifFailure exception: ${it.exception}" }
+            block(it.exception)
+        }
         it
     }
 }

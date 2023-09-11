@@ -3,13 +3,15 @@ package com.san.englishbender.android.core.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
+import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
-import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -25,22 +27,17 @@ class DatabaseWorker(
 
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
         try {
-            prePopulateStats()
-            prePopulateLabels()
-            prePopulateLabelColors()
-
+            try {
+                prePopulateStats()
+                prePopulateTags()
+                prePopulateTagColors()
+            } catch (e: Exception) {
+                log(tag = "PrepopulateException") { "Prepopulate Exception: $e" }
+            }
             Result.success()
         } catch (e: Exception) {
             Result.failure()
         }
-    }
-
-    private fun prePopulateLabelColors() {
-        val userSettings = dataStore.getUserSettings()
-        userSettings.tagColors = realmListOf(
-            "#FF000000", "#FFFFFFFF", "#FF2196F3", "#FF4CAF50", "#FFFFC107"
-        )
-        dataStore.saveUserSettings(userSettings)
     }
 
     private suspend fun prePopulateStats() {
@@ -55,38 +52,28 @@ class DatabaseWorker(
         }
     }
 
-    private suspend fun prePopulateLabels() {
+    private suspend fun prePopulateTags() {
         val tags = listOf(
             Tag(
                 id = randomUUID(),
                 name = "Ideas",
-                color = "#FF2196F3"
+                color = ColorsPreset.yellow.toString()
             ),
             Tag(
                 id = randomUUID(),
                 name = "Thoughts",
-                color = "#FF4CAF50"
+                color = ColorsPreset.green.toString()
             ),
             Tag(
                 id = randomUUID(),
                 name = "Feelings",
-                color = "#FFFFC107"
+                color = ColorsPreset.lightBlue.toString()
             ),
             Tag(
                 id = randomUUID(),
-                name = "Work",
-                color = "#FFFFC107"
-            ),
-            Tag(
-                id = randomUUID(),
-                name = "Design",
-                color = "#FFFFC107"
-            ),
-            Tag(
-                id = randomUUID(),
-                name = "Games",
-                color = "#FFFFC107"
-            ),
+                name = "Creative",
+                color = ColorsPreset.deepOrange.toString()
+            )
         )
 
         tags.forEach {
@@ -100,5 +87,11 @@ class DatabaseWorker(
                 )
             }
         }
+    }
+
+    private fun prePopulateTagColors() {
+        val userSettings = dataStore.getUserSettings()
+        userSettings.tagColors = ColorsPreset.values.map { it.toString() }.toRealmList()
+        dataStore.saveUserSettings(userSettings)
     }
 }

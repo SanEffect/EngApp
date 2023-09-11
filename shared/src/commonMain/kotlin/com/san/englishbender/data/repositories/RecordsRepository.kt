@@ -4,19 +4,26 @@ import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.Record
+import com.san.englishbender.data.local.models.RecordTagRef
 import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
 import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.ext.asFlow
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.ext.toRealmList
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 
@@ -31,9 +38,11 @@ class RecordsRepository constructor(
             when (changes) {
                 is InitialResults,
                 is UpdatedResults -> emit(changes.list.toList().toEntity())
+
                 else -> {}
             }
         }
+
 
 //        return flow { realm.query<Record>().find().toList().map { it.toEntity() } }
 
@@ -55,6 +64,17 @@ class RecordsRepository constructor(
 //        }
     }
 
+    override fun getRecordFlow(id: String): Flow<RecordEntity> = flow {
+        realm.query<Record>("id == $0", id).first().asFlow()
+            .collect { changes: SingleQueryChange<Record> ->
+                when (changes) {
+                    is InitialResults<*>,
+                    is UpdatedResults<*> -> changes.obj?.toEntity()?.let { emit(it) }
+                    else -> {}
+                }
+            }
+    }
+
     override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> =
         withContext(ioDispatcher) {
 
@@ -74,6 +94,10 @@ class RecordsRepository constructor(
 
     override suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity? =
         realm.query<Record>("id == $0", id).first().find()?.toEntity()
+
+    override fun getRecordWithTags(id: String): RecordEntity {
+        TODO("Not yet implemented")
+    }
 
 //    override fun getRecordWithLabels(id: String): Flow<RecordEntity?> =
 //        recordsDataSource.getRecordWithLabels(id)
@@ -117,11 +141,41 @@ class RecordsRepository constructor(
 
 
     override suspend fun saveRecord(record: RecordEntity): String {
-        realm.write {
-            record.id = randomUUID()
-            copyToRealm(record.toLocal())
+//        realm.write {
+//            record.id = randomUUID()
+//            copyToRealm(record.toLocal())
+//        }
+//        return record.id
+
+        return when (record.id.isEmpty()) {
+            true -> {
+                val uuid = randomUUID()
+                realm.write {
+                    record.id = uuid
+                    copyToRealm(record.toLocal())
+                }
+                uuid
+            }
+            false -> {
+                realm.write {
+                    this.copyToRealm(record.toLocal(), updatePolicy = UpdatePolicy.ALL)
+
+//                    realm.query<Record>("id == $0", record.id).first().find()?.let { rec ->
+//                        rec.title = record.title
+//                        rec.description = record.description
+//                        rec.creationDate = record.creationDate
+//                        rec.isDraft = record.isDraft
+//                        rec.isDeleted = record.isDeleted
+//                        rec.backgroundColor = record.backgroundColor
+////                        rec.tags = record.tags?.map {
+////                            RecordTagRef(recordId = record.id, tagId = it)
+////                        }?.toRealmList() ?: realmListOf()
+//                    }
+                }
+                record.id
+            }
         }
-        return record.id
+
 //        return if (record.id.isEmpty()) {
 //            doQuery {
 //                record.id = randomUUID()

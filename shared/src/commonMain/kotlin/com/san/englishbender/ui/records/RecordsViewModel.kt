@@ -6,10 +6,13 @@ import com.san.englishbender.data.getResultFlow
 import com.san.englishbender.data.ifFailure
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.domain.repositories.IRecordTagRefRepository
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
 import com.san.englishbender.ui.ViewModel
 import dev.icerock.moko.resources.StringResource
+import io.github.aakira.napier.log
+import io.realm.kotlin.Realm
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -24,6 +27,7 @@ data class RecordsUiState(
 )
 
 class RecordsViewModel constructor(
+    private val recordTagRefRepository: IRecordTagRefRepository,
     private val getRecordsUseCase: GetRecordsUseCase,
     private val removeRecordUseCase: RemoveRecordUseCase
 ) : ViewModel() {
@@ -37,6 +41,14 @@ class RecordsViewModel constructor(
                 started = WhileUiSubscribed,
                 initialValue = RecordsUiState(isLoading = true)
             )
+
+    fun showAllRecordTagRef() = safeLaunch {
+        val refs = recordTagRefRepository.getAllRecordTagRef()
+        refs.forEach {
+            log(tag = "showAllRecordTagRef") { "recId:tagId: ${it.recordId}:${it.tagId}" }
+        }
+        log(tag = "showAllRecordTagRef") { "--------------------------" }
+    }
 
 //    fun saveRecords() = safeLaunch {
 //        repeat(200) { i ->

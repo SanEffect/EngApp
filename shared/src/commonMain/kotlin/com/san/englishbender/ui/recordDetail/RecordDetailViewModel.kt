@@ -1,6 +1,5 @@
 package com.san.englishbender.ui.recordDetail
 
-//import com.san.englishbender.domain.usecases.recordLabels.SaveRecordLabelUseCase
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
@@ -16,12 +15,11 @@ import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.getResultFlow
 import com.san.englishbender.data.ifFailure
 import com.san.englishbender.data.ifSuccess
-import com.san.englishbender.data.local.models.RecordTagRef
-import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.entities.RecordEntity
+import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.entities.isNotEqual
 import com.san.englishbender.domain.usecases.recordTags.DeleteByRecordTagIdUseCase
-import com.san.englishbender.domain.usecases.recordTags.SaveRecordTagRefUseCase
+import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
@@ -30,6 +28,8 @@ import dev.icerock.moko.resources.StringResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -41,11 +41,10 @@ data class DetailUiState(
 )
 
 class RecordDetailViewModel constructor(
-//    private val getRecordWithLabelsUseCase: GetRecordWithLabelsUseCase,
+    private val getRecordFlowUseCase: GetRecordFlowUseCase,
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
     private val getTagsFlowUseCase: GetTagsFlowUseCase,
-    private val saveRecordTagRefUseCase: SaveRecordTagRefUseCase,
     private val deleteByRecordTagIdUseCase: DeleteByRecordTagIdUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
@@ -57,26 +56,28 @@ class RecordDetailViewModel constructor(
     private var prevRecordState: RecordEntity? = null
     val randomGreeting = AppConstants.GREETINGS.random()
 
-//    fun getRecord(recordId: String?) {
-//        combine(
-//            getRecordWithLabelsUseCase(recordId),
-//            getLabelsFlowUseCase()
-//        ) { recordEntity, labels ->
-//            _uiState.update { state ->
-//                recordEntity?.let { record ->
-//                    prevRecordState = record.copy()
-//                    state.copy(
-//                        record = record,
-//                        labels = labels
-//                    )
-//                } ?: state.copy(labels = labels)
-//            }
-//        }.launchIn(viewModelScope)
-//    }
+    fun getRecord(recordId: String?) {
+        val recId = recordId ?: return
+
+        combine(
+            getRecordFlowUseCase(recId),
+            getTagsFlowUseCase()
+        ) { recordEntity, tags ->
+            _uiState.update { state ->
+                recordEntity?.let { record ->
+                    prevRecordState = record.copy()
+                    state.copy(
+                        record = record,
+                        tags = tags
+                    )
+                } ?: state.copy(tags = tags)
+            }
+        }.launchIn(viewModelScope)
+    }
 
     fun saveRecord(
         currRecordState: RecordEntity,
-        selectedLabels: List<TagEntity>
+        selectedTags: List<TagEntity>
     ) = safeLaunch {
         if (currRecordState.title.trim().isEmpty()) {
             showUserMessage(SharedRes.strings.empty_title_message)
@@ -87,6 +88,12 @@ class RecordDetailViewModel constructor(
         saveInProgress = true
         currRecordState.isDraft = false
 
+        // Add only new tags
+        _uiState.value.tags.let { initialTags ->
+            val newTags = selectedTags.subtract(initialTags.toSet()).map { it.id }
+            currRecordState.tags = newTags
+        }
+
         getResultFlow { saveRecordUseCase(currRecordState) }
             .ifFailure {
                 saveInProgress = false
@@ -96,7 +103,7 @@ class RecordDetailViewModel constructor(
                 launch {
                     updateRecordTags(
                         recordId = recordId,
-                        selectedLabels = selectedLabels
+                        selectedTags = selectedTags
                     )
                 }
                 launch {
@@ -112,23 +119,14 @@ class RecordDetailViewModel constructor(
 
     private fun updateRecordTags(
         recordId: String,
-        selectedLabels: List<TagEntity>
+        selectedTags: List<TagEntity>
     ) = safeLaunch {
-        val initialTags = _uiState.value.tags
-        val deletedTags = initialTags.subtract(selectedLabels.toSet()).toList()
-        val addedTags = selectedLabels.subtract(initialTags.toSet()).toList()
-
-        deletedTags.forEach { tag ->
-            deleteByRecordTagIdUseCase(recordId, tag.id)
-        }
-
-        addedTags.forEach { tag ->
-            saveRecordTagRefUseCase(
-                RecordTagRef().apply {
-                    this.recordId = recordId
-                    tagId = tag.id
-                }
-            )
+        // Delete tags if necessary
+        _uiState.value.tags.let { initialTags ->
+            val deletedTags = initialTags.subtract(selectedTags.toSet()).toList()
+            deletedTags.forEach { tag ->
+                deleteByRecordTagIdUseCase(recordId, tag.id)
+            }
         }
     }
 

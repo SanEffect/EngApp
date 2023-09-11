@@ -10,6 +10,10 @@ class RecordTagRefRepository(
     private val realm: Realm
 ) : IRecordTagRefRepository {
 
+    override suspend fun getAllRecordTagRef(): List<RecordTagRef> = doQuery {
+        realm.query(RecordTagRef::class).find()
+    }
+
     override suspend fun saveRecordTagRef(recordTagRef: RecordTagRef): Unit =
         doQuery {
             realm.write { copyToRealm(recordTagRef) }

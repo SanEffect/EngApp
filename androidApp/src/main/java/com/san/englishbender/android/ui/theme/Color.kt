@@ -59,12 +59,75 @@ val darkReplyBlueColors = darkColorScheme(
     surface = Color.White
 )
 
+object ColorsPreset {
 
+    val coral: Color = Color(0xFFF29131)
+    val deepOrange: Color = Color(0xFFFF5722)
+    val red: Color = Color(0xFFF44336)
+    val pink: Color = Color(0xFFE91E63)
+    val purple: Color = Color(0xFF9C27B0)
+    val deepPurple: Color = Color(0xFF673AB7)
+    val indigo: Color = Color(0xFF3F51B5)
+    val blue: Color = Color(0xFF2196F3)
+    val lightBlue: Color = Color(0xFF03A9F4)
+    val cyan: Color = Color(0xFF00BCD4)
+    val teal: Color = Color(0xFF009688)
+    val green: Color = Color(0xFF4CAF50)
+    val lightGreen: Color = Color(0xFF8BC34A)
+    val lime: Color = Color(0xFFCDDC39)
+    val yellow: Color = Color(0xFFFFEF35)
+    val amber: Color = Color(0xFFFFC107)
+    val brown: Color = Color(0xFF795548)
+    val gray: Color = Color(0xFF9E9E9E)
+    val white: Color = Color(0xFFFFFFFF)
+    val black: Color = Color(0xFF000000)
 
+    val values = arrayListOf(
+        coral,
+        deepOrange,
+        red,
+        pink,
+        purple,
+        deepPurple,
+        indigo,
+        blue,
+        lightBlue,
+        cyan,
+        teal,
+        green,
+        lightGreen,
+        lime,
+        yellow,
+        amber,
+        brown,
+        gray,
+        white,
+        black,
+    )
 
-
-
-
+//    val values = arrayListOf(
+//        Color(0xFF000000),
+//        Color(0xFFFFFFFF),
+//        Color(0xFFF5F5F5),
+//        Color(0xFFDAE8FC),
+//        Color(0xFFD5E8D4),
+//        Color(0xFFFFE6CC),
+//        Color(0xFFFFF2CC),
+//        Color(0xFFF8CECC),
+//        Color(0xFFE1D5E7),
+//        Color(0xFF03A9F4),
+//        Color(0xFF2196F3),
+//        Color(0xFF8BC34A),
+//        Color(0xFF4CAF50),
+//        Color(0xFF009688),
+//        Color(0xFFFFEB3B),
+//        Color(0xFFFFC107),
+//        Color(0xFFF44336),
+//        Color(0xFFE91E63),
+//        Color(0xFF9C27B0),
+//        Color(0xFF673AB7),
+//    )
+}
 
 
 val BottomSheetContainerColor = Color(0xFFF2F2F2)

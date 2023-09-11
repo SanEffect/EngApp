@@ -83,9 +83,7 @@ fun RecordDetailScreen(
     LaunchedEffect(viewModel) {
         when (recordId.isNull) {
             true -> viewModel.resetUiState()
-            false -> {
-                //viewModel.getRecord(recordId)
-            }
+            false -> viewModel.getRecord(recordId)
         }
     }
 

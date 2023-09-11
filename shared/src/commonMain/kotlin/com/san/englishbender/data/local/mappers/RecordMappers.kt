@@ -1,10 +1,12 @@
 package com.san.englishbender.data.local.mappers
 
 import com.san.englishbender.data.local.models.Record
+import com.san.englishbender.data.local.models.RecordTagRef
 import com.san.englishbender.domain.entities.RecordEntity
 import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.ext.toRealmList
 
-fun Record.toEntity() : RecordEntity =
+fun Record.toEntity(): RecordEntity =
     RecordEntity(
         id = id,
         title = title,
@@ -12,10 +14,11 @@ fun Record.toEntity() : RecordEntity =
         creationDate = creationDate,
         isDeleted = isDeleted,
         isDraft = isDraft,
-        backgroundColor = backgroundColor
+        backgroundColor = backgroundColor,
+        tags = tags.map { it.tagId }
     )
 
-fun RecordEntity.toLocal() : Record =
+fun RecordEntity.toLocal(): Record =
     Record(
         id = id,
         title = title,
@@ -24,7 +27,9 @@ fun RecordEntity.toLocal() : Record =
         isDeleted = isDeleted,
         isDraft = isDraft,
         backgroundColor = backgroundColor,
-        tags = realmListOf()
+        tags = tags?.map {
+            RecordTagRef(recordId = id, tagId = it)
+        }?.toRealmList() ?: realmListOf()
     )
 
 fun List<Record>.toEntity() = this.map { it.toEntity() }

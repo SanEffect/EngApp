@@ -5,6 +5,7 @@ import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
 import com.san.englishbender.domain.usecases.tags.SaveTagUseCase
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,7 +52,9 @@ class TagsViewModel(
 //        )
 
     fun getTags() = safeLaunch {
+        log(tag = "showAllRecordTagRef") { "getTags" }
         getTagsFlowUseCase().collect { tags ->
+            log(tag = "showAllRecordTagRef") { "tags: $tags" }
             _uiState.update {
                 it.copy(
                     tags = tags,

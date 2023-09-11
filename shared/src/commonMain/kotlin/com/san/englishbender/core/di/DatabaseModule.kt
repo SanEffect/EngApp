@@ -5,6 +5,7 @@ import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Record
 import com.san.englishbender.data.local.models.RecordTagRef
+import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.data.local.models.UserSettings
 import com.san.englishbender.data.repositories.RecordTagRefRepository
@@ -26,6 +27,7 @@ private val dataStoreModels = setOf(
     Record::class,
     Tag::class,
     RecordTagRef::class,
+    Stats::class,
 )
 
 val databaseModule = module {

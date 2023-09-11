@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +67,10 @@ fun RecordsScreen(
     val viewModel: RecordsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.showAllRecordTagRef()
+    }
+
     RecordsContent(
         viewModel,
         uiState,
@@ -73,17 +78,17 @@ fun RecordsScreen(
         openDrawer = openDrawer
     )
 
-    when {
-        uiState.isLoading -> LoadingView()
-        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
-        uiState.records.isEmpty() -> EmptyView()
-        else -> RecordsContent(
-            viewModel,
-            uiState,
-            onRecordClick = onRecordClick,
-            openDrawer = openDrawer
-        )
-    }
+//    when {
+//        uiState.isLoading -> LoadingView()
+//        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
+//        uiState.records.isEmpty() -> EmptyView()
+//        else -> RecordsContent(
+//            viewModel,
+//            uiState,
+//            onRecordClick = onRecordClick,
+//            openDrawer = openDrawer
+//        )
+//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

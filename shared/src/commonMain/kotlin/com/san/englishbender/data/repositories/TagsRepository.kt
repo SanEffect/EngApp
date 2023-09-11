@@ -6,6 +6,7 @@ import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.repositories.ITagsRepository
 import com.san.englishbender.ioDispatcher
+import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
@@ -19,10 +20,15 @@ class TagsRepository(
 ) : ITagsRepository {
 
     override fun getAllTagsFlow(): Flow<List<TagEntity>> = flow {
+        log(tag = "showAllRecordTagRef") { "getAllTagsFlow" }
         realm.query(Tag::class).asFlow().collect { changes ->
+            log(tag = "showAllRecordTagRef") { "changes: $changes" }
             when (changes) {
                 is InitialResults,
-                is UpdatedResults -> emit(changes.list.toList().toEntity())
+                is UpdatedResults -> {
+                    log(tag = "showAllRecordTagRef") { "list: ${changes.list.toList()}" }
+                    emit(changes.list.toList().toEntity())
+                }
                 else -> {}
             }
         }
