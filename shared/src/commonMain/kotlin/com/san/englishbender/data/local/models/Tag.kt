@@ -1,5 +1,7 @@
 package com.san.englishbender.data.local.models
 
+import io.realm.kotlin.ext.backlinks
+import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
@@ -9,7 +11,7 @@ open class Tag : RealmObject {
     var name: String = ""
     var color: String = ""
 
-//    val record: RealmResults<RecordObj> by backlinks(RecordObj::tags)
+    val records: RealmResults<Record> by backlinks(Record::tags)
 
     constructor(id: String, name: String, color: String) {
         this.id = id

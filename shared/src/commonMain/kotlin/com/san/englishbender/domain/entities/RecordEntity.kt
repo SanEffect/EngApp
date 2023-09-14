@@ -12,7 +12,8 @@ data class RecordEntity(
     var isDraft: Boolean = false,
     var creationDate: Long = 0,
     var backgroundColor: String = "",
-    var tags: List<String>? = null
+//    var tags: List<String>? = null
+    var tags: List<TagEntity>? = null
 ) : CommonParcelable
 
 fun RecordEntity.isNotEqual(other: RecordEntity): Boolean {

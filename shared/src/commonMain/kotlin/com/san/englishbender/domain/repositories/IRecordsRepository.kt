@@ -10,7 +10,7 @@ interface IRecordsRepository {
 
     suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity>
 
-    suspend fun saveRecord(record: RecordEntity): String
+    suspend fun saveRecord(record: RecordEntity)
 
     suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity?
 

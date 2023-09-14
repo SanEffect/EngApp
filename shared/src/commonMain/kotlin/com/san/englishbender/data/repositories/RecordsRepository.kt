@@ -4,26 +4,23 @@ import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.Record
-import com.san.englishbender.data.local.models.RecordTagRef
-import com.san.englishbender.data.local.models.Stats
+import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
+import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
-import io.realm.kotlin.ext.asFlow
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.ext.realmListOf
-import io.realm.kotlin.ext.toRealmList
+import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 
@@ -62,18 +59,24 @@ class RecordsRepository constructor(
 //            refreshCache(recordEntities)
 //            recordEntities
 //        }
-    }
+    }.flowOn(ioDispatcher)
 
     override fun getRecordFlow(id: String): Flow<RecordEntity> = flow {
         realm.query<Record>("id == $0", id).first().asFlow()
             .collect { changes: SingleQueryChange<Record> ->
                 when (changes) {
-                    is InitialResults<*>,
-                    is UpdatedResults<*> -> changes.obj?.toEntity()?.let { emit(it) }
+                    is InitialObject<*>,
+                    is UpdatedObject<*> -> {
+
+                        changes.obj?.toEntity()?.let {
+                            log(tag = "selectedTags") { "it: $it" }
+                            emit(it) }
+                    }
+
                     else -> {}
                 }
             }
-    }
+    }.flowOn(ioDispatcher)
 
     override suspend fun getRecords(forceUpdate: Boolean): List<RecordEntity> =
         withContext(ioDispatcher) {
@@ -123,7 +126,8 @@ class RecordsRepository constructor(
             }
         }*/
 
-    override fun getRecordsCount(): Flow<Long?> = realm.query(Record::class).count().asFlow()
+    override fun getRecordsCount(): Flow<Long?> =
+        realm.query(Record::class).count().asFlow().flowOn(ioDispatcher)
 
 //    override fun getRecordsCount(): Flow<Long?> = flow {
 //
@@ -139,56 +143,42 @@ class RecordsRepository constructor(
 //        }
 //    }.flowOn(ioDispatcher)
 
+    override suspend fun saveRecord(record: RecordEntity) {
+        try {
 
-    override suspend fun saveRecord(record: RecordEntity): String {
-//        realm.write {
-//            record.id = randomUUID()
-//            copyToRealm(record.toLocal())
-//        }
-//        return record.id
-
-        return when (record.id.isEmpty()) {
-            true -> {
-                val uuid = randomUUID()
-                realm.write {
-                    record.id = uuid
-                    copyToRealm(record.toLocal())
-                }
-                uuid
+            if (record.id.isEmpty()) {
+                log(tag = "selectedTags") { "saveRecord record isEmpty" }
+                record.id = randomUUID()
             }
-            false -> {
-                realm.write {
-                    this.copyToRealm(record.toLocal(), updatePolicy = UpdatePolicy.ALL)
 
-//                    realm.query<Record>("id == $0", record.id).first().find()?.let { rec ->
-//                        rec.title = record.title
-//                        rec.description = record.description
-//                        rec.creationDate = record.creationDate
-//                        rec.isDraft = record.isDraft
-//                        rec.isDeleted = record.isDeleted
-//                        rec.backgroundColor = record.backgroundColor
-////                        rec.tags = record.tags?.map {
-////                            RecordTagRef(recordId = record.id, tagId = it)
-////                        }?.toRealmList() ?: realmListOf()
-//                    }
-                }
-                record.id
-            }
-        }
-
-//        return if (record.id.isEmpty()) {
-//            doQuery {
-//                record.id = randomUUID()
-//                record.creationDate = getSystemTimeInMillis()
-//                recordsDataSource.insertRecord(record.toLocal())
+//            record.tags?.forEach { tag ->
+//                log(tag = "selectedTags") { "record tag: $tag" }
 //            }
-//            cacheRecord(record)
-//            record.id
-//        } else {
-//            doQuery { recordsDataSource.updateRecord(record.toLocal()) }
-//            cacheRecord(record)
-//            record.id
-//        }
+//            log(tag = "selectedTags") { "-----------------------" }
+//
+//            val local = record.toLocal()
+//            log(tag = "selectedTags") { "saveRecord local: $local" }
+//
+//            val tags = realm.query<Tag>().find()
+//            val tag = tags.find { it.id == record.tags?.firstOrNull()?.id }
+//            log(tag = "selectedTags") { "saveRecord tag: $tag" }
+//
+//            if (tag != null) {
+//                log(tag = "selectedTags") { "saveRecord add: $tag" }
+//                local.tags.clear()
+//                local.tags.add(tag)
+//            }
+
+
+
+            realm.write {
+                log(tag = "selectedTags") { "write" }
+                this.copyToRealm(record.toLocal(), UpdatePolicy.ALL)
+            }
+
+        } catch (e: Exception) {
+            log(tag = "selectedTags") { "saveRecord e: $e" }
+        }
     }
 
     override suspend fun removeRecord(recordId: String): Unit = doQuery {

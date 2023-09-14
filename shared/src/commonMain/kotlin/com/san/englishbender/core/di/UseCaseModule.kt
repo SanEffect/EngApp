@@ -1,9 +1,5 @@
 package com.san.englishbender.core.di
 
-import com.san.englishbender.domain.usecases.recordTags.DeleteByRecordTagIdUseCase
-import com.san.englishbender.domain.usecases.recordTags.DeleteRecordTagRefByRecordIdUseCase
-import com.san.englishbender.domain.usecases.recordTags.DeleteRecordTagRefByTagIdUseCase
-import com.san.englishbender.domain.usecases.recordTags.SaveRecordTagRefUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
@@ -24,12 +20,6 @@ val useCaseModule = module {
     single { SaveRecordUseCase(get()) }
     single { RemoveRecordUseCase(get(), get()) }
     single { GetRecordsCountUseCase(get()) }
-
-    // --- RecordTagRef
-    single { SaveRecordTagRefUseCase(get()) }
-    single { DeleteByRecordTagIdUseCase(get()) }
-    single { DeleteRecordTagRefByTagIdUseCase(get()) }
-    single { DeleteRecordTagRefByRecordIdUseCase(get()) }
 
     // --- Stats
     single { GetStatsUseCase(get()) }

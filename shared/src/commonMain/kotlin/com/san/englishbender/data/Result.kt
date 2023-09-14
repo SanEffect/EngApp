@@ -67,7 +67,7 @@ suspend fun <T> getResultFlow(action: suspend () -> T): Flow<Result<T>> = flow {
     }
 }
 
-suspend fun <T> Flow<Result<T>>.ifSuccess(block: (T) -> Unit) {
+suspend fun <T> Flow<Result<T>>.ifSuccess(block: suspend (T) -> Unit) {
     this.collect {
         if (it is Result.Success) block(it.data)
     }

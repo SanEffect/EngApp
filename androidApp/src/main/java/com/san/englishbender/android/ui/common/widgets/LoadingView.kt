@@ -12,7 +12,7 @@ import com.san.englishbender.android.ui.common.ProgressIndicator
 import com.san.englishbender.android.ui.theme.EnglishBenderTheme
 
 @Composable
-fun LoadingView(modifier: Modifier = Modifier, delayMillis: Long = 100L) {
+fun LoadingView(modifier: Modifier = Modifier, delayMillis: Long = 0L) {
     Delayed(delayMillis = delayMillis) {
         Box(
             contentAlignment = Alignment.Center,

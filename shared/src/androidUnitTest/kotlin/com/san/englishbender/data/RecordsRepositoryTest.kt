@@ -22,8 +22,6 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import com.san.englishbender.data.local.models.Record
-import com.san.englishbender.data.local.models.RecordTagRef
-import com.san.englishbender.data.local.models.Tag
 import io.realm.kotlin.ext.realmListOf
 
 

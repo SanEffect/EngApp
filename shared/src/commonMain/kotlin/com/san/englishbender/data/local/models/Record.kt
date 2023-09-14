@@ -14,7 +14,7 @@ class Record : RealmObject {
     var isDeleted: Boolean = false
     var creationDate: Long = 0
     var backgroundColor: String = ""
-    var tags: RealmList<RecordTagRef> = realmListOf()
+    var tags: RealmList<Tag> = realmListOf()
 
     constructor(
         id: String,
@@ -24,7 +24,7 @@ class Record : RealmObject {
         isDeleted: Boolean = false,
         creationDate: Long = 0,
         backgroundColor: String = "",
-        tags: RealmList<RecordTagRef>
+        tags: RealmList<Tag>
     ) {
         this.id = id
         this.title = title

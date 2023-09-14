@@ -3,6 +3,7 @@ package com.san.englishbender.android.core.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.models.Stats
@@ -57,22 +58,22 @@ class DatabaseWorker(
             Tag(
                 id = randomUUID(),
                 name = "Ideas",
-                color = ColorsPreset.yellow.toString()
+                color = ColorsPreset.yellow.toHex()
             ),
             Tag(
                 id = randomUUID(),
                 name = "Thoughts",
-                color = ColorsPreset.green.toString()
+                color = ColorsPreset.green.toHex()
             ),
             Tag(
                 id = randomUUID(),
                 name = "Feelings",
-                color = ColorsPreset.lightBlue.toString()
+                color = ColorsPreset.lightBlue.toHex()
             ),
             Tag(
                 id = randomUUID(),
                 name = "Creative",
-                color = ColorsPreset.deepOrange.toString()
+                color = ColorsPreset.deepOrange.toHex()
             )
         )
 

@@ -18,18 +18,19 @@ import com.san.englishbender.data.ifSuccess
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.entities.isNotEqual
-import com.san.englishbender.domain.usecases.recordTags.DeleteByRecordTagIdUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
 import com.san.englishbender.ui.ViewModel
 import dev.icerock.moko.resources.StringResource
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -45,7 +46,6 @@ class RecordDetailViewModel constructor(
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
     private val getTagsFlowUseCase: GetTagsFlowUseCase,
-    private val deleteByRecordTagIdUseCase: DeleteByRecordTagIdUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -54,7 +54,6 @@ class RecordDetailViewModel constructor(
 
     private var saveInProgress = false
     private var prevRecordState: RecordEntity? = null
-    val randomGreeting = AppConstants.GREETINGS.random()
 
     fun getRecord(recordId: String?) {
         val recId = recordId ?: return
@@ -87,48 +86,35 @@ class RecordDetailViewModel constructor(
 
         saveInProgress = true
         currRecordState.isDraft = false
-
-        // Add only new tags
-        _uiState.value.tags.let { initialTags ->
-            val newTags = selectedTags.subtract(initialTags.toSet()).map { it.id }
-            currRecordState.tags = newTags
-        }
+        currRecordState.tags = selectedTags
 
         getResultFlow { saveRecordUseCase(currRecordState) }
             .ifFailure {
                 saveInProgress = false
                 showUserMessage(SharedRes.strings.save_record_error)
             }
-            .ifSuccess { recordId ->
-                launch {
-                    updateRecordTags(
-                        recordId = recordId,
-                        selectedTags = selectedTags
-                    )
-                }
-                launch {
-                    updateStatsUseCase(
-                        prevRecordState = prevRecordState,
-                        currRecordState = currRecordState
-                    )
-                }
+            .ifSuccess {
+                updateStatsUseCase(
+                    prevRecordState = prevRecordState,
+                    currRecordState = currRecordState
+                )
                 saveInProgress = false
                 navigator.popBackStack()
             }
     }
 
-    private fun updateRecordTags(
-        recordId: String,
-        selectedTags: List<TagEntity>
-    ) = safeLaunch {
-        // Delete tags if necessary
-        _uiState.value.tags.let { initialTags ->
-            val deletedTags = initialTags.subtract(selectedTags.toSet()).toList()
-            deletedTags.forEach { tag ->
-                deleteByRecordTagIdUseCase(recordId, tag.id)
-            }
-        }
-    }
+//    private fun updateRecordTags(
+//        recordId: String,
+//        selectedTags: List<TagEntity>
+//    ) = safeLaunch {
+//        // Delete tags if necessary
+//        _uiState.value.tags.let { initialTags ->
+//            val deletedTags = initialTags.subtract(selectedTags.toSet()).toList()
+//            deletedTags.forEach { tag ->
+//                deleteByRecordTagIdUseCase(recordId, tag.id)
+//            }
+//        }
+//    }
 
     fun resetUiState() = safeLaunch {
         _uiState.update {

@@ -27,11 +27,11 @@ import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.domain.entities.TagEntity
 
 @Composable
-fun LabelsRow(
+fun TagsRow(
     modifier: Modifier = Modifier,
-    selectedLabels: List<TagEntity>,
-    onDeleteLabelClick: (String) -> Unit,
-    onMoreLabelsClick: () -> Unit,
+    selectedTags: List<TagEntity>,
+    onDeleteTagClick: (String) -> Unit,
+    onMoreTagsClick: () -> Unit,
 ) {
     LazyRow(
         modifier = modifier
@@ -49,23 +49,23 @@ fun LabelsRow(
             Icon(
                 rememberVectorPainter(Icons.Outlined.NewLabel),
                 contentDescription = null,
-                modifier = Modifier.clickable { onMoreLabelsClick() }
+                modifier = Modifier.clickable { onMoreTagsClick() }
             )
         }
-        items(selectedLabels, key = { it.id }) { label ->
-            LabelItem(
-                label = label,
-                containerColor = label.color.toColor,
-                onDeleteClick = { labelId -> onDeleteLabelClick(labelId) }
+        items(selectedTags, key = { it.id }) { tag ->
+            TagItem(
+                tag = tag,
+                containerColor = tag.color.toColor,
+                onDeleteClick = { tagId -> onDeleteTagClick(tagId) }
             )
         }
     }
 }
 
 @Composable
-fun LabelItem(
+fun TagItem(
     modifier: Modifier = Modifier,
-    label: TagEntity,
+    tag: TagEntity,
     containerColor: Color = Color.White,
     onDeleteClick: (String) -> Unit,
 ) {
@@ -79,16 +79,16 @@ fun LabelItem(
     ) {
         Text(
             modifier = Modifier.padding(start = 4.dp),
-            text = label.name,
+            text = tag.name,
             fontSize = 12.sp
         )
         Icon(
             modifier = Modifier
                 .padding(start = 6.dp)
                 .size(18.dp)
-                .clickable { onDeleteClick(label.id) },
+                .clickable { onDeleteClick(tag.id) },
             imageVector = Icons.Filled.Close,
-            contentDescription = "Delete label"
+            contentDescription = "Delete tag"
         )
     }
 }

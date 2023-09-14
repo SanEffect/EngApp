@@ -7,6 +7,6 @@ import com.san.englishbender.domain.repositories.IRecordsRepository
 class SaveRecordUseCase constructor(
     private val recordsRepository: IRecordsRepository
 ) {
-    suspend operator fun invoke(record: RecordEntity): String =
+    suspend operator fun invoke(record: RecordEntity) =
         recordsRepository.saveRecord(record)
 }

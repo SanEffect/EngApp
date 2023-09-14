@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,12 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
-import com.san.englishbender.android.ui.common.widgets.EmptyView
-import com.san.englishbender.android.ui.common.widgets.ErrorView
-import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
-import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.core.utils.DateConverters.convertLongToDate
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.ui.records.RecordsUiState
@@ -66,10 +62,6 @@ fun RecordsScreen(
 
     val viewModel: RecordsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.showAllRecordTagRef()
-    }
 
     RecordsContent(
         viewModel,
@@ -156,11 +148,19 @@ fun RecordsContent(
             }
         }
     ) { paddingValues ->
+
+
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            item {
+                Button(onClick = { viewModel.showData() }) {
+                    Text("Show Data")
+                }
+            }
             items(items = uiState.records, key = { it.id }) { record ->
                 RecordItem(record, viewModel, onRecordClick)
             }
         }
+
     }
 }
 

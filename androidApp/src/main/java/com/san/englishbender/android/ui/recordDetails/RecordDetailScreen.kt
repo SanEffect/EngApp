@@ -37,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -50,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -59,14 +61,18 @@ import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.EBOutlinedButton
-import com.san.englishbender.android.ui.tags.TagsNavHost
+import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
+import com.san.englishbender.android.ui.tags.TagsNavHost
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
+import com.san.englishbender.core.AppConstants
+import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.core.extensions.isNull
 import com.san.englishbender.ui.recordDetail.DetailUiState
 import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
+import io.github.aakira.napier.log
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
 import java.util.Date
@@ -80,11 +86,8 @@ fun RecordDetailScreen(
     val viewModel: RecordDetailViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel) {
-        when (recordId.isNull) {
-            true -> viewModel.resetUiState()
-            false -> viewModel.getRecord(recordId)
-        }
+    LaunchedEffect(recordId) {
+        if (recordId.isNotNull) viewModel.getRecord(recordId)
     }
 
     RecordDetailContent(
@@ -93,11 +96,9 @@ fun RecordDetailScreen(
         onBackClick,
     )
 
-//        DisposableEffect(LocalLifecycleOwner.current) {
-//
-//            Timber.tag("recordDesc").d("clear")
-//            onDispose { viewModel.clear() }
-//        }
+    DisposableEffect(LocalLifecycleOwner.current) {
+        onDispose { viewModel.resetUiState() }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,8 +109,10 @@ fun RecordDetailContent(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+//    val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val bottomSheetState = rememberModalBottomSheetState()
+    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(uiState.userMessage) {
         uiState.userMessage.getContentIfNotHandled()?.let {
@@ -117,42 +120,28 @@ fun RecordDetailContent(
         }
     }
 
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
 //    var originalText by rememberSaveable(viewState) { mutableStateOf(viewState.originalText) }
 //    val translatedText by rememberSaveable(viewState) { mutableStateOf(viewState.translatedText) }
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
 //    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
-    val recordData by remember(uiState.record) { mutableStateOf(uiState.record) }
+    val record by remember(uiState.record) { mutableStateOf(uiState.record) }
 
-//    log(tag = "resetUiState") { "recordData: $recordData" }
-
-    val randomGreeting = viewModel.randomGreeting
-    var title by rememberSaveable(recordData.title) { mutableStateOf(recordData.title) }
-    var description by rememberSaveable(recordData.description) { mutableStateOf(recordData.description) }
+    val randomGreeting = remember(record) { AppConstants.GREETINGS.random() }
+    var title by rememberSaveable(record) { mutableStateOf(record.title) }
+    var description by rememberSaveable(record) { mutableStateOf(record.description) }
 
     var containerColor by remember {
         mutableStateOf(
-            if (recordData.backgroundColor.isEmpty()) Color.White
-            else recordData.backgroundColor.toColor
+            if (record.backgroundColor.isEmpty()) Color.White
+            else record.backgroundColor.toColor
         )
     }
     var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
     var tagsDialog by remember { mutableStateOf(false) }
-    val selectedTags = remember(uiState.record) {
-        uiState.record.tags?.let { tagIds ->
-            uiState.tags.filter { tagIds.contains(it.id) }.toMutableStateList()
-        } ?: mutableStateListOf()
+    val selectedTags = remember(record) {
+        record.tags?.toMutableStateList() ?: mutableStateListOf()
     }
-
-
-//    val formattedString = getAnnotatedString(description, russianWordList)
-//    var textFieldValueState by remember {
-//        mutableStateOf(TextFieldValue(annotatedString = formattedString))
-//    }
-//    val textFieldValue = textFieldValueState.copy(annotatedString = formattedString)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -165,7 +154,7 @@ fun RecordDetailContent(
                 ),
                 title = {
                     Text(
-                        if (recordData.title.isEmpty()) "New Record" else "Record Details",
+                        if (record.title.isEmpty()) "New Record" else "Record Details",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
 //                        style = JetRortyTypography.h2
@@ -185,7 +174,7 @@ fun RecordDetailContent(
                         modifier = Modifier.padding(end = 8.dp),
                         text = "Save",
                         onClick = {
-                            viewModel.saveRecord(recordData, selectedTags)
+                            viewModel.saveRecord(record, selectedTags)
                         }
                     )
                 }
@@ -197,7 +186,8 @@ fun RecordDetailContent(
                 navItemClicked = { navItem ->
                     bottomNavItem = navItem
                     openBottomSheet = true
-                })
+                }
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -207,7 +197,7 @@ fun RecordDetailContent(
                 .fillMaxWidth()
                 .padding(paddingValues)
         ) {
-            if (recordData.isDraft) {
+            if (record.isDraft) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -218,13 +208,13 @@ fun RecordDetailContent(
                 }
             }
 
-            // --- Labels
-            LabelsRow(
-                selectedLabels = selectedTags,
-                onDeleteLabelClick = { labelId ->
-                    selectedTags.removeIf { it.id == labelId }
+            // --- Tags
+            TagsRow(
+                selectedTags = selectedTags,
+                onDeleteTagClick = { tagId ->
+                    selectedTags.removeIf { it.id == tagId }
                 },
-                onMoreLabelsClick = { tagsDialog = true }
+                onMoreTagsClick = { tagsDialog = true }
             )
 
             // --- Title
@@ -233,7 +223,7 @@ fun RecordDetailContent(
                 label = { Text("Title") },
                 onValueChange = {
                     title = it
-                    recordData.title = it
+                    record.title = it
                 },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -264,7 +254,7 @@ fun RecordDetailContent(
                     ),
                     onValueChange = {
                         description = it
-                        recordData.description = it
+                        record.description = it
                     },
                     label = { Text(randomGreeting) },
                     modifier = Modifier
@@ -292,7 +282,7 @@ fun RecordDetailContent(
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             containerColor = color
-                            recordData.backgroundColor = color.toHex()
+                            record.backgroundColor = color.toHex()
                         }
                     )
 
