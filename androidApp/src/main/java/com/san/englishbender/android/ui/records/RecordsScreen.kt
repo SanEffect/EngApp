@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,8 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
+import com.san.englishbender.android.ui.common.widgets.EmptyView
+import com.san.englishbender.android.ui.common.widgets.ErrorView
+import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
+import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.core.utils.DateConverters.convertLongToDate
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.ui.records.RecordsUiState
@@ -57,30 +60,23 @@ fun RecordsScreen(
     onRecordClick: (String?) -> Unit,
     openDrawer: () -> Unit
 ) {
-//    val appContext: Context = remember { GlobalContext.get().get() }
 //    val lifecycleOwner = LocalLifecycleOwner.current
+//    val appContext: Context = remember { GlobalContext.get().get() }
 
     val viewModel: RecordsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    RecordsContent(
-        viewModel,
-        uiState,
-        onRecordClick = onRecordClick,
-        openDrawer = openDrawer
-    )
-
-//    when {
-//        uiState.isLoading -> LoadingView()
-//        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
-//        uiState.records.isEmpty() -> EmptyView()
-//        else -> RecordsContent(
-//            viewModel,
-//            uiState,
-//            onRecordClick = onRecordClick,
-//            openDrawer = openDrawer
-//        )
-//    }
+    when {
+        uiState.isLoading -> LoadingView()
+        uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
+        uiState.records.isEmpty() -> EmptyView()
+        else -> RecordsContent(
+            viewModel,
+            uiState,
+            onRecordClick = onRecordClick,
+            openDrawer = openDrawer
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,19 +144,11 @@ fun RecordsContent(
             }
         }
     ) { paddingValues ->
-
-
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
-            item {
-                Button(onClick = { viewModel.showData() }) {
-                    Text("Show Data")
-                }
-            }
             items(items = uiState.records, key = { it.id }) { record ->
                 RecordItem(record, viewModel, onRecordClick)
             }
         }
-
     }
 }
 
@@ -248,9 +236,7 @@ fun DeleteRecordDialog(
                     backgroundColor = Color.Transparent,
                     contentColor = Color.Red
                 )
-            ) {
-                Text("Yes")
-            }
+            ) { Text("Yes") }
         },
         dismissButton = {
             TextButton(
@@ -259,9 +245,7 @@ fun DeleteRecordDialog(
                     backgroundColor = Color.Transparent,
                     contentColor = Color.White
                 )
-            ) {
-                Text("Cancel")
-            }
+            ) { Text("Cancel") }
         },
         backgroundColor = Color.White
     )

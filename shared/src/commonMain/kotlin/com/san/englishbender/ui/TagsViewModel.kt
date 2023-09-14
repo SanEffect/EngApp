@@ -52,9 +52,7 @@ class TagsViewModel(
 //        )
 
     fun getTags() = safeLaunch {
-        log(tag = "showAllRecordTagRef") { "getTags" }
         getTagsFlowUseCase().collect { tags ->
-            log(tag = "showAllRecordTagRef") { "tags: $tags" }
             _uiState.update {
                 it.copy(
                     tags = tags,

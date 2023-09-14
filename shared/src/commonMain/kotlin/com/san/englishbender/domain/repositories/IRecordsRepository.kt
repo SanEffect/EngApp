@@ -14,12 +14,9 @@ interface IRecordsRepository {
 
     suspend fun getRecordById(id: String, forceUpdate: Boolean): RecordEntity?
 
-    fun getRecordWithTags(id: String): RecordEntity
-
     suspend fun removeRecord(recordId: String)
 
 //    suspend fun removeRecords()
-
 //    suspend fun deleteRecords(recordIds: List<String>)
 
     fun getRecordsCount(): Flow<Long?>

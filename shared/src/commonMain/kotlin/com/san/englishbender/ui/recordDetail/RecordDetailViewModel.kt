@@ -90,31 +90,21 @@ class RecordDetailViewModel constructor(
 
         getResultFlow { saveRecordUseCase(currRecordState) }
             .ifFailure {
+                log(tag = "saveDraft") { "ifFailure" }
                 saveInProgress = false
                 showUserMessage(SharedRes.strings.save_record_error)
             }
             .ifSuccess {
+                log(tag = "saveDraft") { "ifSuccess" }
                 updateStatsUseCase(
                     prevRecordState = prevRecordState,
                     currRecordState = currRecordState
                 )
                 saveInProgress = false
+                prevRecordState = currRecordState
                 navigator.popBackStack()
             }
     }
-
-//    private fun updateRecordTags(
-//        recordId: String,
-//        selectedTags: List<TagEntity>
-//    ) = safeLaunch {
-//        // Delete tags if necessary
-//        _uiState.value.tags.let { initialTags ->
-//            val deletedTags = initialTags.subtract(selectedTags.toSet()).toList()
-//            deletedTags.forEach { tag ->
-//                deleteByRecordTagIdUseCase(recordId, tag.id)
-//            }
-//        }
-//    }
 
     fun resetUiState() = safeLaunch {
         _uiState.update {
@@ -128,16 +118,26 @@ class RecordDetailViewModel constructor(
         }
     }
 
-    fun saveDraft(record: RecordEntity) = safeLaunch {
-        val title = record.title.trim()
-        val description = record.description.trim()
+    fun saveDraft(currRecordState: RecordEntity) = safeLaunch {
+
+        log(tag = "saveDraft") { "currRecordState: $currRecordState" }
+        log(tag = "saveDraft") { "prevRecordState: $prevRecordState" }
+
+        val title = currRecordState.title.trim()
+        val description = currRecordState.description.trim()
 
         if (title.isEmpty() && description.isEmpty()) return@safeLaunch
 
         prevRecordState?.let {
-            if (record.isNotEqual(it)) {
-                record.isDraft = true
-                saveRecordUseCase(record)
+            val isEqual = currRecordState.isNotEqual(it)
+            log(tag = "saveDraft") { "isEqual: $isEqual" }
+        }
+
+        prevRecordState?.let {
+            if (currRecordState.isNotEqual(it)) {
+                log(tag = "saveDraft") { "isNotEqual" }
+                currRecordState.isDraft = true
+                saveRecordUseCase(currRecordState)
             }
         }
     }
@@ -150,7 +150,6 @@ class RecordDetailViewModel constructor(
         val token = ""
 
         try {
-
             val openAI = OpenAI(OpenAIConfig(token, LogLevel.None))
 
             //Timber.tag("openAI").d("> Getting available engines...")
@@ -214,61 +213,4 @@ class RecordDetailViewModel constructor(
 //    private var translateToggled = false
 //    private var translatedText = ""
 //    private var originalText = ""
-//
-//    private fun getRussianWords(text: String): List<String> {
-//        if (text.isEmpty()) return arrayListOf()
-//
-//        val words = text.split(" ")
-//        return words.filter { langDetector.detectLanguageOf(it) == Language.RUSSIAN }
-//    }
-//
-//    val description = MutableStateFlow("")
-
-//    @FlowPreview
-//    @ExperimentalCoroutinesApi
-//    val russianWordList = description
-//        .debounce(1000)
-//        .distinctUntilChanged()
-//        .flatMapLatest { text ->
-//            flow { emit(getRussianWords(text)) }
-//        }
-
-
-    /*    private fun highlightRussianWords(text: String): AnnotatedString {
-            val russianWords = getRussianWords(text)
-
-            return buildAnnotatedString {
-                append(text)
-
-                russianWords.forEach { word ->
-                    val startIndex = text.indexOf(word)
-                    val endIndex = startIndex + word.length
-
-                    addStyle(
-                        style = SpanStyle(
-                            background = Color(0xfffcfcb1),
-                            color = Color(0xff64B5F6),
-                            fontSize = 16.sp
-                        ),
-                        start = startIndex,
-                        end = endIndex
-                    )
-                }
-
-                // Add bold style to keywords that has to be bold
-    //            boldIndexes.forEach {
-    //                addStyle(
-    //                    style = SpanStyle(
-    //                        background = Color(0xfffcfcb1),
-    //                        fontWeight = FontWeight.Bold,
-    //                        color = Color(0xff64B5F6),
-    //                        fontSize = 15.sp
-    //
-    //                    ),
-    //                    start = it.first,
-    //                    end = it.second
-    //                )
-    //            }
-            }
-        }*/
 }

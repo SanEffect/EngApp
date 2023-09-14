@@ -5,6 +5,7 @@ import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.domain.repositories.IStatsRepository
 import com.san.englishbender.ioDispatcher
 import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.SingleQueryChange
@@ -29,7 +30,7 @@ class StatsRepository(
     }.flowOn(ioDispatcher)
 
     override suspend fun updateStats(stats: Stats): Unit = doQuery {
-        realm.write { copyToRealm(stats) }
+        realm.write { copyToRealm(stats, UpdatePolicy.ALL) }
     }
 
     override suspend fun deleteStats(): Unit = doQuery {

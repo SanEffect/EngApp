@@ -34,7 +34,7 @@ kotlin {
         val retrofitVersion = "2.9.0"
         val okHttpVersion = "4.11.0"
         val moshiVersion = "1.13.0"
-        val lifecycleViewModelVersion = "2.6.1"
+        val lifecycleViewModelVersion = "2.6.2"
         val koinCoreVersion = "3.4.2"
         val koinAndroidVersion = "3.4.2"
         val koinComposeVersion = "3.4.5"
@@ -89,6 +89,8 @@ kotlin {
 
                 // Napier
                 api("io.github.aakira:napier:2.6.1")
+
+//                implementation("org.gradle:gradle-tooling-api:7.4.2")
             }
         }
         val commonTest by getting {
@@ -100,13 +102,13 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                implementation("androidx.core:core-ktx:1.10.1")
+                implementation("androidx.core:core-ktx:1.12.0")
                 implementation("com.google.android.material:material:1.9.0")
 
                 // ViewModel & LiveData
                 implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion")
-                implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
-                implementation("androidx.activity:activity-compose:1.8.0-alpha07")
+//                implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
+                implementation("androidx.activity:activity-compose:1.8.0-beta01")
 
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")

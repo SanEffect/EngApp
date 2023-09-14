@@ -28,9 +28,9 @@ class UpdateStatsUseCase(
             }
 
             val recordInc = 1
+            val multiplier = if (isDeletion) -1 else 1
             val wordsCount = getDiff(prevWordsCount, getWordsCountOfStrings(title, description))
             val lettersCount = getDiff(prevLettersCount, getLettersOfStrings(title, description))
-            val multiplier = if (isDeletion) -1 else 1
 
             val newStats = Stats(
                 recordsCount = it.recordsCount + (recordInc * multiplier),

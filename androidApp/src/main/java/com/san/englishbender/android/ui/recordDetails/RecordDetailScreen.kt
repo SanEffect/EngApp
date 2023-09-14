@@ -97,7 +97,10 @@ fun RecordDetailScreen(
     )
 
     DisposableEffect(LocalLifecycleOwner.current) {
-        onDispose { viewModel.resetUiState() }
+        onDispose {
+            viewModel.saveDraft(uiState.record)
+            viewModel.resetUiState()
+        }
     }
 }
 
@@ -123,13 +126,12 @@ fun RecordDetailContent(
 //    var originalText by rememberSaveable(viewState) { mutableStateOf(viewState.originalText) }
 //    val translatedText by rememberSaveable(viewState) { mutableStateOf(viewState.translatedText) }
 //    val showTranslatedText by rememberSaveable(viewState) { mutableStateOf(viewState.showTranslatedText) }
-//    val russianWordList by viewModel.russianWordList.collectAsState(listOf())
 
     val record by remember(uiState.record) { mutableStateOf(uiState.record) }
 
-    val randomGreeting = remember(record) { AppConstants.GREETINGS.random() }
     var title by rememberSaveable(record) { mutableStateOf(record.title) }
     var description by rememberSaveable(record) { mutableStateOf(record.description) }
+    val randomGreeting = remember(record) { AppConstants.GREETINGS.random() }
 
     var containerColor by remember {
         mutableStateOf(
@@ -296,9 +298,9 @@ fun RecordDetailContent(
             tags = uiState.tags,
             recordTags = selectedTags,
             dismiss = { tagsDialog = false },
-            onTagClick = { labels ->
+            onTagClick = { tags ->
                 selectedTags.clear()
-                selectedTags.addAll(labels)
+                selectedTags.addAll(tags)
             }
         )
     }

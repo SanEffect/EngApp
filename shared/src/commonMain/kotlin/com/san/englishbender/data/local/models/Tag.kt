@@ -10,7 +10,6 @@ open class Tag : RealmObject {
     var id: String = ""
     var name: String = ""
     var color: String = ""
-
     val records: RealmResults<Record> by backlinks(Record::tags)
 
     constructor(id: String, name: String, color: String) {
