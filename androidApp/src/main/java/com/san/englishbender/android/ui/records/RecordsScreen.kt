@@ -69,7 +69,6 @@ fun RecordsScreen(
     when {
         uiState.isLoading -> LoadingView()
         uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
-        uiState.records.isEmpty() -> EmptyView()
         else -> RecordsContent(
             viewModel,
             uiState,

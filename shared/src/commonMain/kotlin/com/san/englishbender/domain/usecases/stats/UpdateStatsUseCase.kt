@@ -1,10 +1,7 @@
 package com.san.englishbender.domain.usecases.stats
 
-import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IStatsRepository
-//import com.san.englishbender.domain.repositories.IStatsRepository
-import kotlinx.coroutines.flow.first
 
 class UpdateStatsUseCase(
     private val getStatsUseCase: GetStatsUseCase,
@@ -18,7 +15,7 @@ class UpdateStatsUseCase(
         prevRecordState: RecordEntity? = null,
         currRecordState: RecordEntity
     ) {
-        getStatsUseCase().first()?.let {
+        getStatsUseCase()?.let { stats ->
             val title = currRecordState.title
             val description = currRecordState.description
 
@@ -32,12 +29,11 @@ class UpdateStatsUseCase(
             val wordsCount = getDiff(prevWordsCount, getWordsCountOfStrings(title, description))
             val lettersCount = getDiff(prevLettersCount, getLettersOfStrings(title, description))
 
-            val newStats = Stats(
-                recordsCount = it.recordsCount + (recordInc * multiplier),
-                wordsCount = it.wordsCount + (wordsCount * multiplier),
-                lettersCount = it.lettersCount + (lettersCount * multiplier)
-            )
-            statsRepository.updateStats(newStats)
+            stats.recordsCount += (recordInc * multiplier)
+            stats.wordsCount += (wordsCount * multiplier)
+            stats.lettersCount += (lettersCount * multiplier)
+
+            statsRepository.updateStats(stats)
         }
     }
 

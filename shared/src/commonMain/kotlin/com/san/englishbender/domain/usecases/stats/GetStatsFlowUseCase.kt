@@ -2,9 +2,10 @@ package com.san.englishbender.domain.usecases.stats
 
 import com.san.englishbender.domain.entities.StatsEntity
 import com.san.englishbender.domain.repositories.IStatsRepository
+import kotlinx.coroutines.flow.Flow
 
-class GetStatsUseCase(
+class GetStatsFlowUseCase(
     private val statsRepository: IStatsRepository
 ) {
-    suspend operator fun invoke(): StatsEntity? = statsRepository.getStats()
+    operator fun invoke(): Flow<StatsEntity?> = statsRepository.getStatsFlow()
 }

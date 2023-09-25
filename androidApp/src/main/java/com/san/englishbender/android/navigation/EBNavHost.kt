@@ -18,7 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.san.englishbender.android.ui.EBAppState
 import com.san.englishbender.android.ui.common.AppDrawer
-import com.san.englishbender.android.ui.recordDetails.RecordDetailScreen
+import com.san.englishbender.android.ui.recordDetails.RecordDetailsScreen
 import com.san.englishbender.android.ui.records.RecordsScreen
 import com.san.englishbender.android.ui.stats.StatsScreen
 import com.san.englishbender.core.navigation.Destinations
@@ -113,7 +113,7 @@ fun EBNavHost(
         ) { entry ->
             val recordId = entry.arguments?.getString(RECORD_ID_ARG)
 
-            RecordDetailScreen(
+            RecordDetailsScreen(
                 onBackClick = { navigator.popBackStack() },
                 recordId
             )

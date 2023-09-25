@@ -46,7 +46,6 @@ class RecordsRepository constructor(
                 when (changes) {
                     is InitialObject<*>,
                     is UpdatedObject<*> -> changes.obj?.toEntity()?.let { emit(it) }
-
                     else -> {}
                 }
             }

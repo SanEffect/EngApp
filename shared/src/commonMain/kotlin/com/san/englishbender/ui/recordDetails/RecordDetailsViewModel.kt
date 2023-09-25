@@ -1,4 +1,4 @@
-package com.san.englishbender.ui.recordDetail
+package com.san.englishbender.ui.recordDetails
 
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionRequest
@@ -9,7 +9,6 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import com.san.englishbender.SharedRes
-import com.san.englishbender.core.AppConstants
 import com.san.englishbender.core.Event
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.getResultFlow
@@ -30,9 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 data class DetailUiState(
     val saveInProgress: Boolean = false,
@@ -41,7 +38,12 @@ data class DetailUiState(
     val userMessage: Event<StringResource?> = Event(null)
 )
 
-class RecordDetailViewModel constructor(
+data class GrammarCheckUiState(
+    val isLoading: Boolean = false,
+    val result: MutableList<String> = mutableListOf()
+)
+
+class RecordDetailsViewModel constructor(
     private val getRecordFlowUseCase: GetRecordFlowUseCase,
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
@@ -52,8 +54,13 @@ class RecordDetailViewModel constructor(
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
+    private val _grammarUiState = MutableStateFlow(GrammarCheckUiState())
+    val grammarUiState: StateFlow<GrammarCheckUiState> = _grammarUiState.asStateFlow()
+
     private var saveInProgress = false
     private var prevRecordState: RecordEntity? = null
+    private var prevText: String = ""
+    private val results = mutableListOf<String>()
 
     fun getRecord(recordId: String?) {
         val recId = recordId ?: return
@@ -90,18 +97,16 @@ class RecordDetailViewModel constructor(
 
         getResultFlow { saveRecordUseCase(currRecordState) }
             .ifFailure {
-                log(tag = "saveDraft") { "ifFailure" }
                 saveInProgress = false
                 showUserMessage(SharedRes.strings.save_record_error)
             }
             .ifSuccess {
-                log(tag = "saveDraft") { "ifSuccess" }
                 updateStatsUseCase(
                     prevRecordState = prevRecordState,
                     currRecordState = currRecordState
                 )
                 saveInProgress = false
-                prevRecordState = currRecordState
+//                prevRecordState = currRecordState
                 navigator.popBackStack()
             }
     }
@@ -142,75 +147,52 @@ class RecordDetailViewModel constructor(
         }
     }
 
-    private val textResult = MutableStateFlow(listOf(""))
-
     @OptIn(BetaOpenAI::class)
-    fun checkGrammar(text: String) = viewModelScope.launch {
+    fun checkGrammar(text: String) = safeLaunch {
 
+        if (prevText.equals(text, true)) {
+            _grammarUiState.update {
+                it.copy(
+                    isLoading = false,
+                    result = results
+                )
+            }
+            return@safeLaunch
+        }
+
+        prevText = text
+
+        _grammarUiState.update { it.copy(isLoading = true) }
         val token = ""
 
         try {
-            val openAI = OpenAI(OpenAIConfig(token, LogLevel.None))
-
-            //Timber.tag("openAI").d("> Getting available engines...")
-            //openAI.models().forEach(::println)
-
-            //Timber.tag("openAI").d("\n> Getting ada engine...")
-
-//        val ada = openAI.model(modelId = ModelId("text-ada-001"))
-
-//        Timber.tag("openAI").d("\n>️ Creating completion...")
-//        val completionRequest = CompletionRequest(
-//            model = ada.id,
-//            prompt = "What is the difference between 'stare' and 'glance'?"
-//        )
-////        openAI.completion(completionRequest).choices.forEach(::println)
-//        openAI.completion(completionRequest).choices.forEach {
-//            Timber.tag("openAI").d("\n>️ ${it.text}")
-//        }
+            val config = OpenAIConfig(token, LogLevel.All)
+            val openAI = OpenAI(config)
 
             val chatCompletionRequest = ChatCompletionRequest(
                 model = ModelId("gpt-3.5-turbo"),
                 messages = listOf(
-//                ChatMessage(
-//                    role = ChatRole.System,
-//                    content = "You are a helpful assistant that translates Russian to English."
-//                ),
+                    ChatMessage(
+                        role = ChatRole.System,
+                        content = "You are a useful assistant for checking the grammar of English texts."
+                    ),
                     ChatMessage(
                         role = ChatRole.User,
-                        content = "Please, do grammar check for this text - \"$text\""
+                        content = "Please, conduct a grammar check for this text - \"$text\". Confirm if it is grammatically correct, suggest improvements, or point out errors. Don't repeat this sentence."
                     )
                 )
             )
-
-            val list = mutableListOf("")
             openAI.chatCompletion(chatCompletionRequest).choices.forEach {
-
-                list.add(it.message.toString())
-//            list.add(it.message?.content.toString())
-
-//            textResult.value = it.message?.content.toString()
+                results.add(it.message?.content.toString())
             }
-            textResult.value = list
-
+            _grammarUiState.update {
+                it.copy(
+                    isLoading = false,
+                    result = results
+                )
+            }
         } catch (e: Exception) {
-
+            log(tag = "GrammarCheckBSContent") { "OpenAI request error: $e" }
         }
-//        val chatCompletionRequest = ChatCompletionRequest(
-//            model = ModelId("gpt-3.5-turbo"),
-////            model = ModelId("gpt-4"),
-//            messages = listOf(
-//                ChatMessage(
-//                    role = ChatRole.User,
-//                    content = "Hello Chat-GPT!"
-//                )
-//            )
-//        )
-//        val completion: ChatCompletion = openAI.chatCompletion(chatCompletionRequest)
     }
-
-//    private var needToTranslate = true
-//    private var translateToggled = false
-//    private var translatedText = ""
-//    private var originalText = ""
 }

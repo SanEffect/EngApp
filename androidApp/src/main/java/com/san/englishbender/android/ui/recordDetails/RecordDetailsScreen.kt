@@ -43,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
@@ -61,7 +60,7 @@ import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.EBOutlinedButton
-import com.san.englishbender.android.ui.common.widgets.LoadingView
+import com.san.englishbender.android.ui.recordDetails.bottomSheets.GrammarCheckBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
 import com.san.englishbender.android.ui.tags.TagsNavHost
@@ -69,28 +68,26 @@ import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.AppConstants
 import com.san.englishbender.core.extensions.isNotNull
-import com.san.englishbender.core.extensions.isNull
-import com.san.englishbender.ui.recordDetail.DetailUiState
-import com.san.englishbender.ui.recordDetail.RecordDetailViewModel
-import io.github.aakira.napier.log
+import com.san.englishbender.ui.recordDetails.DetailUiState
+import com.san.englishbender.ui.recordDetails.RecordDetailsViewModel
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
 import java.util.Date
 
 
 @Composable
-fun RecordDetailScreen(
+fun RecordDetailsScreen(
     onBackClick: () -> Unit,
     recordId: String?
 ) {
-    val viewModel: RecordDetailViewModel = getViewModel()
+    val viewModel: RecordDetailsViewModel = getViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(recordId) {
         if (recordId.isNotNull) viewModel.getRecord(recordId)
     }
 
-    RecordDetailContent(
+    RecordDetailsContent(
         uiState,
         viewModel,
         onBackClick,
@@ -98,7 +95,7 @@ fun RecordDetailScreen(
 
     DisposableEffect(LocalLifecycleOwner.current) {
         onDispose {
-            viewModel.saveDraft(uiState.record)
+//            viewModel.saveDraft(uiState.record)
             viewModel.resetUiState()
         }
     }
@@ -106,9 +103,9 @@ fun RecordDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordDetailContent(
+fun RecordDetailsContent(
     uiState: DetailUiState,
-    viewModel: RecordDetailViewModel,
+    viewModel: RecordDetailsViewModel,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -273,22 +270,19 @@ fun RecordDetailContent(
                 sheetState = bottomSheetState,
             ) {
                 when (bottomNavItem) {
-//                    BottomNavItem.Analyze -> AnalyseTextBSContent(
-//                        viewModel,
-//                        description
-//                    )
+                    BottomNavItem.GrammarCheck -> GrammarCheckBSContent(
+                        viewModel,
+                        description
+                    )
                     BottomNavItem.Translate -> TranslatedTextBSContent(
                         text = "Some translated text"
                     )
-
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             containerColor = color
                             record.backgroundColor = color.toHex()
                         }
                     )
-
-                    else -> {}
                 }
             }
         }

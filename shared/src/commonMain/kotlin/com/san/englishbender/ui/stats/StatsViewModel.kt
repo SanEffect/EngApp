@@ -2,7 +2,7 @@ package com.san.englishbender.ui.stats
 
 import com.san.englishbender.core.extensions.WhileUiSubscribed
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
-import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
+import com.san.englishbender.domain.usecases.stats.GetStatsFlowUseCase
 import com.san.englishbender.ui.ViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -17,12 +17,12 @@ data class StatsUiState(
 
 class StatsViewModel(
     getRecordsCountUseCase: GetRecordsCountUseCase,
-    getStatsUseCase: GetStatsUseCase,
+    getStatsFlowUseCase: GetStatsFlowUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<StatsUiState> = combine(
         getRecordsCountUseCase(Unit),
-        getStatsUseCase()
+        getStatsFlowUseCase()
     ) { recordsCount, stats ->
         StatsUiState(
             recordsCount = recordsCount ?: 0,

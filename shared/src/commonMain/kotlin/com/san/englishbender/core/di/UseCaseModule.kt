@@ -5,6 +5,7 @@ import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
 import com.san.englishbender.domain.usecases.records.RemoveRecordUseCase
 import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
+import com.san.englishbender.domain.usecases.stats.GetStatsFlowUseCase
 import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
@@ -23,6 +24,7 @@ val useCaseModule = module {
 
     // --- Stats
     single { GetStatsUseCase(get()) }
+    single { GetStatsFlowUseCase(get()) }
     single { UpdateStatsUseCase(get(), get()) }
 
     // --- Tags

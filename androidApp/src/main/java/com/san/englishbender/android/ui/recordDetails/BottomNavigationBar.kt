@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 sealed class BottomNavItem(var title: String, var icon: ImageVector) {
-    object Analyze : BottomNavItem("Analyze", Icons.Outlined.Spellcheck)
+    object GrammarCheck : BottomNavItem("GrammarCheck", Icons.Outlined.Spellcheck)
     object Translate : BottomNavItem("Translate", Icons.Outlined.Translate)
     object Settings : BottomNavItem("Settings", Icons.Outlined.Settings)
 }
@@ -30,7 +30,7 @@ fun NavigationBar(
     navItemClicked: (navItem: BottomNavItem) -> Unit
 ) {
     val navItems = listOf(
-        BottomNavItem.Analyze,
+        BottomNavItem.GrammarCheck,
         BottomNavItem.Translate,
         BottomNavItem.Settings
     )

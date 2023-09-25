@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.konan.properties.Properties
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -29,6 +31,11 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+//        getByName("debug") {
+//            val properties = Properties().apply { load(project.rootProject.file("local.properties").inputStream()) }
+//            val openAIKey: String = properties.getProperty("OPENAI_API_KEY")
+//            buildConfigField("String", "OPENAI_API_KEY", "\"$openAIKey\"")
+//        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
