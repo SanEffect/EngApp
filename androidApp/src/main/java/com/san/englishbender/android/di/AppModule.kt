@@ -12,5 +12,5 @@ val appModule = module {
     viewModel { MainActivityViewModel(get()) }
 
     single { DataStoreRealm(get()) }
-    single<IUserDataRepository> { UserDataRepository(get()) }
+//    single<IUserDataRepository> { UserDataRepository(get()) }
 }

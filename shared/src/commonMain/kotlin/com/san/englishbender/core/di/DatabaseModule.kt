@@ -6,7 +6,6 @@ import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Record
 import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.data.local.models.Tag
-import com.san.englishbender.data.local.models.UserSettings
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.data.repositories.StatsRepository
 import com.san.englishbender.data.repositories.TagsRepository
@@ -20,7 +19,6 @@ import org.koin.dsl.module
 
 private val dataStoreModels = setOf(
     AppSettings::class,
-    UserSettings::class,
     Record::class,
     Tag::class,
     Stats::class,
@@ -36,6 +34,6 @@ val databaseModule = module {
     }
 
     single<IRecordsRepository> { RecordsRepository(get()) }
-    single<ITagsRepository> { TagsRepository(get()) }
+    single<ITagsRepository> { TagsRepository(get(), get()) }
     single<IStatsRepository> { StatsRepository(get()) }
 }

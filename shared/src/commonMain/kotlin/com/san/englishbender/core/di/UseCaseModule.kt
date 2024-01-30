@@ -8,7 +8,9 @@ import com.san.englishbender.domain.usecases.records.SaveRecordUseCase
 import com.san.englishbender.domain.usecases.stats.GetStatsFlowUseCase
 import com.san.englishbender.domain.usecases.stats.GetStatsUseCase
 import com.san.englishbender.domain.usecases.stats.UpdateStatsUseCase
+import com.san.englishbender.domain.usecases.tags.DeleteTagUseCase
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
+import com.san.englishbender.domain.usecases.tags.SaveTagColorUseCase
 import com.san.englishbender.domain.usecases.tags.SaveTagUseCase
 import org.koin.dsl.module
 
@@ -30,4 +32,6 @@ val useCaseModule = module {
     // --- Tags
     single { GetTagsFlowUseCase(get()) }
     single { SaveTagUseCase(get()) }
+    single { SaveTagColorUseCase(get()) }
+    single { DeleteTagUseCase(get()) }
 }

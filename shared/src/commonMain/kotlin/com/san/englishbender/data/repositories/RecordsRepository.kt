@@ -4,6 +4,7 @@ import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.mappers.toEntity
 import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.Record
+import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.ioDispatcher
@@ -71,7 +72,11 @@ class RecordsRepository constructor(
     }
 
     override suspend fun removeRecord(recordId: String): Unit = doQuery {
-        val record = realm.query<Record>("id == $0", recordId).first()
-        realm.write { delete(record) }
+        log(tag = "ExceptionHandling") { "repo removeRecord recordId: $recordId" }
+        realm.write {
+            val record = query<Record>("id == $0", recordId).find()
+            log(tag = "ExceptionHandling") { "repo removeRecord record: $record" }
+            delete(record)
+        }
     }
 }

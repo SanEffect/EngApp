@@ -103,12 +103,12 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("androidx.core:core-ktx:1.12.0")
-                implementation("com.google.android.material:material:1.9.0")
+                implementation("com.google.android.material:material:1.11.0")
 
                 // ViewModel & LiveData
                 implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion")
 //                implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleViewModelVersion")
-                implementation("androidx.activity:activity-compose:1.8.0-beta01")
+                implementation("androidx.activity:activity-compose:1.8.2")
 
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")

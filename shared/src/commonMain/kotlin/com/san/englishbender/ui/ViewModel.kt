@@ -3,6 +3,7 @@ package com.san.englishbender.ui
 import com.san.englishbender.data.Result
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -14,6 +15,8 @@ expect abstract class ViewModel() {
     protected val handler: CoroutineExceptionHandler
 
     protected fun safeLaunch(block: suspend CoroutineScope.() -> Unit)
+
+    protected fun safeAsync(block: suspend CoroutineScope.() -> Unit): Job
 
     open fun handleError(exception: Throwable)
 

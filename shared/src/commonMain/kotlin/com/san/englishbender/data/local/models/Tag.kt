@@ -10,12 +10,14 @@ open class Tag : RealmObject {
     var id: String = ""
     var name: String = ""
     var color: String = ""
+    var isWhite: Boolean = false
     val records: RealmResults<Record> by backlinks(Record::tags)
 
-    constructor(id: String, name: String, color: String) {
+    constructor(id: String, name: String, color: String, isWhite: Boolean) {
         this.id = id
         this.name = name
         this.color = color
+        this.isWhite = isWhite
     }
 
     constructor() {}

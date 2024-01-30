@@ -3,6 +3,7 @@ package com.san.englishbender.data
 import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
@@ -61,8 +62,10 @@ suspend fun <T> getResult(action: suspend () -> T) = try {
 
 suspend fun <T> getResultFlow(action: suspend () -> T): Flow<Result<T>> = flow {
     return@flow try {
+        log(tag = "ExceptionHandling") { "getResultFlow s" }
         emit(Result.Success(action.invoke()))
     } catch (e: Exception) {
+        log(tag = "ExceptionHandling") { "getResultFlow f" }
         emit(Result.Failure(e))
     }
 }

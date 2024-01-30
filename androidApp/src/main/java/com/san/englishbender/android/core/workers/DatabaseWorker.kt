@@ -6,13 +6,19 @@ import androidx.work.WorkerParameters
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.data.local.dataStore.IDataStore
+import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.ioDispatcher
 import com.san.englishbender.randomUUID
 import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.ext.copyFromRealm
+import io.realm.kotlin.ext.query
+import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.toRealmList
+import io.realm.kotlin.ext.toRealmSet
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,7 +37,7 @@ class DatabaseWorker(
             try {
                 prePopulateStats()
                 prePopulateTags()
-                prePopulateTagColors()
+                prePopulateColorPresets()
             } catch (e: Exception) {
                 log(tag = "PrepopulateException") { "Prepopulate Exception: $e" }
             }
@@ -58,41 +64,57 @@ class DatabaseWorker(
             Tag(
                 id = randomUUID(),
                 name = "Ideas",
-                color = ColorsPreset.yellow.toHex()
+                color = ColorsPreset.yellow.toHex(),
+                isWhite = false
             ),
             Tag(
                 id = randomUUID(),
                 name = "Thoughts",
-                color = ColorsPreset.green.toHex()
+                color = ColorsPreset.green.toHex(),
+                isWhite = false
             ),
             Tag(
                 id = randomUUID(),
                 name = "Feelings",
-                color = ColorsPreset.lightBlue.toHex()
+                color = ColorsPreset.lightBlue.toHex(),
+                isWhite = false
             ),
             Tag(
                 id = randomUUID(),
                 name = "Creative",
-                color = ColorsPreset.deepOrange.toHex()
+                color = ColorsPreset.deepOrange.toHex(),
+                isWhite = false
             )
         )
 
-        tags.forEach {
-            realm.write {
+        realm.write {
+            tags.forEach {
                 copyToRealm(
                     Tag(
                         id = it.id,
                         name = it.name,
-                        color = it.color
+                        color = it.color,
+                        isWhite = false
                     )
                 )
             }
         }
     }
 
-    private fun prePopulateTagColors() {
-        val userSettings = dataStore.getUserSettings()
-        userSettings.tagColors = ColorsPreset.values.map { it.toString() }.toRealmList()
-        dataStore.saveUserSettings(userSettings)
+    private fun prePopulateColorPresets() {
+        realm.writeBlocking {
+            val appSettings = realm.query<AppSettings>().first().find()
+            appSettings?.let { settings ->
+                val newSettings = AppSettings().apply {
+                    isFirstLaunch = settings.isFirstLaunch
+                    colorPresets = ColorsPreset.values.map { it.toHex() }.toRealmList()
+                }
+                copyToRealm(newSettings, UpdatePolicy.ALL)
+            }
+        }
+
+//        val appSettings = dataStore.getAppSettings()
+//        appSettings.colorPresets = ColorsPreset.values.map { it.toHex() }.toRealmList()
+//        dataStore.saveAppSettings(appSettings)
     }
 }

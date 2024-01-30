@@ -2,6 +2,8 @@ package com.san.englishbender.core.extensions
 
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_TITLE
 import com.san.englishbender.getSystemTimeInMillis
+import io.github.aakira.napier.LogLevel
+import io.github.aakira.napier.Napier
 import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -70,6 +72,14 @@ inline fun measureTimeMillis(operationName: String, block: () -> Unit): Long {
     log(tag = "measureTimeMillis") {"$operationName operation took $timeInMillis ms" }
     log(tag = "measureTimeMillis") {"---------------------------------" }
     return timeInMillis
+}
+
+fun logError(
+    throwable: Throwable? = null,
+    tag: String? = null,
+    message: () -> String,
+) {
+    Napier.log(LogLevel.ERROR, tag, throwable, message())
 }
 
 //fun truncateText(inputText: String, maxLength: Int): String {

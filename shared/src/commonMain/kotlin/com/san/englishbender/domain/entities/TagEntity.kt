@@ -8,5 +8,6 @@ import com.san.englishbender.CommonParcelize
 data class TagEntity(
     var id: String = "",
     var name: String = "",
-    var color: String = ""
+    var color: String = "",
+    var isWhite: Boolean = false
 ) : CommonParcelable

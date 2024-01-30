@@ -30,79 +30,80 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.toColor
-import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.android.ui.common.EBOutlinedButton
+import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.android.ui.theme.selectedLabelColor
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.ui.TagsViewModel
+import io.github.aakira.napier.log
 
 
 @Composable
 fun TagsScreen(
     tagsViewModel: TagsViewModel,
     recordTags: List<TagEntity>,
-    createTag: (String?) -> Unit = {},
+    addEditTag: (TagEntity?) -> Unit = {},
     onTagClick: (List<TagEntity>) -> Unit,
     dismiss: () -> Unit = {}
 ) {
     val uiState by tagsViewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { tagsViewModel.getTags() }
+//    LaunchedEffect(tagsViewModel) {
+//        log(tag = "TagsScreen") { "tagsViewModel.getTags()" }
+//        tagsViewModel.getTags()
+//    }
 
     val selectedTags = remember { mutableStateListOf<TagEntity>() }
     recordTags.forEach {
         if (!selectedTags.contains(it)) selectedTags.add(it)
     }
 
-    BaseDialogContent(
-        height = 350.dp,
-        dismiss = dismiss
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(16.dp)) {
 
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 16.dp),
-                text = "Tags",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
+        Text(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 16.dp),
+            text = "Tags",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
 
-            Column(modifier = Modifier.weight(1f)) {
-                LazyColumn {
-                    items(uiState.tags.size) { index ->
-                        val tag = uiState.tags[index]
-                        val hasTag = selectedTags.any { it.id == tag.id }
+        Column(modifier = Modifier
+            .weight(1f)
+            .padding(bottom = 16.dp)) {
+            LazyColumn {
+                items(uiState.tags.size) { index ->
+                    val tag = uiState.tags[index]
+                    val hasTag = selectedTags.any { it.id == tag.id }
 
-                        TagRow(
-                            tag = tag,
-                            isSelected = hasTag,
-                            onClick = {
-                                if (hasTag) selectedTags.removeIf { it.id == tag.id }
-                                else selectedTags.add(tag)
+                    TagRow(
+                        tag = tag,
+                        isSelected = hasTag,
+                        onClick = {
+                            if (hasTag) selectedTags.removeIf { it.id == tag.id }
+                            else selectedTags.add(tag)
 
-                                onTagClick(selectedTags.toList())
-                            },
-                            onEditClick = { createTag(tag.id) }
-                        )
-                    }
+                            onTagClick(selectedTags.toList())
+                        },
+                        onEditClick = { addEditTag(tag) }
+                    )
                 }
             }
+        }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                EBOutlinedButton(
-                    text = "Create",
-                    onClick = { createTag(null) }
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            EBOutlinedButton(
+                text = "Create",
+                onClick = { addEditTag(null) }
+            )
 
-                EBOutlinedButton(
-                    text = "Close",
-                    onClick = dismiss
-                )
-            }
+            EBOutlinedButton(
+                text = "Close",
+                onClick = dismiss
+            )
         }
     }
 }
@@ -137,7 +138,8 @@ fun TagRow(
             Text(
                 modifier = Modifier.padding(8.dp),
                 text = tag.name,
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                color = if (tag.isWhite) ColorsPreset.white else ColorsPreset.black
             )
         }
         Row(
@@ -158,7 +160,6 @@ fun TagRow(
                     .size(18.dp)
             )
         }
-
     }
 }
 

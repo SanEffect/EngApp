@@ -43,7 +43,7 @@ data class GrammarCheckUiState(
     val result: MutableList<String> = mutableListOf()
 )
 
-class RecordDetailsViewModel constructor(
+class RecordDetailsViewModel(
     private val getRecordFlowUseCase: GetRecordFlowUseCase,
     private val saveRecordUseCase: SaveRecordUseCase,
     private val updateStatsUseCase: UpdateStatsUseCase,
@@ -136,11 +136,8 @@ class RecordDetailsViewModel constructor(
         prevRecordState?.let {
             val isEqual = currRecordState.isNotEqual(it)
             log(tag = "saveDraft") { "isEqual: $isEqual" }
-        }
 
-        prevRecordState?.let {
             if (currRecordState.isNotEqual(it)) {
-                log(tag = "saveDraft") { "isNotEqual" }
                 currRecordState.isDraft = true
                 saveRecordUseCase(currRecordState)
             }
@@ -163,7 +160,7 @@ class RecordDetailsViewModel constructor(
         prevText = text
 
         _grammarUiState.update { it.copy(isLoading = true) }
-        val token = ""
+        val token = "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"
 
         try {
             val config = OpenAIConfig(token, LogLevel.All)

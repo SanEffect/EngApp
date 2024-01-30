@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.san.englishbender.android.core.extensions.toColor
+import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.domain.entities.TagEntity
 
 @Composable
@@ -80,7 +81,8 @@ fun TagItem(
         Text(
             modifier = Modifier.padding(start = 4.dp),
             text = tag.name,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            color = if (tag.isWhite) ColorsPreset.white else ColorsPreset.black
         )
         Icon(
             modifier = Modifier

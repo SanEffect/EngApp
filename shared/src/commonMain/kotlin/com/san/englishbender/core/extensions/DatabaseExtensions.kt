@@ -14,7 +14,7 @@ suspend fun <T> doQuery(
     try {
         action.invoke()
     } catch (e: Exception) {
-        log(tag = "ExceptionHandling") { "doQuery exception: $e" }
+        logError(tag = "ExceptionHandling") { "doQuery exception: $e" }
         throw Exception(e)
     }
 }

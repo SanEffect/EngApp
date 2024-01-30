@@ -10,5 +10,5 @@ val viewModelModule = module {
     single { RecordsViewModel(get(), get()) }
     single { RecordDetailsViewModel(get(), get(), get(), get(), get()) }
     single { StatsViewModel(get(), get()) }
-    single { TagsViewModel(get(), get(), get()) }
+    single { TagsViewModel(get(), get(), get(), get(), get()) }
 }

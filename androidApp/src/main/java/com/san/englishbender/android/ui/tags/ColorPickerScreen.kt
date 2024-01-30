@@ -1,6 +1,7 @@
 package com.san.englishbender.android.ui.tags
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,76 +28,73 @@ import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
-import com.san.englishbender.android.ui.common.BaseDialogContent
+import com.san.englishbender.android.ui.common.DialogHeader
 import com.san.englishbender.android.ui.common.EBOutlinedButton
-import io.github.aakira.napier.log
 
 
 @Composable
 fun ColorPickerScreen(
-    onSave: () -> Unit = {},
-    onBack: () -> Unit = {},
-    dismiss: () -> Unit = {}
+    onSave: (String) -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
-    log(tag = "navEntriesCheck") { "ColorPickerScreen" }
-    BaseDialogContent(
-        height = 500.dp,
-        dismiss = dismiss
-    ) {
-        val controller = rememberColorPickerController()
-        var hexCode by remember { mutableStateOf("") }
-        var color: Color by remember { mutableStateOf(Color.Black) }
+    val controller = rememberColorPickerController()
+    var hexCode by remember { mutableStateOf("") }
+    var color: Color by remember { mutableStateOf(Color.Black) }
 
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        DialogHeader(
+            title = "Color Picker",
+            onClick = onBack
+        )
+
+        HsvColorPicker(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            HsvColorPicker(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-                    .padding(10.dp),
-                controller = controller,
-                onColorChanged = { colorEnvelope: ColorEnvelope ->
-                    color = colorEnvelope.color
-                    hexCode = colorEnvelope.hexCode
-                }
-            )
+                .height(250.dp)
+                .padding(10.dp),
+            controller = controller,
+            onColorChanged = { colorEnvelope: ColorEnvelope ->
+                color = colorEnvelope.color
+                hexCode = colorEnvelope.hexCode
+            }
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
+        Row(Modifier.border(1.dp, Color.DarkGray, RoundedCornerShape(6.dp))) {
             BrightnessSlider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
                     .height(35.dp),
                 controller = controller,
-                borderSize = 10.dp,
-                borderColor = Color.DarkGray
             )
+        }
 
-            Text(text = "#$hexCode", fontSize = 14.sp, color = color)
-            Box(
-                Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color)) {}
+        Text(text = "#$hexCode", fontSize = 14.sp)
+        Box(
+            Modifier
+                .size(80.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(color)
+        ) {}
 
-            Row(
-                Modifier.fillMaxWidth().padding(top = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                EBOutlinedButton(
-                    text = "Back",
-                    onClick = onBack
-                )
-                EBOutlinedButton(
-                    text = "Save",
-                    onClick = onSave
-                )
-            }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            EBOutlinedButton(
+                text = "Add",
+                onClick = {
+                    onSave("#$hexCode")
+                }
+            )
         }
     }
 }

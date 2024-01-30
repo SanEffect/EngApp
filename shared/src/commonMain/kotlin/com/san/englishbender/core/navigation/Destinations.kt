@@ -4,7 +4,7 @@ import com.san.englishbender.core.navigation.Screens.COLOR_PICKER_SCREEN
 import com.san.englishbender.core.navigation.Screens.RECORDS_SCREEN
 import com.san.englishbender.core.navigation.Screens.RECORD_DETAIL_SCREEN
 import com.san.englishbender.core.navigation.Screens.STATS_SCREEN
-import com.san.englishbender.core.navigation.Screens.TAG_CREATE_SCREEN
+import com.san.englishbender.core.navigation.Screens.TAG_ADD_EDIT_SCREEN
 import com.san.englishbender.core.navigation.Screens.TAG_LIST_SCREEN
 
 object Screens {
@@ -14,7 +14,7 @@ object Screens {
 
     // ---
     const val TAG_LIST_SCREEN = "tag_list"
-    const val TAG_CREATE_SCREEN = "tag_create"
+    const val TAG_ADD_EDIT_SCREEN = "tag_add_edit"
     const val COLOR_PICKER_SCREEN = "color_picker"
 }
 
@@ -29,6 +29,6 @@ object Destinations {
     const val RECORD_DETAIL_ROUTE = "$RECORD_DETAIL_SCREEN?recordId={recordId}"
 
     const val TAG_LIST_ROUTE = TAG_LIST_SCREEN
-    const val TAG_CREATE_ROUTE = "$TAG_CREATE_SCREEN?tagId={tagId}"
+    const val TAG_CREATE_ROUTE = "$TAG_ADD_EDIT_SCREEN?tagId={tagId}"
     const val COLOR_PICKER_ROUTE = COLOR_PICKER_SCREEN
 }

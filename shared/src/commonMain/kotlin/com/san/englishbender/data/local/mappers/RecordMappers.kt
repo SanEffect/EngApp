@@ -34,7 +34,7 @@ fun RecordEntity.toLocal(): Record =
         isDeleted = isDeleted,
         isDraft = isDraft,
         backgroundColor = backgroundColor,
-        tags = tags?.map { Tag(it.id, it.name, it.color) }?.toRealmList() ?: realmListOf()
+        tags = tags?.map { Tag(it.id, it.name, it.color, it.isWhite) }?.toRealmList() ?: realmListOf()
     )
 
 fun List<Record>.toEntity() = this.map { it.toEntity() }

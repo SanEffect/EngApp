@@ -1,12 +1,16 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
+import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.mappers.toEntity
+import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.repositories.ITagsRepository
 import com.san.englishbender.ioDispatcher
 import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.ext.copyFromRealm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
@@ -15,7 +19,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 class TagsRepository(
-    private val realm: Realm
+    private val realm: Realm,
+    private val dataStore: IDataStore
 ) : ITagsRepository {
 
     override fun getAllTagsFlow(): Flow<List<TagEntity>> = flow {
@@ -23,6 +28,7 @@ class TagsRepository(
             when (changes) {
                 is InitialResults,
                 is UpdatedResults -> emit(changes.list.toList().toEntity())
+
                 else -> {}
             }
         }
@@ -36,8 +42,27 @@ class TagsRepository(
         realm.write { copyToRealm(tag) }
     }
 
+    override suspend fun saveTagColor(hexCode: String): Unit = doQuery {
+        realm.writeBlocking {
+            val appSettings = realm.query<AppSettings>().first().find() ?: return@writeBlocking
+            appSettings.colorPresets.add(hexCode)
+
+            val newAppSettings = appSettings.copyFromRealm()
+            newAppSettings.colorPresets.add(hexCode)
+            copyToRealm(newAppSettings, UpdatePolicy.ALL)
+
+//            log(tag = "PrepopulateException") { "colorPresets: ${it.colorPresets}" }
+//            val newAppSettings = it.copyFromRealm()
+//            newAppSettings.colorPresets.add(hexCode)
+//            log(tag = "PrepopulateException") { "new colorPresets: ${newAppSettings.colorPresets}" }
+//            copyToRealm(newAppSettings, UpdatePolicy.ALL)
+        }
+    }
+
     override suspend fun deleteTag(tagId: String): Unit = doQuery {
-        val tag = realm.query<Tag>("id == $0", tagId).first()
-        realm.write { delete(tag) }
+        realm.write {
+            val tag = query<Tag>("id == $0", tagId).find()
+            delete(tag)
+        }
     }
 }

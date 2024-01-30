@@ -6,6 +6,7 @@ import io.github.aakira.napier.log
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -25,6 +26,10 @@ actual abstract class ViewModel actual constructor() : ViewModel() {
 
     protected actual fun safeLaunch(block: suspend CoroutineScope.() -> Unit) {
         viewModelScope.launch(handler, block = block)
+    }
+
+    protected actual fun safeAsync(block: suspend CoroutineScope.() -> Unit): Job {
+        return viewModelScope.launch(handler, block = block)
     }
 
     actual override fun onCleared() {
