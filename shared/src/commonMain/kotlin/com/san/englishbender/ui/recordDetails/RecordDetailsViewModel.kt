@@ -160,7 +160,7 @@ class RecordDetailsViewModel(
         prevText = text
 
         _grammarUiState.update { it.copy(isLoading = true) }
-        val token = "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"
+        val token = ""
 
         try {
             val config = OpenAIConfig(token, LogLevel.All)
