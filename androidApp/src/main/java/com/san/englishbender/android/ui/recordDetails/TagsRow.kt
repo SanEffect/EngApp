@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -36,12 +35,11 @@ fun TagsRow(
 ) {
     LazyRow(
         modifier = modifier
-            .height(100.dp)
             .padding(
                 start = 12.dp,
                 end = 12.dp,
-                top = 12.dp,
-                bottom = 24.dp
+                top = 8.dp,
+                bottom = 12.dp
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)

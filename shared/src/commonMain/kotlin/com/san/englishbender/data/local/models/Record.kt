@@ -9,7 +9,8 @@ class Record : RealmObject {
     @PrimaryKey
     var id: String = ""
     var title: String = ""
-    var description: String = ""
+    var text: String = ""
+    var plainText: String = ""
     var isDraft: Boolean = false
     var isDeleted: Boolean = false
     var creationDate: Long = 0
@@ -19,7 +20,8 @@ class Record : RealmObject {
     constructor(
         id: String,
         title: String,
-        description: String,
+        text: String,
+        plainText: String,
         isDraft: Boolean = false,
         isDeleted: Boolean = false,
         creationDate: Long = 0,
@@ -28,7 +30,8 @@ class Record : RealmObject {
     ) {
         this.id = id
         this.title = title
-        this.description = description
+        this.text = text
+        this.plainText = plainText
         this.isDraft = isDraft
         this.isDeleted = isDeleted
         this.creationDate = creationDate

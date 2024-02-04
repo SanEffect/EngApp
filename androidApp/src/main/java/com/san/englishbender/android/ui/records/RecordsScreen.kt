@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
-import com.san.englishbender.android.ui.common.widgets.EmptyView
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
@@ -161,7 +160,7 @@ fun RecordItem(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     record.title = truncateText(record.title, RECORD_MAX_LENGTH_TITLE)
-    record.description = truncateText(record.description, RECORD_MAX_LENGTH_DESCRIPTION)
+    record.plainText = truncateText(record.plainText, RECORD_MAX_LENGTH_DESCRIPTION)
 
     Card(
         modifier = Modifier
@@ -204,7 +203,7 @@ fun RecordItem(
                 fontSize = 16.sp,
                 text = record.title
             )
-            Text(text = record.description, fontSize = 14.sp)
+            Text(text = record.plainText, fontSize = 14.sp)
         }
     }
 

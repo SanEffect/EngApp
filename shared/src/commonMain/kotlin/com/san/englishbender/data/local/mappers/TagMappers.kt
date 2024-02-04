@@ -7,14 +7,16 @@ fun Tag.toEntity() =
     TagEntity(
         id = id,
         name = name,
-        color = color
+        color = color,
+        isWhite = isWhite
     )
 
 fun TagEntity.toLocal() =
     Tag(
         id = id,
         name = name,
-        color = color
+        color = color,
+        isWhite = isWhite
     )
 
 fun List<Tag>.toEntity() = this.map { it.toEntity() }

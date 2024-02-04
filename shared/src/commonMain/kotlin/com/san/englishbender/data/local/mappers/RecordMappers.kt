@@ -11,7 +11,8 @@ fun Record.toEntity(): RecordEntity =
     RecordEntity(
         id = id,
         title = title,
-        description = description,
+        text = text,
+        plainText = plainText,
         creationDate = creationDate,
         isDeleted = isDeleted,
         isDraft = isDraft,
@@ -29,7 +30,8 @@ fun RecordEntity.toLocal(): Record =
     Record(
         id = id,
         title = title,
-        description = description,
+        text = text,
+        plainText = plainText,
         creationDate = creationDate,
         isDeleted = isDeleted,
         isDraft = isDraft,

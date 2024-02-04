@@ -17,11 +17,11 @@ class UpdateStatsUseCase(
     ) {
         getStatsUseCase()?.let { stats ->
             val title = currRecordState.title
-            val description = currRecordState.description
+            val description = currRecordState.plainText
 
             prevRecordState?.let { prevRecord ->
-                prevWordsCount = getWordsCountOfStrings(prevRecord.title, prevRecord.description)
-                prevLettersCount = getLettersOfStrings(prevRecord.title, prevRecord.description)
+                prevWordsCount = getWordsCountOfStrings(prevRecord.title, prevRecord.plainText)
+                prevLettersCount = getLettersOfStrings(prevRecord.title, prevRecord.plainText)
             }
 
             val recordInc = 1

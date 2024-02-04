@@ -30,7 +30,7 @@ class DatabaseWorker(
 ) : CoroutineWorker(context, workerParams), KoinComponent {
 
     private val realm: Realm by inject()
-    private val dataStore: IDataStore by inject()
+//    private val dataStore: IDataStore by inject()
 
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
         try {

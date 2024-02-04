@@ -27,6 +27,10 @@ fun String.ifEmpty(block: () -> Unit) = run {
     if(this.isEmpty()) block()
 }
 
+inline fun <T> T.ifNotEmpty(block: (T) -> Unit) = run {
+    if (this is String && this.isNotEmpty()) block(this)
+}
+
 val String.isDigitOnly: Boolean
     get() = matches(Regex("^\\d*\$"))
 

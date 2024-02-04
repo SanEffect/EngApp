@@ -129,7 +129,7 @@ class RecordDetailsViewModel(
         log(tag = "saveDraft") { "prevRecordState: $prevRecordState" }
 
         val title = currRecordState.title.trim()
-        val description = currRecordState.description.trim()
+        val description = currRecordState.text.trim()
 
         if (title.isEmpty() && description.isEmpty()) return@safeLaunch
 

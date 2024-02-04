@@ -47,9 +47,10 @@ import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.android.ui.theme.selectedLabelColor
 import com.san.englishbender.core.extensions.isNull
-import com.san.englishbender.data.local.models.Tag
+import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.randomUUID
 import com.san.englishbender.ui.TagsViewModel
+import io.github.aakira.napier.log
 import kotlinx.coroutines.launch
 
 
@@ -66,7 +67,7 @@ fun AddEditTagScreen(
     val tag = uiState.tags.firstOrNull { it.id == tagId }
     var name by remember { mutableStateOf(tag?.name ?: "") }
     var selectedColor by remember { mutableStateOf(tag?.color?.toColor ?: ColorsPreset.coral) }
-    var isWhiteFontColor by remember { mutableStateOf(false) }
+    var isWhiteFontColor by remember { mutableStateOf(tag?.isWhite ?: false) }
     var confirmDeleting by remember { mutableStateOf(false) }
 
     val title = if (tagId.isNull) "Add new tag" else "Edit tag"
@@ -179,9 +180,11 @@ fun AddEditTagScreen(
 //                            blue = (0x00..0xFF).random()
 //                        )
 
+                    log(tag = "isWhiteFontColor") { "saveTag isWhiteFontColor: $isWhiteFontColor" }
+
                     coroutineScope.launch {
                         tagsViewModel.saveTag(
-                            Tag(
+                            TagEntity(
                                 id = tagId ?: randomUUID(),
                                 name = name,
                                 color = selectedColor.toHex(),

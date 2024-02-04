@@ -50,7 +50,7 @@ android {
 //    }
 }
 
-val composeVersion = "1.5.4"
+val composeVersion = "1.6.0"
 val material3Version = "1.1.2"
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
@@ -100,6 +100,9 @@ dependencies {
 
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.0.5")
+
+    // Compose Rich Editor
+    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc01")
 //    implementation("com.godaddy.android.colorpicker:compose-color-picker-android:0.7.0")
 
     // Navigation

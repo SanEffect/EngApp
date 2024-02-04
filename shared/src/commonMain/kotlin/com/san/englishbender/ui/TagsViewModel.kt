@@ -2,12 +2,12 @@ package com.san.englishbender.ui
 
 import com.san.englishbender.core.extensions.WhileUiSubscribed
 import com.san.englishbender.data.local.dataStore.IDataStore
-import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.usecases.tags.DeleteTagUseCase
 import com.san.englishbender.domain.usecases.tags.GetTagsFlowUseCase
 import com.san.englishbender.domain.usecases.tags.SaveTagColorUseCase
 import com.san.englishbender.domain.usecases.tags.SaveTagUseCase
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -69,7 +69,8 @@ class TagsViewModel(
 //        }
 //    }
 
-    suspend fun saveTag(tag: Tag) = safeLaunch {
+    suspend fun saveTag(tag: TagEntity) = safeLaunch {
+        log(tag = "isWhiteFontColor") { "saveTagVM TagEntity: $tag" }
         saveTagUseCase(tag)
     }
 

@@ -8,8 +8,10 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +20,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -40,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,16 +54,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mohamedrejeb.richeditor.annotation.ExperimentalRichTextApi
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
 import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.EBOutlinedButton
+import com.san.englishbender.android.ui.common.richText.RichTextStyleRow
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.GrammarCheckBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.TranslatedTextBSContent
@@ -67,9 +77,12 @@ import com.san.englishbender.android.ui.tags.TagsPager
 import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.AppConstants
+import com.san.englishbender.core.extensions.ifNotEmpty
+import com.san.englishbender.core.extensions.ifNull
 import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.ui.recordDetails.DetailUiState
 import com.san.englishbender.ui.recordDetails.RecordDetailsViewModel
+import io.github.aakira.napier.log
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
 import java.util.Date
@@ -101,7 +114,7 @@ fun RecordDetailsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalRichTextApi::class)
 @Composable
 fun RecordDetailsContent(
     uiState: DetailUiState,
@@ -109,15 +122,29 @@ fun RecordDetailsContent(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 //    val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val bottomSheetState = rememberModalBottomSheetState()
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
+    val richTextState = rememberRichTextState()
+    richTextState.setConfig(
+        linkColor = Color.Blue,
+        linkTextDecoration = TextDecoration.Underline,
+        codeColor = Color.DarkGray,
+        codeBackgroundColor = Color.Transparent,
+        codeStrokeColor = Color.Transparent,
+    )
+
     LaunchedEffect(uiState.userMessage) {
         uiState.userMessage.getContentIfNotHandled()?.let {
             snackbarHostState.showSnackbar(Strings(context).get(it))
         }
+    }
+
+    LaunchedEffect(uiState.record.text) {
+        uiState.record.text.ifNotEmpty { richTextState.setHtml(it) }
     }
 
 //    var originalText by rememberSaveable(viewState) { mutableStateOf(viewState.originalText) }
@@ -127,8 +154,11 @@ fun RecordDetailsContent(
     val record by remember(uiState.record) { mutableStateOf(uiState.record) }
 
     var title by rememberSaveable(record) { mutableStateOf(record.title) }
-    var description by rememberSaveable(record) { mutableStateOf(record.description) }
+//    uiState.record.text.ifNotEmpty { richTextState.setMarkdown(it) }
     val randomGreeting = remember(record) { AppConstants.GREETINGS.random() }
+
+//    log(tag = "richTextState") { "text: ${uiState.record.text}" }
+//    log(tag = "richTextState") { "plainText: ${uiState.record.plainText}" }
 
     var containerColor by remember {
         mutableStateOf(
@@ -146,38 +176,44 @@ fun RecordDetailsContent(
         modifier = Modifier.fillMaxSize(),
         containerColor = containerColor,
         topBar = {
-            TopAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = containerColor
-                ),
-                title = {
-                    Text(
-                        if (record.title.isEmpty()) "New Record" else "Record Details",
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth(),
+            key(containerColor) {
+                TopAppBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = containerColor
+                    ),
+                    title = {
+                        Text(
+                            if (record.title.isEmpty()) "New Record" else "Record Details",
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.fillMaxWidth(),
 //                        style = JetRortyTypography.h2
-                    )
-                },
-                navigationIcon = {
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.ArrowBack),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .clickable { onBackClick() }
-                    )
-                },
-                actions = {
-                    EBOutlinedButton(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = "Save",
-                        onClick = {
-                            viewModel.saveRecord(record, selectedTags)
-                        }
-                    )
-                }
-            )
+                        )
+                    },
+                    navigationIcon = {
+                        Icon(
+                            rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable { onBackClick() }
+                        )
+                    },
+                    actions = {
+                        EBOutlinedButton(
+                            modifier = Modifier.padding(end = 8.dp),
+                            text = "Save",
+                            onClick = {
+                                focusManager.clearFocus()
+                                // TODO: delete it when RichTextEditor has onValueChanged callback
+                                record.text = richTextState.toHtml()
+                                record.plainText = richTextState.annotatedString.text
+                                viewModel.saveRecord(record, selectedTags)
+                            }
+                        )
+                    }
+                )
+            }
         },
         bottomBar = {
             NavigationBar(
@@ -237,30 +273,61 @@ fun RecordDetailsContent(
                 ),
             )
 
+            Divider(
+                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                color = Color.LightGray
+            )
+
             // --- Description
-            SelectionContainer(Modifier.fillMaxSize()) {
-                OutlinedTextField(
-                    value = description,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    onValueChange = {
-                        description = it
-                        record.description = it
-                    },
-                    label = { Text(randomGreeting) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(state = rememberScrollState())
-                )
-            }
+            RichTextStyleRow(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                state = richTextState
+            )
+
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.Start
+//            ) {
+//                EBOutlinedIconButton(
+//                    imageVector = Icons.Outlined.FormatAlignLeft,
+//                    colors = ButtonDefaults.buttonColors(containerColor = if (isLeft) Color.LightGray else Color.White),
+//                    onClick = {
+//                        richTextState.addParagraphStyle(ParagraphStyle(textAlign = TextAlign.Left))
+//                        log(tag = "RichTextStyleRow") {
+//                            "textAlign: ${richTextState.currentParagraphStyle.textAlign}"
+//                        }
+//                    },
+//                )
+//                EBOutlinedIconButton(
+//                    imageVector = Icons.Outlined.FormatAlignCenter,
+//                    colors = ButtonDefaults.buttonColors(containerColor = if (isCenter) Color.LightGray else Color.White),
+//                    onClick = {
+//                        richTextState.addParagraphStyle(ParagraphStyle(textAlign = TextAlign.Center))
+//                        log(tag = "RichTextStyleRow") {
+//                            "textAlign: ${richTextState.currentParagraphStyle.textAlign}"
+//                        }
+//                    },
+//                )
+//            }
+
+            BasicRichTextEditor(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .verticalScroll(state = rememberScrollState()),
+                state = richTextState,
+                decorationBox = { innerTextField ->
+                    Box(Modifier.padding(8.dp)) {
+                        if (richTextState.annotatedString.text.isEmpty()) {
+                            Text(
+                                text = randomGreeting,
+                                color = Color.LightGray
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
         }
 
         if (openBottomSheet) {
@@ -269,14 +336,17 @@ fun RecordDetailsContent(
                 onDismissRequest = { openBottomSheet = false },
                 sheetState = bottomSheetState,
             ) {
+                focusManager.clearFocus()
                 when (bottomNavItem) {
                     BottomNavItem.GrammarCheck -> GrammarCheckBSContent(
                         viewModel,
-                        description
+                        richTextState.annotatedString.text
                     )
+
                     BottomNavItem.Translate -> TranslatedTextBSContent(
                         text = "Some translated text"
                     )
+
                     BottomNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             containerColor = color

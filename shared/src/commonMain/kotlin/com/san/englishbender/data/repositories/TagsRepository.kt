@@ -3,6 +3,7 @@ package com.san.englishbender.data.repositories
 import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.mappers.toEntity
+import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Tag
 import com.san.englishbender.domain.entities.TagEntity
@@ -28,7 +29,6 @@ class TagsRepository(
             when (changes) {
                 is InitialResults,
                 is UpdatedResults -> emit(changes.list.toList().toEntity())
-
                 else -> {}
             }
         }
@@ -38,8 +38,8 @@ class TagsRepository(
         realm.query(Tag::class).find().map { it.toEntity() }
     }
 
-    override suspend fun saveTag(tag: Tag): Unit = doQuery {
-        realm.write { copyToRealm(tag) }
+    override suspend fun saveTag(tag: TagEntity): Unit = doQuery {
+        realm.write { copyToRealm(tag.toLocal(), UpdatePolicy.ALL) }
     }
 
     override suspend fun saveTagColor(hexCode: String): Unit = doQuery {
