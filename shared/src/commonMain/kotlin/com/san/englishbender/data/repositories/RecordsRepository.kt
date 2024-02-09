@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 
-class RecordsRepository constructor(
+class RecordsRepository(
     private val realm: Realm,
 ) : IRecordsRepository {
 

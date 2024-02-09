@@ -4,7 +4,7 @@ import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.repositories.IRecordsRepository
 
 
-class SaveRecordUseCase constructor(
+class SaveRecordUseCase(
     private val recordsRepository: IRecordsRepository
 ) {
     suspend operator fun invoke(record: RecordEntity) =

@@ -48,7 +48,7 @@ fun BackgroundColorPickerBSContent(
         Color(0xFFCCFF99),
     )
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(bottom = 16.dp)) {
         Text(
             modifier = Modifier.padding(8.dp),
             fontSize = 14.sp,

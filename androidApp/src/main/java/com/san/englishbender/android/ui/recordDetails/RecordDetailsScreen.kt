@@ -8,7 +8,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +22,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -78,11 +76,9 @@ import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.AppConstants
 import com.san.englishbender.core.extensions.ifNotEmpty
-import com.san.englishbender.core.extensions.ifNull
 import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.ui.recordDetails.DetailUiState
 import com.san.englishbender.ui.recordDetails.RecordDetailsViewModel
-import io.github.aakira.napier.log
 import org.koin.androidx.compose.getViewModel
 import java.util.Calendar
 import java.util.Date
