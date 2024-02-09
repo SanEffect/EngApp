@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.san.englishbender.android.ui.EBAppState
 import com.san.englishbender.android.ui.common.AppDrawer
+import com.san.englishbender.android.ui.flashcards.FlashCardsScreen
 import com.san.englishbender.android.ui.recordDetails.RecordDetailsScreen
 import com.san.englishbender.android.ui.records.RecordsScreen
 import com.san.englishbender.android.ui.stats.StatsScreen
@@ -116,6 +117,25 @@ fun EBNavHost(
             RecordDetailsScreen(
                 onBackClick = { navigator.popBackStack() },
                 recordId
+            )
+        }
+
+        composable(route = Destinations.FLASHCARDS_ROUTE) {
+            AppDrawer(
+                drawerState,
+                currentRoute,
+                navActions,
+                content = {
+                    FlashCardsScreen(
+                        onBoardClick = { boardId ->
+                            val route = Screens.FLASHCARDS_SCREEN.let { route ->
+                                boardId?.let { "$route?boardId=$it" } ?: route
+                            }
+                            navigator.navigateTo(route)
+                        },
+                        openDrawer = { coroutineScope.launch { drawerState.open() } }
+                    )
+                }
             )
         }
     }

@@ -50,8 +50,8 @@ android {
 //    }
 }
 
-val composeVersion = "1.6.0"
-val material3Version = "1.1.2"
+val composeVersion = "1.6.1"
+val material3Version = "1.2.0"
 val pagingRuntimeVersion = "3.1.1"
 val pagingComposeVersion = "1.0.0-alpha18"
 val koinCoreVersion = "3.4.0"
@@ -96,7 +96,7 @@ dependencies {
     // SplashScreen
     implementation("androidx.core:core-splashscreen:1.0.1")
     
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.0.5")

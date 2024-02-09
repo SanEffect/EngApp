@@ -1,6 +1,7 @@
 package com.san.englishbender.android.navigation
 
 import androidx.navigation.NavHostController
+import com.san.englishbender.core.navigation.Destinations.FLASHCARDS_ROUTE
 import com.san.englishbender.core.navigation.Destinations.RECORD_DETAIL_ROUTE
 import com.san.englishbender.core.navigation.Destinations.STATS_ROUTE
 import com.san.englishbender.core.navigation.Screens.RECORDS_SCREEN
@@ -12,6 +13,10 @@ class EBNavigationActions(private val navController: NavHostController) {
 
     fun navigateToStats() {
         navController.navigate(STATS_ROUTE)
+    }
+
+    fun navigateToFlashCards() {
+        navController.navigate(FLASHCARDS_ROUTE)
     }
 
     fun navigateToRecords() {

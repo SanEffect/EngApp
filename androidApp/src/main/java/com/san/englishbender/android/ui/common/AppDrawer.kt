@@ -6,8 +6,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -42,7 +43,12 @@ private val drawerNavOptions = listOf(
     DrawerNavOptions(
         name = "Records",
         route = Destinations.RECORD_ROUTE,
-        icon = Icons.Default.ViewList
+        icon = Icons.AutoMirrored.Filled.ViewList
+    ),
+    DrawerNavOptions(
+        name = "Flash-cards",
+        route = Destinations.FLASHCARDS_ROUTE,
+        icon = Icons.Default.ViewCarousel
     ),
 )
 
@@ -79,6 +85,7 @@ fun AppDrawer(
                             when (item.route) {
                                 Destinations.STATS_ROUTE -> navActions.navigateToStats()
                                 Destinations.RECORD_ROUTE -> navActions.navigateToRecords()
+                                Destinations.FLASHCARDS_ROUTE -> navActions.navigateToFlashCards()
                             }
 //                            navController.navigate(item.route)
                         },

@@ -1,5 +1,6 @@
 package com.san.englishbender.data.local.models
 
+import com.san.englishbender.domain.entities.StatsEntity
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
@@ -18,3 +19,13 @@ class Stats : RealmObject {
 
     constructor() {}
 }
+
+fun Stats.toEntity() =
+    StatsEntity(
+        recordsCount = this.recordsCount,
+        wordsCount = this.wordsCount,
+        lettersCount = this.lettersCount
+    )
+
+fun StatsEntity.toLocal() =
+    Stats(this.recordsCount, this.wordsCount, this.lettersCount)

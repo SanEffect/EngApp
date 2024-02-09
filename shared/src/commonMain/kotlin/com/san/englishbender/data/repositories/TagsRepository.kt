@@ -2,10 +2,10 @@ package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.dataStore.IDataStore
-import com.san.englishbender.data.local.mappers.toEntity
-import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.AppSettings
 import com.san.englishbender.data.local.models.Tag
+import com.san.englishbender.data.local.models.toEntity
+import com.san.englishbender.data.local.models.toLocal
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.repositories.ITagsRepository
 import com.san.englishbender.ioDispatcher

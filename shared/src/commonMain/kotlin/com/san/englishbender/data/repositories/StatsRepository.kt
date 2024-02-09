@@ -1,9 +1,9 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
-import com.san.englishbender.data.local.mappers.toEntity
-import com.san.englishbender.data.local.mappers.toLocal
 import com.san.englishbender.data.local.models.Stats
+import com.san.englishbender.data.local.models.toEntity
+import com.san.englishbender.data.local.models.toLocal
 import com.san.englishbender.domain.entities.StatsEntity
 import com.san.englishbender.domain.repositories.IStatsRepository
 import com.san.englishbender.ioDispatcher

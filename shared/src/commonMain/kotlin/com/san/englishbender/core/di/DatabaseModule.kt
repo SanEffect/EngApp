@@ -3,12 +3,18 @@ package com.san.englishbender.core.di
 import com.san.englishbender.data.local.dataStore.DataStoreRealm
 import com.san.englishbender.data.local.dataStore.IDataStore
 import com.san.englishbender.data.local.models.AppSettings
+import com.san.englishbender.data.local.models.Board
+import com.san.englishbender.data.local.models.FlashCard
 import com.san.englishbender.data.local.models.Record
 import com.san.englishbender.data.local.models.Stats
 import com.san.englishbender.data.local.models.Tag
+import com.san.englishbender.data.repositories.BoardsRepository
+import com.san.englishbender.data.repositories.FlashCardsRepository
 import com.san.englishbender.data.repositories.RecordsRepository
 import com.san.englishbender.data.repositories.StatsRepository
 import com.san.englishbender.data.repositories.TagsRepository
+import com.san.englishbender.domain.repositories.IBoardsRepository
+import com.san.englishbender.domain.repositories.IFlashCardsRepository
 import com.san.englishbender.domain.repositories.IRecordsRepository
 import com.san.englishbender.domain.repositories.IStatsRepository
 import com.san.englishbender.domain.repositories.ITagsRepository
@@ -22,6 +28,8 @@ private val dataStoreModels = setOf(
     Record::class,
     Tag::class,
     Stats::class,
+    Board::class,
+    FlashCard::class,
 )
 
 val databaseModule = module {
@@ -36,4 +44,6 @@ val databaseModule = module {
     single<IRecordsRepository> { RecordsRepository(get()) }
     single<ITagsRepository> { TagsRepository(get(), get()) }
     single<IStatsRepository> { StatsRepository(get()) }
+    single<IBoardsRepository> { BoardsRepository(get()) }
+    single<IFlashCardsRepository> { FlashCardsRepository(get()) }
 }
