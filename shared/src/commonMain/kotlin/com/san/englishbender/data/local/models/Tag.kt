@@ -1,5 +1,6 @@
 package com.san.englishbender.data.local.models
 
+import com.san.englishbender.domain.entities.TagEntity
 import io.realm.kotlin.ext.backlinks
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.types.RealmObject
@@ -22,3 +23,22 @@ open class Tag : RealmObject {
 
     constructor() {}
 }
+
+fun Tag.toEntity() =
+    TagEntity(
+        id = id,
+        name = name,
+        color = color,
+        isWhite = isWhite
+    )
+
+fun TagEntity.toLocal() =
+    Tag(
+        id = id,
+        name = name,
+        color = color,
+        isWhite = isWhite
+    )
+
+fun List<Tag>.toEntity() = this.map { it.toEntity() }
+fun List<TagEntity>.toLocal() = this.map { it.toLocal() }

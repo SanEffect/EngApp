@@ -1,5 +1,7 @@
 package com.san.englishbender.core.di
 
+import com.san.englishbender.domain.usecases.flashCards.GetBoardsFlowUseCase
+import com.san.englishbender.domain.usecases.flashCards.GetFlashCardsFlowUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
@@ -34,4 +36,8 @@ val useCaseModule = module {
     single { SaveTagUseCase(get()) }
     single { SaveTagColorUseCase(get()) }
     single { DeleteTagUseCase(get()) }
+
+    // --- FlashCards
+    single { GetBoardsFlowUseCase(get()) }
+    single { GetFlashCardsFlowUseCase(get()) }
 }
