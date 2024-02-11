@@ -72,7 +72,6 @@ fun BackgroundColorPickerBSContent(
                         .clickable(onClick = { onClick(color) }),
                     colors = CardDefaults.cardColors(containerColor = color),
                     border = BorderStroke(1.dp, Color.LightGray)
-//                    border = if (index == 0) BorderStroke(1.dp, Color.LightGray) else null
                 ) {}
             }
         }

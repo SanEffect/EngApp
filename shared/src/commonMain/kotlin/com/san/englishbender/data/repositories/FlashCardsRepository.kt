@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.flowOn
 class FlashCardsRepository(
     private val realm: Realm
 ): IFlashCardsRepository {
-    override fun getFlashCardsFlow(): Flow<List<FlashCardEntity>> = flow {
-        realm.query(FlashCard::class).asFlow().collect { changes ->
+    override fun getFlashCardsFlow(boardId: String): Flow<List<FlashCardEntity>> = flow {
+        realm.query<FlashCard>("").asFlow().collect { changes ->
             when (changes) {
                 is InitialResults,
                 is UpdatedResults -> emit(changes.list.toList().toEntity())
@@ -33,9 +33,9 @@ class FlashCardsRepository(
         realm.query(FlashCard::class).find().map { it.toEntity() }
     }
 
-    override suspend fun saveFlashCard(card: FlashCardEntity): Unit = doQuery {
-        realm.write { copyToRealm(card.toLocal(), UpdatePolicy.ALL) }
-    }
+//    override suspend fun saveFlashCard(card: FlashCardEntity): Unit = doQuery {
+//        realm.write { copyToRealm(card.toLocal(), UpdatePolicy.ALL) }
+//    }
 
     override suspend fun deleteFlashCard(cardId: String): Unit = doQuery {
         realm.write {

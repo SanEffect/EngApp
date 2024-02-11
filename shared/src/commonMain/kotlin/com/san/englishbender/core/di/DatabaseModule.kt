@@ -42,7 +42,7 @@ val databaseModule = module {
     }
 
     single<IRecordsRepository> { RecordsRepository(get()) }
-    single<ITagsRepository> { TagsRepository(get(), get()) }
+    single<ITagsRepository> { TagsRepository(get()) }
     single<IStatsRepository> { StatsRepository(get()) }
     single<IBoardsRepository> { BoardsRepository(get()) }
     single<IFlashCardsRepository> { FlashCardsRepository(get()) }

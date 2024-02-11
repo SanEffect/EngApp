@@ -1,5 +1,6 @@
 package com.san.englishbender.core.navigation
 
+import com.san.englishbender.core.navigation.Screens.BOARDS_SCREEN
 import com.san.englishbender.core.navigation.Screens.COLOR_PICKER_SCREEN
 import com.san.englishbender.core.navigation.Screens.FLASHCARDS_SCREEN
 import com.san.englishbender.core.navigation.Screens.RECORDS_SCREEN
@@ -12,6 +13,7 @@ object Screens {
     const val STATS_SCREEN = "stats"
     const val RECORDS_SCREEN = "records"
     const val RECORD_DETAIL_SCREEN = "recordDetail"
+    const val BOARDS_SCREEN = "boards"
     const val FLASHCARDS_SCREEN = "flashcards"
 
     // ---
@@ -30,6 +32,7 @@ object Destinations {
     const val STATS_ROUTE = STATS_SCREEN
     const val RECORD_ROUTE = RECORDS_SCREEN
     const val RECORD_DETAIL_ROUTE = "$RECORD_DETAIL_SCREEN?recordId={recordId}"
+    const val BOARDS_ROUTE = "$BOARDS_SCREEN?boardId={boardId}"
     const val FLASHCARDS_ROUTE = "$FLASHCARDS_SCREEN?boardId={boardId}"
 
     const val TAG_LIST_ROUTE = TAG_LIST_SCREEN

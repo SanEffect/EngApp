@@ -1,6 +1,7 @@
 package com.san.englishbender.core.di
 
 import com.san.englishbender.ui.TagsViewModel
+import com.san.englishbender.ui.flashcards.BoardsViewModel
 import com.san.englishbender.ui.flashcards.FlashCardsViewModel
 import com.san.englishbender.ui.recordDetails.RecordDetailsViewModel
 import com.san.englishbender.ui.records.RecordsViewModel
@@ -12,5 +13,6 @@ val viewModelModule = module {
     single { RecordDetailsViewModel(get(), get(), get(), get(), get()) }
     single { StatsViewModel(get(), get()) }
     single { TagsViewModel(get(), get(), get(), get(), get()) }
-    single { FlashCardsViewModel(get()) }
+    single { BoardsViewModel(get(), get(), get()) }
+    single { FlashCardsViewModel(get(), get()) }
 }

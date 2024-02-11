@@ -1,12 +1,14 @@
 package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
+import com.san.englishbender.core.extensions.toFlow
 import com.san.englishbender.data.local.models.Board
 import com.san.englishbender.data.local.models.toEntity
 import com.san.englishbender.data.local.models.toLocal
 import com.san.englishbender.domain.entities.BoardEntity
 import com.san.englishbender.domain.repositories.IBoardsRepository
 import com.san.englishbender.ioDispatcher
+import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
@@ -15,6 +17,7 @@ import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 class BoardsRepository(
     private val realm: Realm
@@ -33,8 +36,14 @@ class BoardsRepository(
         realm.query(Board::class).find().map { it.toEntity() }
     }
 
+    override suspend fun getBoard(id: String): BoardEntity? = doQuery {
+        realm.query<Board>("id == $0", id).first().find()?.toEntity()
+    }
+
     override suspend fun saveBoard(board: BoardEntity): Unit = doQuery {
-        realm.write { copyToRealm(board.toLocal(), UpdatePolicy.ALL) }
+        val local = board.toLocal()
+        log(tag = "containerColor") { "local: $local" }
+        realm.write { copyToRealm(local, UpdatePolicy.ALL) }
     }
 
     override suspend fun deleteBoard(boardId: String): Unit = doQuery {

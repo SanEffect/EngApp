@@ -18,15 +18,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.san.englishbender.android.ui.EBAppState
 import com.san.englishbender.android.ui.common.AppDrawer
-import com.san.englishbender.android.ui.flashcards.FlashCardsScreen
+import com.san.englishbender.android.ui.flashcards.BoardScreen
+import com.san.englishbender.android.ui.flashcards.BoardsScreen
 import com.san.englishbender.android.ui.recordDetails.RecordDetailsScreen
 import com.san.englishbender.android.ui.records.RecordsScreen
 import com.san.englishbender.android.ui.stats.StatsScreen
 import com.san.englishbender.core.navigation.Destinations
+import com.san.englishbender.core.navigation.DestinationsArgs.BOARD_ID_ARG
 import com.san.englishbender.core.navigation.DestinationsArgs.RECORD_ID_ARG
 import com.san.englishbender.core.navigation.NavigationCommand
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.core.navigation.Screens
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -120,13 +123,13 @@ fun EBNavHost(
             )
         }
 
-        composable(route = Destinations.FLASHCARDS_ROUTE) {
+        composable(route = Destinations.BOARDS_ROUTE) {
             AppDrawer(
                 drawerState,
                 currentRoute,
                 navActions,
                 content = {
-                    FlashCardsScreen(
+                    BoardsScreen(
                         onBoardClick = { boardId ->
                             val route = Screens.FLASHCARDS_SCREEN.let { route ->
                                 boardId?.let { "$route?boardId=$it" } ?: route
@@ -136,6 +139,24 @@ fun EBNavHost(
                         openDrawer = { coroutineScope.launch { drawerState.open() } }
                     )
                 }
+            )
+        }
+
+        composable(
+            route = Destinations.FLASHCARDS_ROUTE,
+            arguments = listOf(
+                navArgument(BOARD_ID_ARG) {
+                    nullable = true
+                    defaultValue = null
+                    type = NavType.StringType
+                },
+            ),
+        ) { entry ->
+            val boardId = entry.arguments?.getString(BOARD_ID_ARG)
+
+            BoardScreen(
+                boardId,
+                onBackClick = { navigator.popBackStack() }
             )
         }
     }

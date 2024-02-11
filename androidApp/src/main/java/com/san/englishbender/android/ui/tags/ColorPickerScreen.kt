@@ -28,7 +28,7 @@ import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
-import com.san.englishbender.android.ui.common.DialogHeader
+import com.san.englishbender.android.ui.common.DialogNavHeader
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 
 
@@ -47,7 +47,7 @@ fun ColorPickerScreen(
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DialogHeader(
+        DialogNavHeader(
             title = "Color Picker",
             onClick = onBack
         )

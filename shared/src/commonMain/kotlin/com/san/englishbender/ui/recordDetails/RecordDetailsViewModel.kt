@@ -12,8 +12,8 @@ import com.san.englishbender.SharedRes
 import com.san.englishbender.core.Event
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.data.getResultFlow
-import com.san.englishbender.data.ifFailure
-import com.san.englishbender.data.ifSuccess
+import com.san.englishbender.data.onFailure
+import com.san.englishbender.data.onSuccess
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.entities.isNotEqual
@@ -62,11 +62,9 @@ class RecordDetailsViewModel(
     private var prevText: String = ""
     private val results = mutableListOf<String>()
 
-    fun getRecord(recordId: String?) {
-        val recId = recordId ?: return
-
+    fun getRecord(recordId: String) {
         combine(
-            getRecordFlowUseCase(recId),
+            getRecordFlowUseCase(recordId),
             getTagsFlowUseCase()
         ) { recordEntity, tags ->
             _uiState.update { state ->
@@ -96,11 +94,11 @@ class RecordDetailsViewModel(
         currRecordState.tags = selectedTags
 
         getResultFlow { saveRecordUseCase(currRecordState) }
-            .ifFailure {
+            .onFailure {
                 saveInProgress = false
                 showUserMessage(SharedRes.strings.save_record_error)
             }
-            .ifSuccess {
+            .onSuccess {
                 updateStatsUseCase(
                     prevRecordState = prevRecordState,
                     currRecordState = currRecordState

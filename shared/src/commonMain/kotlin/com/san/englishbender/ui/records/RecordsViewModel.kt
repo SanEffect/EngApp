@@ -3,8 +3,8 @@ package com.san.englishbender.ui.records
 import com.san.englishbender.SharedRes
 import com.san.englishbender.core.extensions.WhileUiSubscribed
 import com.san.englishbender.data.getResultFlow
-import com.san.englishbender.data.ifFailure
-import com.san.englishbender.data.ifSuccess
+import com.san.englishbender.data.onFailure
+import com.san.englishbender.data.onSuccess
 import com.san.englishbender.domain.entities.RecordEntity
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
@@ -42,8 +42,8 @@ class RecordsViewModel(
 
     fun removeRecord(record: RecordEntity) = safeLaunch {
         getResultFlow { removeRecordUseCase(record) }
-            .ifFailure { RecordsUiState(userMessage = SharedRes.strings.remove_record_error) }
-            .ifSuccess {
+            .onFailure { RecordsUiState(userMessage = SharedRes.strings.remove_record_error) }
+            .onSuccess {
                 log(tag = "ExceptionHandling") { "getResultFlow success" }
             }
     }

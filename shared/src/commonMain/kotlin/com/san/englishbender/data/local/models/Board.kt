@@ -11,20 +11,17 @@ class Board : RealmObject {
     @PrimaryKey
     var id: String = ""
     var name: String = ""
-    var description: String = ""
     var backgroundColor: String = ""
     var flashCards: RealmList<FlashCard> = realmListOf()
 
     constructor(
         id: String,
         name: String,
-        description: String,
         backgroundColor: String = "",
         flashCards: RealmList<FlashCard>
     ) {
         this.id = id
         this.name = name
-        this.description = description
         this.backgroundColor = backgroundColor
         this.flashCards = flashCards
     }
@@ -36,7 +33,6 @@ fun Board.toEntity() =
     BoardEntity(
         id = id,
         name = name,
-        description = description,
         backgroundColor = backgroundColor,
         flashCards = flashCards.toEntity()
     )
@@ -45,7 +41,6 @@ fun BoardEntity.toLocal() =
     Board(
         id = id,
         name = name,
-        description = description,
         backgroundColor = backgroundColor,
         flashCards = flashCards.toLocal().toRealmList()
     )

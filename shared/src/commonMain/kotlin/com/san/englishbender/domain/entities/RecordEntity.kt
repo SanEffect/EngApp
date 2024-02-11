@@ -1,8 +1,10 @@
 package com.san.englishbender.domain.entities
 
+import androidx.compose.runtime.Immutable
 import com.san.englishbender.CommonParcelable
 import com.san.englishbender.CommonParcelize
 
+@Immutable
 @CommonParcelize
 data class RecordEntity(
     var title: String = "",

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -30,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.toColor
+import com.san.englishbender.android.ui.common.DialogHeader
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.theme.ColorsPreset
 import com.san.englishbender.android.ui.theme.selectedLabelColor
 import com.san.englishbender.domain.entities.TagEntity
 import com.san.englishbender.ui.TagsViewModel
-import io.github.aakira.napier.log
 
 
 @Composable
@@ -59,14 +58,16 @@ fun TagsScreen(
 
     Column(modifier = Modifier.padding(16.dp)) {
 
-        Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 16.dp),
-            text = "Tags",
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
-        )
+//        Text(
+//            modifier = Modifier
+//                .align(Alignment.CenterHorizontally)
+//                .padding(bottom = 16.dp),
+//            text = "Tags",
+//            fontWeight = FontWeight.Bold,
+//            fontSize = 16.sp
+//        )
+
+        DialogHeader(title = "Tags")
 
         Column(modifier = Modifier
             .weight(1f)

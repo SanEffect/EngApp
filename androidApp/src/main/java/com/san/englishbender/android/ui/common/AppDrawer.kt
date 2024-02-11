@@ -36,19 +36,19 @@ data class DrawerNavOptions(
 
 private val drawerNavOptions = listOf(
     DrawerNavOptions(
-        name = "Stats",
-        route = Destinations.STATS_ROUTE,
-        icon = Icons.Default.Analytics
-    ),
-    DrawerNavOptions(
         name = "Records",
         route = Destinations.RECORD_ROUTE,
         icon = Icons.AutoMirrored.Filled.ViewList
     ),
     DrawerNavOptions(
         name = "Flash-cards",
-        route = Destinations.FLASHCARDS_ROUTE,
+        route = Destinations.BOARDS_ROUTE,
         icon = Icons.Default.ViewCarousel
+    ),
+    DrawerNavOptions(
+        name = "Stats",
+        route = Destinations.STATS_ROUTE,
+        icon = Icons.Default.Analytics
     ),
 )
 
@@ -85,6 +85,7 @@ fun AppDrawer(
                             when (item.route) {
                                 Destinations.STATS_ROUTE -> navActions.navigateToStats()
                                 Destinations.RECORD_ROUTE -> navActions.navigateToRecords()
+                                Destinations.BOARDS_ROUTE -> navActions.navigateToBoards()
                                 Destinations.FLASHCARDS_ROUTE -> navActions.navigateToFlashCards()
                             }
 //                            navController.navigate(item.route)

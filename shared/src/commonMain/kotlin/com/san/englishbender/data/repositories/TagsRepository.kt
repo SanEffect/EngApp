@@ -16,13 +16,23 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 
 class TagsRepository(
     private val realm: Realm,
-    private val dataStore: IDataStore
+//    private val dataStore: IDataStore
 ) : ITagsRepository {
+
+//    val tags = realm
+//        .query<Tag>()
+//        .asFlow()
+//        .map { result -> result.list.toList().toEntity() }
+//        .flowOn(ioDispatcher)
 
     override fun getAllTagsFlow(): Flow<List<TagEntity>> = flow {
         realm.query(Tag::class).asFlow().collect { changes ->

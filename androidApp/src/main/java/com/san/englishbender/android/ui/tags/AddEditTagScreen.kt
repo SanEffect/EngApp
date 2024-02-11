@@ -39,7 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.noRippleClickable
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
-import com.san.englishbender.android.ui.common.DialogHeader
+import com.san.englishbender.android.ui.common.DialogNavHeader
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.common.EBOutlinedIconButton
 import com.san.englishbender.android.ui.common.FontColorChangeButton
@@ -82,7 +82,7 @@ fun AddEditTagScreen(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        DialogHeader(
+        DialogNavHeader(
             title = title,
             onClick = onBack
         )

@@ -70,13 +70,13 @@ suspend fun <T> getResultFlow(action: suspend () -> T): Flow<Result<T>> = flow {
     }
 }
 
-suspend fun <T> Flow<Result<T>>.ifSuccess(block: suspend (T) -> Unit) {
+suspend fun <T> Flow<Result<T>>.onSuccess(block: suspend (T) -> Unit) {
     this.collect {
         if (it is Result.Success) block(it.data)
     }
 }
 
-fun <T> Flow<Result<T>>.ifFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
+fun <T> Flow<Result<T>>.onFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
     return this.map {
         if (it is Result.Failure) {
             log(tag = "ifFailureException") { "ifFailure exception: ${it.exception}" }
@@ -86,7 +86,7 @@ fun <T> Flow<Result<T>>.ifFailure(block: (Throwable) -> Unit): Flow<Result<T>> {
     }
 }
 
-suspend fun ifFailure(action: suspend () -> Unit, block: (Throwable) -> Unit) {
+suspend fun onFailure(action: suspend () -> Unit, block: (Throwable) -> Unit) {
     try {
         action()
     } catch (e: Exception) {

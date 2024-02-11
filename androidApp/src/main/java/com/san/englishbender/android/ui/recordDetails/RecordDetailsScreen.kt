@@ -26,6 +26,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -93,7 +94,7 @@ fun RecordDetailsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(recordId) {
-        if (recordId.isNotNull) viewModel.getRecord(recordId)
+        recordId?.let { viewModel.getRecord(it) }
     }
 
     RecordDetailsContent(
@@ -269,7 +270,7 @@ fun RecordDetailsContent(
                 ),
             )
 
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
                 color = Color.LightGray
             )

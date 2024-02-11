@@ -59,6 +59,19 @@ val darkReplyBlueColors = darkColorScheme(
     surface = Color.White
 )
 
+val backgroundColors = listOf(
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFCC),
+    Color(0xFFFFCC99),
+    Color(0xFFFFCCCC),
+    Color(0xFFFFCCFF),
+    Color(0xFFCCCCFF),
+    Color(0xFF99CCFF),
+    Color(0xFFCCFFFF),
+    Color(0xFF99FFCC),
+    Color(0xFFCCFF99),
+)
+
 object ColorsPreset {
 
     val coral: Color = Color(0xFFF29131)
