@@ -29,12 +29,12 @@ kotlin {
     }
 
     sourceSets {
-        val coroutineVersion = "1.7.2"
+        val coroutineVersion = "1.7.3"
         val retrofitCoroutineAdapterVersion = "0.9.2"
         val retrofitVersion = "2.9.0"
         val okHttpVersion = "4.11.0"
         val moshiVersion = "1.13.0"
-        val lifecycleViewModelVersion = "2.6.2"
+        val lifecycleViewModelVersion = "2.7.0"
         val koinCoreVersion = "3.4.2"
         val koinAndroidVersion = "3.4.2"
         val koinComposeVersion = "3.4.5"
@@ -74,7 +74,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
                 // Realm
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2") // Add to use coroutines with the SDK
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // Add to use coroutines with the SDK
                 api("io.realm.kotlin:library-base:1.11.0") // Add to only use the local database
                 api("io.realm.kotlin:library-sync:1.11.0") // Add to use Device Sync
                 compileOnly("io.realm.kotlin:library-base:1.11.0")

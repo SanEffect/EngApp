@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.san.englishbender.android.core.extensions.noRippleClickable
 
+
+@Composable
+fun EBTextButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    fontSize: TextUnit = 14.sp,
+    textColor: Color = Color.DarkGray,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
+    onClick: () -> Unit,
+) {
+    TextButton(
+        modifier = modifier,
+        colors = colors,
+        contentPadding = contentPadding,
+        onClick = onClick
+    ) {
+        Text(
+            text = text,
+            fontSize = fontSize,
+            color = textColor
+        )
+    }
+}
 
 @Composable
 fun EBOutlinedButton(

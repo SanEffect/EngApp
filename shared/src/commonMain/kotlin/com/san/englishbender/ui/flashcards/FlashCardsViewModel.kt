@@ -65,7 +65,6 @@ class FlashCardsViewModel(
     fun saveFlashCard(boardName: String, boardColor: String) = safeLaunch {
 
         val board = BoardEntity().apply {
-            id = randomUUID()
             name = boardName
             backgroundColor = boardColor
         }

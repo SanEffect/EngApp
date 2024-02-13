@@ -6,7 +6,7 @@ import com.san.englishbender.randomUUID
 
 @CommonParcelize
 data class BoardEntity(
-    var id: String = randomUUID(),
+    val id: String = randomUUID(),
     var name: String = "",
     var backgroundColor: String = "",
     var flashCards: List<FlashCardEntity> = emptyList()

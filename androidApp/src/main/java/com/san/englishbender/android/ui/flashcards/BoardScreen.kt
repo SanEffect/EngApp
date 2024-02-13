@@ -13,20 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,30 +48,30 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mohamedrejeb.richeditor.annotation.ExperimentalRichTextApi
+import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
 import com.san.englishbender.android.core.extensions.toColor
-import com.san.englishbender.android.core.extensions.toHex
-import com.san.englishbender.android.ui.common.BackgroundColorPicker
 import com.san.englishbender.android.ui.common.BaseDialogContent
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.common.EBOutlinedTextField
+import com.san.englishbender.android.ui.common.EBTextButton
 import com.san.englishbender.android.ui.common.richText.RichTextStyleRow
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
-import com.san.englishbender.android.ui.theme.backgroundColors
+import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.extensions.ifNotEmpty
 import com.san.englishbender.core.extensions.isNotNull
+import com.san.englishbender.core.extensions.isNull
+import com.san.englishbender.domain.entities.BoardEntity
 import com.san.englishbender.domain.entities.FlashCardEntity
 import com.san.englishbender.ui.flashcards.BoardUiState
 import com.san.englishbender.ui.flashcards.BoardsViewModel
-import com.san.englishbender.ui.flashcards.FlashCardsUiState
-import com.san.englishbender.ui.flashcards.FlashCardsViewModel
 import com.wajahatkarim.flippable.FlipAnimationType
 import com.wajahatkarim.flippable.Flippable
 import com.wajahatkarim.flippable.rememberFlipController
@@ -89,16 +87,31 @@ fun BoardScreen(
     val viewModel: BoardsViewModel = getViewModel()
     val uiState by viewModel.boardUiState.collectAsStateWithLifecycle()
 
+//    log(tag = "ExceptionHandling") { "BoardScreen.uiState.board: ${uiState.board}" }
+
     LaunchedEffect(boardId) {
-        boardId?.let { viewModel.getBoard(it) }
+        boardId?.let {
+            log(tag = "FuckThisShit") { "viewModel.getBoard(it)" }
+            viewModel.getBoard(it) }
     }
+
+//    LaunchedEffect(viewModel.boardIsSaved.value) {
+//        log(tag = "FuckThisShit") { "viewModel.boardIsSaved" }
+//        viewModel.boardIsSaved.value.getContentIfNotHandled()?.let {
+//            boardId?.let {
+//                log(tag = "FuckThisShit") { "viewModel.getBoard(it)" }
+//                viewModel.getBoard(it) }
+//        }
+//    }
 
     when {
         uiState.isLoading -> LoadingView()
         uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
         else -> BoardContent(
-            viewModel,
             uiState,
+            onCardCreate = { board, flashCard -> viewModel.addCardToBoard(board, flashCard) },
+            onCardUpdate = { flashCard -> viewModel.updateCard(flashCard) },
+            onCardDelete = { flashCardId -> viewModel.deleteCard(flashCardId) },
             onBackClick
         )
     }
@@ -106,20 +119,32 @@ fun BoardScreen(
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class, ExperimentalRichTextApi::class
+    ExperimentalFoundationApi::class,
+    ExperimentalRichTextApi::class
 )
 @Composable
 fun BoardContent(
-    viewModel: BoardsViewModel,
     uiState: BoardUiState,
-    onBackClick: () -> Unit
+    onCardCreate: (BoardEntity, FlashCardEntity) -> Unit,
+    onCardUpdate: (FlashCardEntity) -> Unit,
+    onCardDelete: (String) -> Unit,
+    onBackClick: () -> Unit = {},
 ) {
-    val focusManager = LocalFocusManager.current
     val controller = rememberFlipController()
+    val focusManager = LocalFocusManager.current
     val cards = uiState.board?.flashCards ?: emptyList()
+
+    log(tag = "FuckThisShit") { "cards.size: ${cards.size}" }
+
+    cards.find { it.id == "0786d6a4-f235-4016-a58b-5040324af033" }?.let {
+        log(tag = "ExceptionHandling") { "front: ${it.frontText}" }
+        log(tag = "ExceptionHandling") { "back: ${it.backText}" }
+    }
+
     val pagerState = rememberPagerState(pageCount = { cards.size })
-//    val pagerState = rememberPagerState(pageCount = { 1 })
-    var boardCreationDialog by remember { mutableStateOf(false) }
+    var addCardDialog by remember { mutableStateOf(false) }
+    var editCardDialog by remember { mutableStateOf(false) }
+    var cardDeletionDialog by remember { mutableStateOf(false) }
 
     val containerColor = uiState.board?.backgroundColor?.toColor
         ?: MaterialTheme.colorScheme.surfaceVariant
@@ -160,7 +185,7 @@ fun BoardContent(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier
                                 .padding(8.dp)
-                                .clickable { boardCreationDialog = true }
+                                .clickable { addCardDialog = true }
                         )
                         Icon(
                             rememberVectorPainter(Icons.Filled.Edit),
@@ -168,7 +193,7 @@ fun BoardContent(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier
                                 .padding(8.dp)
-                                .clickable { }
+                                .clickable { editCardDialog = true }
                         )
                         Icon(
                             rememberVectorPainter(Icons.Filled.Delete),
@@ -176,7 +201,7 @@ fun BoardContent(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier
                                 .padding(8.dp)
-                                .clickable { }
+                                .clickable { cardDeletionDialog = true }
                         )
                     }
                 )
@@ -197,22 +222,18 @@ fun BoardContent(
                 return@Scaffold
             }
 
+            Spacer(Modifier.height(32.dp))
+
             HorizontalPager(
                 state = pagerState
             ) { pageIndex ->
+                val card = cards.getOrNull(pageIndex) ?: return@HorizontalPager
 
-                val card = cards[pageIndex]
+//                log(tag = "ExceptionHandling") { "Pager card: $card" }
 
-                LaunchedEffect(Unit) {
-                    card.back.ifNotEmpty { richTextState.setHtml(it) }
+                LaunchedEffect(card) {
+                    card.backText.ifNotEmpty { richTextState.setHtml(it) }
                 }
-
-//                val card = FlashCardEntity(
-//                    front = "squander",
-//                    back = "waste (something, especially money or time) in a reckless and foolish manner",
-//                )
-
-                Spacer(Modifier.height(32.dp))
 
                 Flippable(
                     modifier = Modifier
@@ -229,7 +250,7 @@ fun BoardContent(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = card.front,
+                                text = card.frontText,
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
@@ -250,9 +271,7 @@ fun BoardContent(
                                     .padding(horizontal = 16.dp)
                                     .verticalScroll(state = rememberScrollState()),
                                 state = richTextState,
-                                textStyle = TextStyle(
-                                    fontSize = 20.sp
-                                ),
+                                textStyle = TextStyle(fontSize = 20.sp),
                                 readOnly = true
                             )
                         }
@@ -264,23 +283,64 @@ fun BoardContent(
         }
     }
 
-    if (boardCreationDialog) {
-        CardCreationDialog(
-            onCardCreate = { flashCard ->
-                uiState.board?.let {
-                    it.flashCards = it.flashCards.plus(listOf(flashCard))
-                    viewModel.saveBoard(it)
-                }
+    when {
+        addCardDialog -> AddCardDialog(
+            onCreate = { flashCard ->
+                focusManager.clearFocus()
+                uiState.board?.let { onCardCreate(it, flashCard) }
             },
-            dismiss = { boardCreationDialog = false }
-        )
+            dismiss = { addCardDialog = false })
+        // ---
+        editCardDialog -> EditCardDialog(
+            currentFlashCard = cards.getOrNull(pagerState.currentPage),
+            onUpdate = { flashCard ->
+                focusManager.clearFocus()
+                onCardUpdate(flashCard)
+            },
+            dismiss = { editCardDialog = false })
+        // ---
+        cardDeletionDialog -> {
+            val card = cards.getOrNull(pagerState.currentPage) ?: return
+
+            CardDeletionDialog(
+                flashCard = card,
+                confirm = { cardId -> onCardDelete(cardId) },
+                dismiss = { cardDeletionDialog = false }
+            )
+        }
     }
+}
+
+@Composable
+fun AddCardDialog(
+    onCreate: (FlashCardEntity) -> Unit,
+    dismiss: () -> Unit
+) {
+    CardContent(
+        onSave = onCreate,
+        dismiss = dismiss
+    )
+}
+
+@Composable
+fun EditCardDialog(
+    currentFlashCard: FlashCardEntity?,
+    onUpdate: (FlashCardEntity) -> Unit,
+    dismiss: () -> Unit
+) {
+    CardContent(
+        currentFlashCard,
+        onSave = onUpdate,
+        dismiss = dismiss
+    )
 }
 
 @OptIn(ExperimentalRichTextApi::class)
 @Composable
-fun CardCreationDialog(
-    onCardCreate: (FlashCardEntity) -> Unit,
+fun CardContent(
+    flashCard: FlashCardEntity? = null,
+    richTextState: RichTextState = rememberRichTextState(),
+    onSave: (FlashCardEntity) -> Unit,
     dismiss: () -> Unit
 ) {
     BaseDialogContent(
@@ -288,9 +348,15 @@ fun CardCreationDialog(
         dismiss = dismiss
     ) {
         var word by remember { mutableStateOf("") }
-        val card by remember { mutableStateOf(FlashCardEntity()) }
+        val card by remember { mutableStateOf(flashCard ?: FlashCardEntity()) }
 
-        val richTextState = rememberRichTextState()
+        flashCard?.let {
+            LaunchedEffect(it) {
+                word = it.frontText
+                richTextState.setHtml(it.backText)
+            }
+        }
+
         richTextState.setConfig(
             linkColor = Color.Blue,
             linkTextDecoration = TextDecoration.Underline,
@@ -318,14 +384,14 @@ fun CardCreationDialog(
                 ),
                 onValueChange = {
                     word = it
-                    card.front = it
+                    card.frontText = it
                 }
             )
 
             Spacer(Modifier.height(16.dp))
 
             RichTextStyleRow(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 8.dp),
                 state = richTextState
             )
             BasicRichTextEditor(
@@ -335,7 +401,8 @@ fun CardCreationDialog(
                     .border(1.dp, Color.Gray, RoundedCornerShape(6.dp))
                     .verticalScroll(state = rememberScrollState()),
                 state = richTextState,
-                minLines = 3,
+                minLines = 12,
+                maxLines = 12,
                 decorationBox = { innerTextField ->
                     Box(Modifier.padding(8.dp)) {
                         if (richTextState.annotatedString.text.isEmpty()) {
@@ -360,16 +427,72 @@ fun CardCreationDialog(
                 EBOutlinedButton(
                     text = "Save",
                     onClick = {
-                        if (card.front.isEmpty()) return@EBOutlinedButton
+                        if (word.isEmpty()) return@EBOutlinedButton
 
                         // TODO: delete it when RichTextEditor has onValueChanged callback
-                        card.back = richTextState.toHtml()
+                        card.backText = richTextState.toHtml()
 
-                        onCardCreate(card)
-                        dismiss()
+                        onSave(card)
+//                        dismiss()
                     }
                 )
             }
         }
     }
 }
+
+@Composable
+fun CardDeletionDialog(
+    flashCard: FlashCardEntity,
+    confirm: (String) -> Unit,
+    dismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = dismiss) {
+        Column {
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "Warning",
+                fontSize = 20.sp
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
+                text = "Are you sure to delete the card \"${flashCard.frontText}\"?",
+                fontSize = 16.sp
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(Modifier.weight(1f))
+                EBTextButton(
+                    text = "Cancel",
+                    onClick = dismiss
+                )
+                EBTextButton(
+                    modifier = Modifier.padding(start = 16.dp),
+                    text = "Delete",
+                    colors = ButtonDefaults.buttonColors(contentColor = RedDark),
+                    onClick = { confirm(flashCard.id) }
+                )
+            }
+        }
+    }
+}
+
+//@Preview
+//@Composable
+//fun BoardContentPreview() {
+//    BoardContent(
+//        uiState = BoardUiState(),
+//        onCardCreate = { board, card ->  },
+//        onCardUpdate = {},
+//        onCardDelete = {}
+//    )
+//}

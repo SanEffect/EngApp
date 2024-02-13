@@ -7,7 +7,6 @@ import com.san.englishbender.randomUUID
 @CommonParcelize
 data class FlashCardEntity(
     var id: String = randomUUID(),
-    var front: String = "",
-    var back: String = "",
-    var description: String = ""
+    var frontText: String = "",
+    var backText: String = "",
 ) : CommonParcelable

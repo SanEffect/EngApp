@@ -3,6 +3,7 @@ package com.san.englishbender.core.di
 import com.san.englishbender.domain.usecases.flashCards.GetBoardsFlowUseCase
 import com.san.englishbender.domain.usecases.flashCards.GetBoardByIdUseCase
 import com.san.englishbender.domain.usecases.flashCards.SaveBoardUseCase
+import com.san.englishbender.domain.usecases.flashCards.SaveFlashCardUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordFlowUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsCountUseCase
 import com.san.englishbender.domain.usecases.records.GetRecordsUseCase
@@ -42,4 +43,5 @@ val useCaseModule = module {
     single { GetBoardsFlowUseCase(get()) }
     single { GetBoardByIdUseCase(get()) }
     single { SaveBoardUseCase(get()) }
+    single { SaveFlashCardUseCase(get()) }
 }

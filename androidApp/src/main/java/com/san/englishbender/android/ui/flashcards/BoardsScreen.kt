@@ -14,9 +14,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -55,6 +56,7 @@ import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun BoardsScreen(
+
     onBoardClick: (String?) -> Unit,
     openDrawer: () -> Unit
 ) {
@@ -65,9 +67,10 @@ fun BoardsScreen(
         uiState.isLoading -> LoadingView()
         uiState.userMessage.isNotNull -> ErrorView(userMessage = uiState.userMessage)
         else -> BoardsContent(
-            viewModel,
             uiState,
+            onBoardCreate = { board -> viewModel.saveBoard(board) },
             onBoardClick = onBoardClick,
+            onGetCards = { viewModel.getCards() },
             openDrawer = openDrawer
         )
     }
@@ -76,9 +79,10 @@ fun BoardsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BoardsContent(
-    viewModel: BoardsViewModel,
     uiState: BoardsUiState,
+    onBoardCreate: (BoardEntity) -> Unit,
     onBoardClick: (String?) -> Unit,
+    onGetCards: () -> Unit,
     openDrawer: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -124,14 +128,20 @@ fun BoardsContent(
                 onClick = { boardCreationDialog = true }
             ) {
                 Icon(
-                    Icons.Filled.Edit,
+                    Icons.Filled.Add,
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
     ) { paddingValues ->
+
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            item {
+                Button(onClick = onGetCards) {
+                    Text("Get cards")
+                }
+            }
             items(items = uiState.boards, key = { it.id }) { board ->
                 BoardItem(board, onBoardClick)
             }
@@ -139,7 +149,7 @@ fun BoardsContent(
     }
     if (boardCreationDialog) {
         BoardCreationDialog(
-            viewModel,
+            onBoardCreate = onBoardCreate,
             dismiss = {
                 focusManager.clearFocus()
                 boardCreationDialog = false
@@ -150,16 +160,15 @@ fun BoardsContent(
 
 @Composable
 fun BoardCreationDialog(
-    viewModel: BoardsViewModel,
+    onBoardCreate: (BoardEntity) -> Unit,
     dismiss: () -> Unit
 ) {
     BaseDialogContent(
         height = 250.dp,
         dismiss = dismiss
     ) {
-        var board by remember { mutableStateOf(BoardEntity()) }
+        val board by remember { mutableStateOf(BoardEntity()) }
         var boardName by remember { mutableStateOf("") }
-        var boardColor by remember { mutableStateOf(backgroundColors.first()) }
 
         Column(
             Modifier
@@ -171,14 +180,17 @@ fun BoardCreationDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                value = board.name,
+                value = boardName,
                 placeholder = "Board name",
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done
                 ),
-                onValueChange = { board.name = it }
+                onValueChange = {
+                    boardName = it
+                    board.name = it
+                }
             )
 
             BackgroundColorPicker(
@@ -203,8 +215,12 @@ fun BoardCreationDialog(
                     text = "Save",
                     onClick = {
                         if (board.name.isEmpty()) return@EBOutlinedButton
+                        board.backgroundColor.ifEmpty {
+                            board.backgroundColor = backgroundColors.first().toHex()
+                        }
 
-                        viewModel.saveBoard(board)
+                        onBoardCreate(board)
+//                        viewModel.saveBoard(board)
                         dismiss()
                     }
                 )
@@ -225,17 +241,30 @@ fun BoardItem(
                 horizontal = 16.dp,
                 vertical = 8.dp
             )
-            .border(1.dp, Color.Gray, RoundedCornerShape(6.dp)),
+            .border(1.dp, Color.Gray, RoundedCornerShape(6.dp))
+            .clickable { onBoardClick(board.id) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier
-                .padding(12.dp)
-                .clickable { onBoardClick(board.id) },
+            modifier = Modifier.padding(12.dp),
             text = board.name
         )
     }
 }
+
+//@PreviewLightDark
+//@Preview
+//@Composable
+//fun BoardsScreenPreview() {
+//    EnglishBenderTheme {
+//        BoardsScreen(
+//            uiState = BoardsUiState(),
+//            onBoardCreate = {},
+//            onBoardClick = {},
+//            openDrawer = {}
+//        )
+//    }
+//}
 
 //@Composable
 //fun rememberImeState(): State<Boolean> {

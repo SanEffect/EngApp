@@ -1,20 +1,17 @@
 package com.san.englishbender.data.local.models
 
 import com.san.englishbender.domain.entities.FlashCardEntity
-import io.realm.kotlin.types.EmbeddedRealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
+import io.realm.kotlin.types.RealmObject
 
-open class FlashCard : EmbeddedRealmObject {
+open class FlashCard : RealmObject {
     var id: String = ""
-    var front: String = ""
-    var back: String = ""
-    var description: String = ""
+    var frontText: String = ""
+    var backText: String = ""
 
-    constructor(id: String, front: String, back: String, description: String) {
+    constructor(id: String, frontText: String, backText: String) {
         this.id = id
-        this.front = front
-        this.back = back
-        this.description = description
+        this.frontText = frontText
+        this.backText = backText
     }
 
     constructor() {}
@@ -23,17 +20,15 @@ open class FlashCard : EmbeddedRealmObject {
 fun FlashCard.toEntity() =
     FlashCardEntity(
         id = id,
-        front = front,
-        back = back,
-        description = description
+        frontText = frontText,
+        backText = backText
     )
 
 fun FlashCardEntity.toLocal() =
     FlashCard(
         id = id,
-        front = front,
-        back = back,
-        description = description
+        frontText = frontText,
+        backText = backText
     )
 
 fun List<FlashCard>.toEntity() = this.map { it.toEntity() }

@@ -1,5 +1,6 @@
 package com.san.englishbender.ui.recordDetails
 
+import androidx.compose.runtime.mutableStateOf
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage

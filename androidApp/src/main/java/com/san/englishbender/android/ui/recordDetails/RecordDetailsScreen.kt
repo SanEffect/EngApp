@@ -24,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -77,7 +76,6 @@ import com.san.englishbender.android.ui.theme.BottomSheetContainerColor
 import com.san.englishbender.android.ui.theme.RedDark
 import com.san.englishbender.core.AppConstants
 import com.san.englishbender.core.extensions.ifNotEmpty
-import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.ui.recordDetails.DetailUiState
 import com.san.englishbender.ui.recordDetails.RecordDetailsViewModel
 import org.koin.androidx.compose.getViewModel
@@ -118,6 +116,7 @@ fun RecordDetailsContent(
     viewModel: RecordDetailsViewModel,
     onBackClick: () -> Unit
 ) {
+
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 //    val coroutineScope = rememberCoroutineScope()

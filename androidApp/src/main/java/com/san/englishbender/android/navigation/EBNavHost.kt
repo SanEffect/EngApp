@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,10 +30,11 @@ import com.san.englishbender.core.navigation.DestinationsArgs.RECORD_ID_ARG
 import com.san.englishbender.core.navigation.NavigationCommand
 import com.san.englishbender.core.navigation.Navigator
 import com.san.englishbender.core.navigation.Screens
-import io.github.aakira.napier.log
+import com.san.englishbender.ui.flashcards.BoardsViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.getViewModel
 
 
 @Composable
