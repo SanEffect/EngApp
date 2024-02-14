@@ -2,13 +2,13 @@ package com.san.englishbender.data.repositories
 
 import com.san.englishbender.core.extensions.doQuery
 import com.san.englishbender.data.local.models.Board
+import com.san.englishbender.data.local.models.FlashCard
 import com.san.englishbender.data.local.models.toEntity
 import com.san.englishbender.data.local.models.toLocal
 import com.san.englishbender.domain.entities.BoardEntity
 import com.san.englishbender.domain.entities.FlashCardEntity
 import com.san.englishbender.domain.repositories.IBoardsRepository
 import com.san.englishbender.ioDispatcher
-import io.github.aakira.napier.log
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
@@ -43,7 +43,7 @@ class BoardsRepository(
         realm.query<Board>("id == $0", id).first().find()?.toEntity()
     }
 
-    override fun getBoardFlow(id: String): Flow<BoardEntity?> = flow {
+    override fun getBoardAsFlow(id: String): Flow<BoardEntity?> = flow {
         realm.query<Board>("id == $0", id)
             .first()
             .asFlow()
@@ -57,24 +57,33 @@ class BoardsRepository(
     }.flowOn(ioDispatcher)
 
     override suspend fun saveBoard(board: BoardEntity): Unit = doQuery {
-        log(tag = "BoardsViewModel") { "saveBoard: $board cards.size: ${board.flashCards.size}" }
         val local = board.toLocal()
         realm.write { copyToRealm(local, UpdatePolicy.ALL) }
     }
 
+    override suspend fun addFlashCardToBoard(boardId: String, flashCard: FlashCardEntity): Unit =
+        doQuery {
+            realm.write {
+                val board = this.query<Board>("id == $0", boardId).first().find()
+                board?.flashCards?.add(flashCard.toLocal())
+            }
+        }
+
     override suspend fun saveFlashCard(card: FlashCardEntity): Unit = doQuery {
-        log(tag = "getCards") { "card: $card" }
-        val local = card.toLocal()
-        log(tag = "getCards") { "local: $local" }
-        log(tag = "getCards") { "front: ${local.frontText}" }
-        log(tag = "getCards") { "back: ${local.backText}" }
-        realm.write { copyToRealm(local, UpdatePolicy.ALL) }
+        realm.write { copyToRealm(card.toLocal(), UpdatePolicy.ALL) }
     }
 
     override suspend fun deleteBoard(boardId: String): Unit = doQuery {
         realm.write {
             val board = query<Board>("id == $0", boardId).find()
             delete(board)
+        }
+    }
+
+    override suspend fun deleteFlashCard(cardId: String): Unit = doQuery {
+        realm.write {
+            val card = query<FlashCard>("id == $0", cardId).find()
+            delete(card)
         }
     }
 }

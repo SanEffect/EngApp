@@ -1,6 +1,5 @@
 package com.san.englishbender.domain.usecases.flashCards
 
-import com.san.englishbender.domain.entities.BoardEntity
 import com.san.englishbender.domain.entities.FlashCardEntity
 import com.san.englishbender.domain.repositories.IBoardsRepository
 

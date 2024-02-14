@@ -2,8 +2,10 @@ package com.san.englishbender.data.local.models
 
 import com.san.englishbender.domain.entities.FlashCardEntity
 import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.annotations.PrimaryKey
 
 open class FlashCard : RealmObject {
+    @PrimaryKey
     var id: String = ""
     var frontText: String = ""
     var backText: String = ""

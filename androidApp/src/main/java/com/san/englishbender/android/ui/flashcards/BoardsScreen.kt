@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -56,12 +55,11 @@ import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun BoardsScreen(
-
     onBoardClick: (String?) -> Unit,
     openDrawer: () -> Unit
 ) {
     val viewModel: BoardsViewModel = getViewModel()
-    val uiState by viewModel.boardsUiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when {
         uiState.isLoading -> LoadingView()
@@ -70,7 +68,6 @@ fun BoardsScreen(
             uiState,
             onBoardCreate = { board -> viewModel.saveBoard(board) },
             onBoardClick = onBoardClick,
-            onGetCards = { viewModel.getCards() },
             openDrawer = openDrawer
         )
     }
@@ -82,7 +79,6 @@ fun BoardsContent(
     uiState: BoardsUiState,
     onBoardCreate: (BoardEntity) -> Unit,
     onBoardClick: (String?) -> Unit,
-    onGetCards: () -> Unit,
     openDrawer: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -135,13 +131,7 @@ fun BoardsContent(
             }
         }
     ) { paddingValues ->
-
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
-            item {
-                Button(onClick = onGetCards) {
-                    Text("Get cards")
-                }
-            }
             items(items = uiState.boards, key = { it.id }) { board ->
                 BoardItem(board, onBoardClick)
             }

@@ -54,11 +54,20 @@ fun <T> Flow<T>.asResult(): Flow<Result<T>> {
         .catch { emit(Result.Failure(it)) }
 }
 
-suspend fun <T> getResult(action: suspend () -> T) = try {
-    Result.Success(action.invoke())
-} catch (e: Exception) {
-    Result.Failure(e)
-}
+//suspend fun <T> getResult(action: suspend () -> T) = try {
+//    Result.Success(action.invoke())
+//} catch (e: Exception) {
+//    Result.Failure(e)
+//}
+
+//suspend fun <T> getResult(action: suspend () -> Flow<T>) : T = try {
+//    action.invoke().collect {
+//        return@collect Result.Success(it)
+//    }
+////    Result.Success(action.invoke())
+//} catch (e: Exception) {
+//    Result.Failure(e)
+//}
 
 suspend fun <T> getResultFlow(action: suspend () -> T): Flow<Result<T>> = flow {
     return@flow try {

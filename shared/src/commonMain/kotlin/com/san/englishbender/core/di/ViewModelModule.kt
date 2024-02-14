@@ -13,6 +13,6 @@ val viewModelModule = module {
     single { RecordDetailsViewModel(get(), get(), get(), get(), get()) }
     single { StatsViewModel(get(), get()) }
     single { TagsViewModel(get(), get(), get(), get(), get()) }
-    single { BoardsViewModel(get(), get(), get(), get()) }
-    single { FlashCardsViewModel(get(), get()) }
+    single { BoardsViewModel(get(), get(), get()) }
+    single { FlashCardsViewModel(get(), get(), get(), get()) }
 }

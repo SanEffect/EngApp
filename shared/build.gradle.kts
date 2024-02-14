@@ -75,9 +75,9 @@ kotlin {
 
                 // Realm
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // Add to use coroutines with the SDK
-                api("io.realm.kotlin:library-base:1.11.0") // Add to only use the local database
-                api("io.realm.kotlin:library-sync:1.11.0") // Add to use Device Sync
-                compileOnly("io.realm.kotlin:library-base:1.11.0")
+                api("io.realm.kotlin:library-base:1.12.0") // Add to only use the local database
+                api("io.realm.kotlin:library-sync:1.12.0") // Add to use Device Sync
+                compileOnly("io.realm.kotlin:library-base:1.12.0")
 //                implementation("com.github.vicpinm:krealmextensions:2.5.0")
 
                 // Moco

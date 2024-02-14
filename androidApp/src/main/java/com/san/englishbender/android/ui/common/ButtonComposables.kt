@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,7 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -166,4 +170,21 @@ fun FontColorChangeButton(
 //            tint = if (state) Color.White else Color.Black
 //        )
 //    }
+}
+
+@Composable
+fun EBIcon(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    contentDescription: String? = null,
+    onClick: () -> Unit
+) {
+    Icon(
+        painter = rememberVectorPainter(imageVector),
+        contentDescription = contentDescription,
+        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onClick() }
+    )
 }

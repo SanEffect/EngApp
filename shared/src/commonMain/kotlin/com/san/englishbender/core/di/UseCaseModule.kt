@@ -1,5 +1,9 @@
 package com.san.englishbender.core.di
 
+import com.san.englishbender.domain.usecases.flashCards.AddFlashCardToBoardUseCase
+import com.san.englishbender.domain.usecases.flashCards.DeleteBoardUseCase
+import com.san.englishbender.domain.usecases.flashCards.DeleteFlashCardUseCase
+import com.san.englishbender.domain.usecases.flashCards.GetBoardAsFlowUseCase
 import com.san.englishbender.domain.usecases.flashCards.GetBoardsFlowUseCase
 import com.san.englishbender.domain.usecases.flashCards.GetBoardByIdUseCase
 import com.san.englishbender.domain.usecases.flashCards.SaveBoardUseCase
@@ -42,6 +46,10 @@ val useCaseModule = module {
     // --- FlashCards
     single { GetBoardsFlowUseCase(get()) }
     single { GetBoardByIdUseCase(get()) }
+    single { GetBoardAsFlowUseCase(get()) }
     single { SaveBoardUseCase(get()) }
+    single { AddFlashCardToBoardUseCase(get()) }
     single { SaveFlashCardUseCase(get()) }
+    single { DeleteBoardUseCase(get()) }
+    single { DeleteFlashCardUseCase(get()) }
 }
