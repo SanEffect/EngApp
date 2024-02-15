@@ -17,6 +17,7 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san.englishbender.android.core.extensions.truncateText
+import com.san.englishbender.android.ui.common.EBIcon
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.core.AppConstants.RECORD_MAX_LENGTH_DESCRIPTION
@@ -93,31 +95,22 @@ fun RecordsContent(
                 modifier = Modifier.fillMaxWidth(),
                 title = {},
                 navigationIcon = {
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.Menu),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable { openDrawer() }
+                    EBIcon(
+                        imageVector = Icons.Filled.Menu,
+                        modifier = Modifier.padding(8.dp),
+                        onClick = { openDrawer() }
                     )
                 },
                 actions = {
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.FilterList),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable { }
+                    EBIcon(
+                        imageVector = Icons.Filled.FilterList,
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {}
                     )
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.Settings),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable { }
+                    EBIcon(
+                        imageVector = Icons.Filled.Settings,
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {}
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -129,14 +122,12 @@ fun RecordsContent(
             FloatingActionButton(
                 contentColor = Color.White,
                 backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
-                shape = RoundedCornerShape(10.dp),
-                onClick = {
-                    onRecordClick(null)
-                }
+                shape = RoundedCornerShape(8.dp),
+                onClick = { onRecordClick(null) }
             ) {
                 Icon(
                     Icons.Filled.Edit,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }

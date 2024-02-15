@@ -66,7 +66,10 @@ import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
 import com.san.englishbender.Strings
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.core.extensions.toHex
+import com.san.englishbender.android.ui.common.BottomNavBar
+import com.san.englishbender.android.ui.common.BottomNavItem
 import com.san.englishbender.android.ui.common.EBOutlinedButton
+import com.san.englishbender.android.ui.common.RecordDetailsNavItem
 import com.san.englishbender.android.ui.common.richText.RichTextStyleRow
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.BackgroundColorPickerBSContent
 import com.san.englishbender.android.ui.recordDetails.bottomSheets.GrammarCheckBSContent
@@ -162,7 +165,7 @@ fun RecordDetailsContent(
             else record.backgroundColor.toColor
         )
     }
-    var bottomNavItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Translate) }
+    var bottomNavItem by remember { mutableStateOf<BottomNavItem>(RecordDetailsNavItem.Translate) }
     var tagsDialog by remember { mutableStateOf(false) }
     val selectedTags = remember(record) {
         record.tags?.toMutableStateList() ?: mutableStateListOf()
@@ -212,8 +215,13 @@ fun RecordDetailsContent(
             }
         },
         bottomBar = {
-            NavigationBar(
+            BottomNavBar(
                 containerColor = containerColor,
+                navItems = listOf(
+                    RecordDetailsNavItem.GrammarCheck,
+                    RecordDetailsNavItem.Translate,
+                    RecordDetailsNavItem.Settings
+                ),
                 navItemClicked = { navItem ->
                     bottomNavItem = navItem
                     openBottomSheet = true
@@ -334,21 +342,20 @@ fun RecordDetailsContent(
             ) {
                 focusManager.clearFocus()
                 when (bottomNavItem) {
-                    BottomNavItem.GrammarCheck -> GrammarCheckBSContent(
+                    RecordDetailsNavItem.GrammarCheck -> GrammarCheckBSContent(
                         viewModel,
                         richTextState.annotatedString.text
                     )
-
-                    BottomNavItem.Translate -> TranslatedTextBSContent(
+                    RecordDetailsNavItem.Translate -> TranslatedTextBSContent(
                         text = "Some translated text"
                     )
-
-                    BottomNavItem.Settings -> BackgroundColorPickerBSContent(
+                    RecordDetailsNavItem.Settings -> BackgroundColorPickerBSContent(
                         onClick = { color ->
                             containerColor = color
                             record.backgroundColor = color.toHex()
                         }
                     )
+                    else -> {}
                 }
             }
         }

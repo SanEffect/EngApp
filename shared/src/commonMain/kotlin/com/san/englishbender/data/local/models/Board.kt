@@ -12,6 +12,7 @@ class Board : RealmObject {
     var id: String = ""
     var name: String = ""
     var backgroundColor: String = ""
+    var isDisabled: Boolean = false
     var flashCards: RealmList<FlashCard> = realmListOf()
 
     constructor(

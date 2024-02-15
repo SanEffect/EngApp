@@ -16,6 +16,7 @@ import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.TypeParceler
 import org.koin.dsl.module
+import java.io.InputStreamReader
 import java.util.UUID
 
 actual typealias CommonParcelize = Parcelize
@@ -65,6 +66,16 @@ actual class Strings(
             StringDesc.Resource(id).toString(context)
         } else {
             id.format(*args.toTypedArray()).toString(context)
+        }
+    }
+}
+
+internal actual class SharedFileReader{
+    actual fun loadJsonFile(fileName: String): String? {
+        return javaClass.classLoader?.getResourceAsStream(fileName).use { stream ->
+            InputStreamReader(stream).use { reader ->
+                reader.readText()
+            }
         }
     }
 }

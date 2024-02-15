@@ -177,7 +177,7 @@ fun EBIcon(
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     contentDescription: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit = {}
 ) {
     Icon(
         painter = rememberVectorPainter(imageVector),

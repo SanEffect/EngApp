@@ -1,0 +1,16 @@
+{
+  "cards": [
+    {
+      "frontText":"Word1",
+      "backText":"Full of activity"
+    },
+    {
+      "frontText":"Word2",
+      "backText":"Full of activity"
+    },
+    {
+      "frontText":"Word3",
+      "backText":"Full of activity"
+    }
+  ]
+}

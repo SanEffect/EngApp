@@ -55,3 +55,7 @@ expect class Platform() {
 expect class Strings {
     fun get(id: StringResource, args: List<Any> = emptyList()): String
 }
+
+internal expect class SharedFileReader() {
+    fun loadJsonFile(fileName: String): String?
+}

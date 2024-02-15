@@ -6,30 +6,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.FormatAlignLeft
-import androidx.compose.material.icons.automirrored.outlined.FormatAlignRight
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.FormatBold
+import androidx.compose.material.icons.outlined.FormatItalic
+import androidx.compose.material.icons.outlined.FormatListNumbered
+import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.FormatStrikethrough
+import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
-import io.github.aakira.napier.log
+
 
 @Composable
 fun RichTextStyleRow(
     modifier: Modifier = Modifier,
-    state: RichTextState,
+    state: RichTextState
 ) {
 //    val currentParagraphStyle = state.currentParagraphStyle
 //    val isCentered = currentParagraphStyle.textAlign == TextAlign.Center
@@ -83,7 +86,6 @@ fun RichTextStyleRow(
                 icon = Icons.Outlined.FormatBold
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
@@ -93,79 +95,53 @@ fun RichTextStyleRow(
                 icon = Icons.Outlined.FormatItalic
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
-                    state.toggleSpanStyle(
-                        SpanStyle(
-                            textDecoration = TextDecoration.Underline
-                        )
-                    )
+                    state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
                 },
                 isSelected = state.currentSpanStyle.textDecoration?.contains(TextDecoration.Underline) == true,
                 icon = Icons.Outlined.FormatUnderlined
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
-                    state.toggleSpanStyle(
-                        SpanStyle(
-                            textDecoration = TextDecoration.LineThrough
-                        )
-                    )
+                    state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
                 },
                 isSelected = state.currentSpanStyle.textDecoration?.contains(TextDecoration.LineThrough) == true,
                 icon = Icons.Outlined.FormatStrikethrough
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
-                    state.toggleSpanStyle(
-                        SpanStyle(
-                            fontSize = 28.sp
-                        )
-                    )
+                    state.toggleSpanStyle(SpanStyle(fontSize = 28.sp))
                 },
                 isSelected = state.currentSpanStyle.fontSize == 28.sp,
                 icon = Icons.Outlined.FormatSize
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
-                    state.toggleSpanStyle(
-                        SpanStyle(
-                            color = Color.Red
-                        )
-                    )
+                    state.toggleSpanStyle(SpanStyle(color = Color.Red))
                 },
                 isSelected = state.currentSpanStyle.color == Color.Red,
                 icon = Icons.Filled.Circle,
                 tint = Color.Red
             )
         }
-
         item {
             RichTextStyleButton(
                 onClick = {
-                    state.toggleSpanStyle(
-                        SpanStyle(
-                            background = Color.Yellow
-                        )
-                    )
+                    state.toggleSpanStyle(SpanStyle(background = Color.Yellow))
                 },
                 isSelected = state.currentSpanStyle.background == Color.Yellow,
                 icon = Icons.Outlined.Circle,
                 tint = Color.Yellow
             )
         }
-
         item {
             Box(
                 Modifier
@@ -174,29 +150,20 @@ fun RichTextStyleRow(
                     .background(Color(0xFF393B3D))
             )
         }
-
         item {
             RichTextStyleButton(
-                onClick = {
-                    state.toggleUnorderedList()
-                },
+                onClick = { state.toggleUnorderedList() },
                 isSelected = state.isUnorderedList,
                 icon = Icons.AutoMirrored.Outlined.FormatListBulleted,
             )
         }
-
         item {
             RichTextStyleButton(
-                onClick = {
-                    state.toggleOrderedList()
-                },
+                onClick = { state.toggleOrderedList() },
                 isSelected = state.isOrderedList,
                 icon = Icons.Outlined.FormatListNumbered,
             )
         }
-
-
-
         item {
             Box(
                 Modifier
@@ -205,12 +172,9 @@ fun RichTextStyleRow(
                     .background(Color(0xFF393B3D))
             )
         }
-
         item {
             RichTextStyleButton(
-                onClick = {
-                    state.toggleCodeSpan()
-                },
+                onClick = { state.toggleCodeSpan() },
                 isSelected = state.isCodeSpan,
                 icon = Icons.Outlined.Code,
             )

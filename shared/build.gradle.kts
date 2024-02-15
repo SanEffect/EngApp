@@ -5,6 +5,7 @@ plugins {
     id("kotlin-kapt")
     id("io.realm.kotlin") version "1.11.0"
     id("dev.icerock.mobile.multiplatform-resources")
+    kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -29,7 +30,8 @@ kotlin {
     }
 
     sourceSets {
-        val coroutineVersion = "1.7.3"
+//        val coroutineVersion = "1.7.3"
+        val coroutineVersion = "1.8.0"
         val retrofitCoroutineAdapterVersion = "0.9.2"
         val retrofitVersion = "2.9.0"
         val okHttpVersion = "4.11.0"
@@ -38,6 +40,10 @@ kotlin {
         val koinCoreVersion = "3.4.2"
         val koinAndroidVersion = "3.4.2"
         val koinComposeVersion = "3.4.5"
+
+        getByName("androidMain") {
+            kotlin.srcDir("build/generated/moko/androidMain/src")
+        }
 
         val commonMain by getting {
             dependencies {
@@ -90,7 +96,7 @@ kotlin {
                 // Napier
                 api("io.github.aakira:napier:2.6.1")
 
-//                implementation("org.gradle:gradle-tooling-api:7.4.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
             }
         }
         val commonTest by getting {
@@ -209,6 +215,13 @@ android {
             }
         }
     }
+
+    sourceSets["main"].resources.setSrcDirs(
+        listOf(
+            "src/androidMain/resources",
+            "src/commonMain/resources"
+        )
+    )
 }
 
 // Don't cache SNAPSHOT (changing) dependencies.

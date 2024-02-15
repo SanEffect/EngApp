@@ -1,8 +1,9 @@
-package com.san.englishbender.android.ui.recordDetails
+package com.san.englishbender.android.ui.common
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material.icons.outlined.Translate
@@ -13,32 +14,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
-sealed class BottomNavItem(var title: String, var icon: ImageVector) {
-    object GrammarCheck : BottomNavItem("GrammarCheck", Icons.Outlined.Spellcheck)
-    object Translate : BottomNavItem("Translate", Icons.Outlined.Translate)
-    object Settings : BottomNavItem("Settings", Icons.Outlined.Settings)
+sealed class BottomNavItem(var label: String, var icon: ImageVector)
+
+sealed class DeckNavItem(label: String, icon: ImageVector) : BottomNavItem(label, icon) {
+    data object SendToArchive : DeckNavItem("Archive", Icons.Outlined.Archive)
+}
+
+sealed class RecordDetailsNavItem(label: String, icon: ImageVector) : BottomNavItem(label, icon) {
+    data object GrammarCheck : RecordDetailsNavItem("GrammarCheck", Icons.Outlined.Spellcheck)
+    data object Translate : RecordDetailsNavItem("Translate", Icons.Outlined.Translate)
+    data object Settings : RecordDetailsNavItem("Settings", Icons.Outlined.Settings)
 }
 
 @Composable
-fun NavigationBar(
+fun BottomNavBar(
     hasLabel: Boolean = false,
     containerColor: Color = Color.White,
+    navItems: List<BottomNavItem>,
     navItemClicked: (navItem: BottomNavItem) -> Unit
 ) {
-    val navItems = listOf(
-        BottomNavItem.GrammarCheck,
-        BottomNavItem.Translate,
-        BottomNavItem.Settings
-    )
-
     NavigationBar(
         contentColor = Color.Black,
         containerColor = containerColor
     ) {
-        navItems.forEachIndexed { index, navItem ->
+        navItems.forEach{ navItem ->
             NavigationBarItem(
                 icon = { Icon(navItem.icon, contentDescription = null) },
-                label = { if (hasLabel) Text(navItem.title) },
+                label = { if (hasLabel) Text(navItem.label) },
                 selected = false,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,

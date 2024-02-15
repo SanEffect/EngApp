@@ -1,13 +1,16 @@
 package com.san.englishbender.android.ui.flashcards
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,6 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,11 +46,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.san.englishbender.android.core.extensions.noRippleClickable
 import com.san.englishbender.android.core.extensions.toHex
 import com.san.englishbender.android.ui.common.BackgroundColorPicker
 import com.san.englishbender.android.ui.common.BaseDialogContent
+import com.san.englishbender.android.ui.common.EBIcon
 import com.san.englishbender.android.ui.common.EBOutlinedButton
 import com.san.englishbender.android.ui.common.EBOutlinedTextField
 import com.san.englishbender.android.ui.common.widgets.ErrorView
@@ -51,6 +63,7 @@ import com.san.englishbender.core.extensions.isNotNull
 import com.san.englishbender.domain.entities.BoardEntity
 import com.san.englishbender.ui.flashcards.BoardsUiState
 import com.san.englishbender.ui.flashcards.BoardsViewModel
+import io.github.aakira.napier.log
 import org.koin.androidx.compose.getViewModel
 
 @Composable
@@ -68,6 +81,7 @@ fun BoardsScreen(
             uiState,
             onBoardCreate = { board -> viewModel.saveBoard(board) },
             onBoardClick = onBoardClick,
+            onJson = { viewModel.loadAndParseJsonFile() },
             openDrawer = openDrawer
         )
     }
@@ -79,6 +93,7 @@ fun BoardsContent(
     uiState: BoardsUiState,
     onBoardCreate: (BoardEntity) -> Unit,
     onBoardClick: (String?) -> Unit,
+    onJson: () -> Unit,
     openDrawer: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -92,23 +107,16 @@ fun BoardsContent(
                 modifier = Modifier.fillMaxWidth(),
                 title = {},
                 navigationIcon = {
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.Menu),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable { openDrawer() }
+                    EBIcon(
+                        imageVector = Icons.Filled.Menu,
+                        modifier = Modifier.padding(8.dp),
+                        onClick = { openDrawer() }
                     )
                 },
                 actions = {
-                    Icon(
-                        rememberVectorPainter(Icons.Filled.FilterList),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clickable { }
+                    EBIcon(
+                        imageVector = Icons.Filled.MoreVert,
+                        modifier = Modifier.padding(8.dp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -120,7 +128,7 @@ fun BoardsContent(
             FloatingActionButton(
                 contentColor = Color.White,
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(8.dp),
                 onClick = { boardCreationDialog = true }
             ) {
                 Icon(
@@ -131,7 +139,12 @@ fun BoardsContent(
             }
         }
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+        LazyColumn(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+            item {
+                Button(onClick = { onJson() }) {
+                    Text("Test")
+                }
+            }
             items(items = uiState.boards, key = { it.id }) { board ->
                 BoardItem(board, onBoardClick)
             }
@@ -210,7 +223,6 @@ fun BoardCreationDialog(
                         }
 
                         onBoardCreate(board)
-//                        viewModel.saveBoard(board)
                         dismiss()
                     }
                 )
@@ -224,16 +236,13 @@ fun BoardItem(
     board: BoardEntity,
     onBoardClick: (String?) -> Unit,
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            )
-            .border(1.dp, Color.Gray, RoundedCornerShape(6.dp))
+            .padding(vertical = 8.dp)
             .clickable { onBoardClick(board.id) },
-        verticalAlignment = Alignment.CenterVertically
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
     ) {
         Text(
             modifier = Modifier.padding(12.dp),

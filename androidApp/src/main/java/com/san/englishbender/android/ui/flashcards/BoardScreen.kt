@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -55,11 +56,17 @@ import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
 import com.san.englishbender.android.core.extensions.noRippleClickable
 import com.san.englishbender.android.core.extensions.toColor
 import com.san.englishbender.android.ui.common.BaseDialogContent
+import com.san.englishbender.android.ui.common.BottomNavBar
+import com.san.englishbender.android.ui.common.BottomNavItem
+import com.san.englishbender.android.ui.common.DeckNavItem
 import com.san.englishbender.android.ui.common.EBIcon
 import com.san.englishbender.android.ui.common.EBOutlinedButton
+import com.san.englishbender.android.ui.common.EBOutlinedIconButton
 import com.san.englishbender.android.ui.common.EBOutlinedTextField
 import com.san.englishbender.android.ui.common.EBTextButton
-import com.san.englishbender.android.ui.common.richText.RichTextStyleRow
+import com.san.englishbender.android.ui.common.RecordDetailsNavItem
+import com.san.englishbender.android.ui.common.richText.RichTextToolsRow
+import com.san.englishbender.android.ui.common.richText.shortRichTextToolsPanel
 import com.san.englishbender.android.ui.common.widgets.ErrorView
 import com.san.englishbender.android.ui.common.widgets.LoadingView
 import com.san.englishbender.android.ui.theme.RedDark
@@ -84,7 +91,11 @@ fun BoardScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(boardId) {
-        boardId?.let { viewModel.getBoard(it) }
+        boardId?.let {
+            viewModel.observeBoard(it)
+//            viewModel.getBoard(it)
+//            viewModel.getFlashCards(it)
+        }
     }
 
     when {
@@ -93,7 +104,7 @@ fun BoardScreen(
         else -> BoardContent(
             uiState,
             onCardCreate = { board, flashCard -> viewModel.addCardToBoard(board, flashCard) },
-            onCardUpdate = { flashCard -> viewModel.updateCard(flashCard) },
+            onCardUpdate = { flashCard -> viewModel.saveCard(flashCard) },
             onCardDelete = { flashCardId -> viewModel.deleteFlashCard(flashCardId) },
             onBackClick
         )
@@ -116,12 +127,15 @@ fun BoardContent(
     val controller = rememberFlipController()
     val focusManager = LocalFocusManager.current
 
-    val cards = uiState.board?.flashCards ?: emptyList()
-    val pagerState = rememberPagerState(pageCount = { cards.size })
+//    val cards = uiState.board?.flashCards ?: emptyList()
+//    val cards = uiState.flashCards ?: emptyList()
+    val pagerState = rememberPagerState(pageCount = { uiState.flashCards.size })
 
     var addCardDialog by remember { mutableStateOf(false) }
     var editCardDialog by remember { mutableStateOf(false) }
     var cardDeletionDialog by remember { mutableStateOf(false) }
+
+//    var bottomNavItem by remember { mutableStateOf<BottomNavItem>(DeckNavItem.SendToArchive) }
 
     val containerColor = uiState.board?.backgroundColor?.toColor
         ?: MaterialTheme.colorScheme.surfaceVariant
@@ -172,15 +186,41 @@ fun BoardContent(
                     }
                 )
             }
-        }
+        },
+        bottomBar = {
+            BottomNavBar(
+                navItems = listOf(
+                    DeckNavItem.SendToArchive,
+                ),
+                containerColor = containerColor,
+                navItemClicked = { navItem ->
+//                    bottomNavItem = navItem
+
+                    when (navItem) {
+                        DeckNavItem.SendToArchive -> {
+                            uiState.flashCards.getOrNull(pagerState.currentPage)?.let {
+                                it.isArchived = true
+                                onCardUpdate(it)
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            )
+        },
     ) { paddingValues ->
 
         Column(
             Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                )
         ) {
-            if (cards.isEmpty()) {
+            if (uiState.flashCards.isEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -191,12 +231,21 @@ fun BoardContent(
                 return@Scaffold
             }
 
-            Spacer(Modifier.height(32.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "${(pagerState.currentPage + 1)}/${uiState.flashCards.size}",
+                    fontSize = 18.sp
+                )
+            }
 
             HorizontalPager(
                 state = pagerState
             ) { pageIndex ->
-                val card = cards.getOrNull(pageIndex) ?: return@HorizontalPager
+                val card = uiState.flashCards.getOrNull(pageIndex) ?: return@HorizontalPager
 
                 LaunchedEffect(card.backText) {
                     card.backText.ifNotEmpty { richTextState.setHtml(it) }
@@ -210,7 +259,6 @@ fun BoardContent(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(16.dp)
                                 .border(1.dp, Color.Gray, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp)),
                             contentAlignment = Alignment.Center
@@ -227,7 +275,6 @@ fun BoardContent(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(16.dp)
                                 .border(1.dp, Color.Gray, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp)),
                             contentAlignment = Alignment.Center
@@ -248,6 +295,17 @@ fun BoardContent(
                     flipAnimationType = FlipAnimationType.HORIZONTAL_CLOCKWISE
                 )
             }
+
+//            EBOutlinedIconButton(
+//                imageVector = Icons.Outlined.Archive,
+//                modifier = Modifier.padding(vertical = 16.dp),
+//                onClick = {
+//                    cards.getOrNull(pagerState.currentPage)?.let {
+//                        it.isArchived = true
+//                        onCardUpdate(it)
+//                    }
+//                }
+//            )
         }
     }
 
@@ -261,7 +319,7 @@ fun BoardContent(
         )
         // ---
         editCardDialog -> AddEditCardDialog(
-            flashCard = cards.getOrNull(pagerState.currentPage) ?: return,
+            flashCard = uiState.flashCards.getOrNull(pagerState.currentPage) ?: return,
             onSave = { flashCard ->
                 focusManager.clearFocus()
                 onCardUpdate(flashCard)
@@ -270,7 +328,7 @@ fun BoardContent(
         )
         // ---
         cardDeletionDialog -> CardDeletionDialog(
-            flashCard = cards.getOrNull(pagerState.currentPage) ?: return,
+            flashCard = uiState.flashCards.getOrNull(pagerState.currentPage) ?: return,
             confirm = { cardId -> onCardDelete(cardId) },
             dismiss = { cardDeletionDialog = false }
         )
@@ -315,11 +373,15 @@ fun AddEditCardDialog(
         dismiss = dismiss
     ) {
         Column(
-            Modifier.fillMaxWidth().padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -358,8 +420,9 @@ fun AddEditCardDialog(
 
             Spacer(Modifier.height(16.dp))
 
-            RichTextStyleRow(
-                state = richTextState
+            RichTextToolsRow(
+                state = richTextState,
+                richTextTools = shortRichTextToolsPanel
             )
             BasicRichTextEditor(
                 modifier = Modifier

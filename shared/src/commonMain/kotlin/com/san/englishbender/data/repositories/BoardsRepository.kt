@@ -12,12 +12,18 @@ import com.san.englishbender.ioDispatcher
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.DeletedList
+import io.realm.kotlin.notifications.InitialList
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
+import io.realm.kotlin.notifications.ListChange
 import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedList
 import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
+import io.realm.kotlin.query.find
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
@@ -56,9 +62,27 @@ class BoardsRepository(
             }
     }.flowOn(ioDispatcher)
 
+    override fun getFlashCardsAsFlow(id: String): Flow<List<FlashCardEntity?>> = flow {
+        realm.query<Board>("id == $0", id)
+            .first()
+            .find()
+            ?.also { board ->
+                board.flashCards
+                    .asFlow()
+                    .collect { listChange: ListChange<FlashCard> ->
+                    when (listChange) {
+                        is InitialList,
+                        is UpdatedList,
+                        is DeletedList -> emit(
+                            listChange.list.filter { !it.isArchived }.toEntity()
+                        )
+                    }
+                }
+            }
+    }.flowOn(ioDispatcher)
+
     override suspend fun saveBoard(board: BoardEntity): Unit = doQuery {
-        val local = board.toLocal()
-        realm.write { copyToRealm(local, UpdatePolicy.ALL) }
+        realm.write { copyToRealm(board.toLocal(), UpdatePolicy.ALL) }
     }
 
     override suspend fun addFlashCardToBoard(boardId: String, flashCard: FlashCardEntity): Unit =
@@ -72,6 +96,14 @@ class BoardsRepository(
     override suspend fun saveFlashCard(card: FlashCardEntity): Unit = doQuery {
         realm.write { copyToRealm(card.toLocal(), UpdatePolicy.ALL) }
     }
+
+//    override suspend fun sendCardToArchive(boardId: String, cardId: String): Unit =
+//        doQuery {
+//            realm.write {
+//                val board = this.query<Board>("id == $0", boardId).first().find()
+//                board?.flashCards?.find { it.id == cardId }?.isArchived = true
+//            }
+//        }
 
     override suspend fun deleteBoard(boardId: String): Unit = doQuery {
         realm.write {

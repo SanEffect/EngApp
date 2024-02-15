@@ -14,5 +14,5 @@ val viewModelModule = module {
     single { StatsViewModel(get(), get()) }
     single { TagsViewModel(get(), get(), get(), get(), get()) }
     single { BoardsViewModel(get(), get(), get()) }
-    single { FlashCardsViewModel(get(), get(), get(), get()) }
+    single { FlashCardsViewModel(get(), get(), get(), get(), get()) }
 }

@@ -9,6 +9,8 @@ interface IBoardsRepository {
     suspend fun getBoards() : List<BoardEntity>
     suspend fun getBoard(id: String) : BoardEntity?
     fun getBoardAsFlow(id: String) : Flow<BoardEntity?>
+    fun getFlashCardsAsFlow(id: String): Flow<List<FlashCardEntity?>>
+//    suspend fun sendCardToArchive(boardId: String, cardId: String)
     suspend fun saveBoard(board: BoardEntity)
     suspend fun addFlashCardToBoard(boardId: String, flashCard: FlashCardEntity)
     suspend fun saveFlashCard(card: FlashCardEntity)
